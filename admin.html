@@ -13,7 +13,7 @@
         .admin-container {
             max-width: 600px;
             margin: 40px auto;
-            background: #ffffff;
+            background: #fff;
             padding: 24px;
             border-radius: 8px;
             border: 1px solid #ddd;
@@ -60,107 +60,116 @@
             background-color: #e85f00;
         }
 
-        .preview {
-            margin-top: 24px;
-            border-top: 1px solid #ddd;
-            padding-top: 24px;
+        .preview img {
+            max-width: 150px;
+            margin-top: 10px;
+            border-radius: 6px;
         }
     </style>
 </head>
 
 <body>
 
-    <!-- HEADER SIMPLES -->
-    <header class="header">
-        <div class="container header-content">
-            <div class="logo">OfertaPrime<span>X</span> | Admin</div>
-        </div>
-    </header>
-
-    <!-- CONTEÚDO ADMIN -->
-    <div class="admin-container">
-
-        <h1>Adicionar Produto</h1>
-
-        <!-- FORMULÁRIO -->
-        <form id="productForm">
-
-            <div class="form-group">
-                <label>Nome do Produto</label>
-                <input type="text" id="name" required>
-            </div>
-
-            <div class="form-group">
-                <label>Categoria</label>
-                <select id="category">
-                    <option>Eletrônicos</option>
-                    <option>Informática</option>
-                    <option>Esportes e Fitness</option>
-                </select>
-            </div>
-
-            <div class="form-group">
-                <label>Plataforma</label>
-                <select id="platform">
-                    <option>Mercado Livre</option>
-                    <option>Amazon</option>
-                    <option>Shopee</option>
-                    <option>Magalu</option>
-                </select>
-            </div>
-
-            <div class="form-group">
-                <label>Preço (R$)</label>
-                <input type="number" step="0.01" id="price" required>
-            </div>
-
-            <div class="form-group">
-                <label>Link de Afiliado</label>
-                <input type="url" id="link" required>
-            </div>
-
-            <div class="form-group">
-                <label>Imagem do Produto</label>
-                <input type="text" id="image" value="images/placeholder.png">
-            </div>
-
-            <button type="submit" class="admin-btn">
-                Publicar Produto
-            </button>
-        </form>
-
-        <!-- PREVIEW -->
-        <div class="preview" id="preview"></div>
-
+<header class="header">
+    <div class="container header-content">
+        <div class="logo">OfertaPrime<span>X</span> | Admin</div>
     </div>
+</header>
 
-    <!-- JS -->
-    <script>
-        const form = document.getElementById('productForm');
-        const preview = document.getElementById('preview');
+<div class="admin-container">
 
-        form.addEventListener('submit', function(e) {
-            e.preventDefault();
+    <h1>Adicionar Produto</h1>
 
-            const name = document.getElementById('name').value;
-            const category = document.getElementById('category').value;
-            const platform = document.getElementById('platform').value;
-            const price = document.getElementById('price').value;
-            const link = document.getElementById('link').value;
-            const image = document.getElementById('image').value;
+    <form id="productForm">
 
-            preview.innerHTML = `
-                <h3>Preview do Produto</h3>
-                <div class="product-card">
-                    <img src="${image}">
-                    <h4 class="product-title">${name}</h4>
-                    <p class="platform">${platform}</p>
-                    <p class="price">R$ ${price}</p>
-                    <a href="${link}" class="btn" target="_blank">Ver Oferta</a>
-                </div>
-            `;
-        });
-    </script>
+        <div class="form-group">
+            <label>Nome do Produto</label>
+            <input type="text" id="name" required>
+        </div>
+
+        <div class="form-group">
+            <label>Categoria</label>
+            <select id="category">
+                <option>Eletrônicos</option>
+                <option>Informática</option>
+                <option>Esportes e Fitness</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Plataforma</label>
+            <select id="platform">
+                <option value="mercado-livre">Mercado Livre</option>
+                <option value="amazon">Amazon</option>
+                <option value="shopee">Shopee</option>
+                <option value="magalu">Magalu</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Preço (R$)</label>
+            <input type="number" step="0.01" id="price" required>
+        </div>
+
+        <div class="form-group">
+            <label>Link de Afiliado</label>
+            <input type="url" id="link" required>
+        </div>
+
+        <!-- NOVO: upload de imagem -->
+        <div class="form-group">
+            <label>Imagem do Produto</label>
+            <input type="file" id="imageFile" accept="image/*">
+            <small>
+                A imagem deve ser salva manualmente em:
+                <strong>images/&lt;plataforma&gt;/</strong>
+            </small>
+        </div>
+
+        <button type="submit" class="admin-btn">
+            Publicar Produto
+        </button>
+    </form>
+
+    <div class="preview" id="preview"></div>
+
+</div>
+
+<script>
+    const form = document.getElementById('productForm');
+    const preview = document.getElementById('preview');
+    const imageInput = document.getElementById('imageFile');
+
+    form.addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        const name = document.getElementById('name').value;
+        const platform = document.getElementById('platform').value;
+        const price = document.getElementById('price').value;
+        const link = document.getElementById('link').value;
+
+        let imagePath = 'images/placeholder.png';
+
+        if (imageInput.files.length > 0) {
+            const fileName = imageInput.files[0].name;
+            imagePath = `images/${platform}/${fileName}`;
+        }
+
+        preview.innerHTML = `
+            <h3>Preview do Produto</h3>
+            <div class="product-card">
+                <img src="${imagePath}">
+                <h4>${name}</h4>
+                <p class="platform">${platform}</p>
+                <p class="price">R$ ${price}</p>
+                <a href="${link}" class="btn" target="_blank">Ver Oferta</a>
+            </div>
+            <p style="margin-top:10px;font-size:13px;color:#666">
+                👉 Salve a imagem manualmente em <b>${imagePath}</b>
+            </p>
+        `;
+    });
+</script>
 
 </body>
 </html>
