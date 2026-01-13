@@ -1,6 +1,5 @@
 /* =====================================================
    RESET BÁSICO
-   Remove espaçamentos padrão do navegador
 ===================================================== */
 * {
   margin: 0;
@@ -10,7 +9,7 @@
 }
 
 /* =====================================================
-   ESTILO GERAL DO SITE
+   ESTILO GERAL
 ===================================================== */
 body {
   background: #ffffff;
@@ -19,8 +18,7 @@ body {
 }
 
 /* =====================================================
-   CONTAINER PADRÃO
-   Centraliza o conteúdo e limita largura
+   CONTAINER
 ===================================================== */
 .container {
   width: 90%;
@@ -29,7 +27,7 @@ body {
 }
 
 /* =====================================================
-   HEADER (TOPO DO SITE)
+   HEADER
 ===================================================== */
 .header {
   background: #0a7cff;
@@ -43,13 +41,8 @@ body {
   margin-bottom: 10px;
 }
 
-.header p {
-  font-size: 16px;
-  opacity: 0.9;
-}
-
 /* =====================================================
-   MENU DE NAVEGAÇÃO
+   MENU
 ===================================================== */
 .menu {
   background: #085fc4;
@@ -68,37 +61,22 @@ body {
 }
 
 /* =====================================================
-   SEÇÕES DO SITE
+   SEÇÕES
 ===================================================== */
 .section {
   padding: 50px 0;
 }
 
-/* Seção com fundo cinza */
 .section.gray {
   background: #f5f5f5;
 }
 
-/* Seção de destaque (personalizado) */
 .section.highlight {
   background: #fff8e1;
 }
 
 /* =====================================================
-   TÍTULOS
-===================================================== */
-h2 {
-  margin-bottom: 10px;
-  font-size: 26px;
-}
-
-h3 {
-  margin-top: 30px;
-  font-size: 20px;
-}
-
-/* =====================================================
-   GRID DE PRODUTOS
+   GRID
 ===================================================== */
 .grid {
   display: grid;
@@ -111,25 +89,20 @@ h3 {
    CARD DE PRODUTO
 ===================================================== */
 .card {
+  position: relative; /* necessário para o badge */
   background: #ffffff;
   border-radius: 10px;
   padding: 15px;
   text-align: center;
-
-  /* sombra suave */
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-
-  /* animação suave */
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
   transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
-/* Efeito ao passar o mouse */
 .card:hover {
   transform: translateY(-5px);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.15);
 }
 
-/* Imagem do produto */
 .card img {
   width: 100%;
   height: 160px;
@@ -137,22 +110,18 @@ h3 {
   margin-bottom: 10px;
 }
 
-/* Nome do produto */
 .card h3 {
   font-size: 15px;
   margin: 10px 0;
   min-height: 40px;
 }
 
-/* Preço */
 .card p {
   font-size: 18px;
   font-weight: bold;
   color: #0a7cff;
-  margin: 5px 0;
 }
 
-/* Plataforma (Mercado Livre, Amazon etc) */
 .card span {
   display: block;
   font-size: 12px;
@@ -160,7 +129,6 @@ h3 {
   margin-bottom: 10px;
 }
 
-/* Botão de oferta */
 .card .btn {
   display: block;
   background: #0a7cff;
@@ -171,18 +139,38 @@ h3 {
   font-weight: bold;
 }
 
-/* Hover do botão */
 .card .btn:hover {
   background: #085fc4;
 }
 
 /* =====================================================
-   RODAPÉ
+   BADGES (TOP / PERSONALIZADO)
+===================================================== */
+.badge {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  padding: 5px 10px;
+  font-size: 11px;
+  font-weight: bold;
+  color: #ffffff;
+  border-radius: 5px;
+}
+
+.badge.top {
+  background: #ff5722;
+}
+
+.badge.personalizado {
+  background: #2e7d32;
+}
+
+/* =====================================================
+   FOOTER
 ===================================================== */
 .footer {
   background: #111;
   color: #ffffff;
   text-align: center;
   padding: 20px 0;
-  font-size: 14px;
 }
