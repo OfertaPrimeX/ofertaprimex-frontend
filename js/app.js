@@ -1,26 +1,32 @@
 fetch("data/produtos.json")
-  .then(res => res.json())
+  .then(response => response.json())
   .then(produtos => {
-    const top20 = document.querySelector("#top20 .grid");
-    const personalizado = document.querySelector("#personalizado .grid");
 
-    produtos.forEach(p => {
-      const card = `
+    const top20Grid = document.querySelector("#top20 .grid");
+    const personalizadoGrid = document.querySelector("#personalizado .grid");
+
+    produtos.forEach(produto => {
+
+      const cardHTML = `
         <div class="card">
-          <img src="${p.imagem}" alt="${p.nome}">
-          <h3>${p.nome}</h3>
-          <p>${p.preco}</p>
-          <span>${p.plataforma}</span>
-          <a href="${p.link}" target="_blank" class="btn">Ver oferta</a>
+          <img src="${produto.imagem}" alt="${produto.nome}">
+          <h3>${produto.nome}</h3>
+          <p>${produto.preco}</p>
+          <span>${produto.plataforma}</span>
+          <a href="${produto.link}" target="_blank" class="btn">Ver oferta</a>
         </div>
       `;
 
-      if (p.top && top20) {
-        top20.innerHTML += card;
+      if (produto.top === true && top20Grid) {
+        top20Grid.innerHTML += cardHTML;
       }
 
-      if (p.personalizado && personalizado) {
-        personalizado.innerHTML += card;
+      if (produto.personalizado === true && personalizadoGrid) {
+        personalizadoGrid.innerHTML += cardHTML;
       }
+
     });
+  })
+  .catch(error => {
+    console.error("Erro ao carregar produtos:", error);
   });

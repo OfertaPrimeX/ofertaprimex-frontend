@@ -3,88 +3,115 @@
 <head>
   <meta charset="UTF-8" />
   <title>OfertaPrimeX – As melhores ofertas da internet</title>
-  <meta name="description" content="Compare ofertas de Eletrônicos, Informática, Esportes e Fitness. Top 20 dos produtos mais procurados." />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- CSS principal -->
   <link rel="stylesheet" href="css/style.css" />
 </head>
+
 <body>
 
-<header>
-  <div class="container header">
-    <h1 class="logo">OfertaPrimeX</h1>
-    <nav>
+  <!-- ================= HEADER ================= -->
+  <header class="header">
+    <div class="container">
+      <h1>OfertaPrimeX</h1>
+      <p>As melhores ofertas, comparadas para você</p>
+    </div>
+  </header>
+
+  <!-- ================= MENU ================= -->
+  <nav class="menu">
+    <div class="container">
       <a href="#top20">Top 20</a>
       <a href="#categorias">Categorias</a>
       <a href="#personalizado">Personalizado</a>
       <a href="#quem-somos">Quem Somos</a>
-    </nav>
-  </div>
-</header>
-
-<section class="hero">
-  <div class="container">
-    <h2>Encontre as melhores ofertas da internet em um só lugar</h2>
-    <p>Eletrônicos, Informática, Esportes e Fitness com links confiáveis.</p>
-    <a href="#top20" class="btn">Ver Top 20 Agora</a>
-  </div>
-</section>
-
-<section id="top20" class="section">
-  <div class="container">
-    <h2>🔥 Top 20 Mais Procurados</h2>
-    <div class="grid">
-      <!-- Produto -->
-      <div class="card">
-        <img src="images/placeholder.png" alt="Produto">
-        <h3>Nome do Produto</h3>
-        <p>R$ 999,90</p>
-        <span>Mercado Livre</span>
-        <a href="#" class="btn">Ver oferta</a>
-      </div>
-      <!-- Repete -->
     </div>
-  </div>
-</section>
+  </nav>
 
-<section id="categorias" class="section gray">
-  <div class="container">
-    <h2>Categorias</h2>
+  <!-- ================= TOP 20 ================= -->
+  <section id="top20" class="section">
+    <div class="container">
+      <h2>🔥 Top 20 Mais Procurados</h2>
+      <div class="grid">
+        <!-- PRODUTOS DO TOP 20 ENTRAM AQUI VIA JS -->
+      </div>
+    </div>
+  </section>
 
-    <h3>Eletrônicos</h3>
-    <div class="grid"></div>
+  <!-- ================= CATEGORIAS ================= -->
+  <section id="categorias" class="section gray">
+    <div class="container">
+      <h2>📦 Categorias</h2>
 
-    <h3>Informática</h3>
-    <div class="grid"></div>
+      <!-- Eletrônicos -->
+      <h3>Eletrônicos</h3>
+      <div class="grid" id="categoria-eletronicos">
+        <!-- FUTURO: produtos por categoria -->
+      </div>
 
-    <h3>Esportes</h3>
-    <div class="grid"></div>
+      <!-- Informática -->
+      <h3>Informática</h3>
+      <div class="grid" id="categoria-informatica">
+        <!-- FUTURO -->
+      </div>
 
-    <h3>Fitness</h3>
-    <div class="grid"></div>
-  </div>
-</section>
+      <!-- Esportes -->
+      <h3>Esportes</h3>
+      <div class="grid" id="categoria-esportes">
+        <!-- FUTURO -->
+      </div>
 
-<section id="personalizado" class="section highlight">
-  <div class="container">
-    <h2>⭐ Produtos mais pedidos pela comunidade</h2>
-    <div class="grid"></div>
-  </div>
-</section>
+      <!-- Fitness -->
+      <h3>Fitness</h3>
+      <div class="grid" id="categoria-fitness">
+        <!-- FUTURO -->
+      </div>
 
-<section id="quem-somos" class="section">
-  <div class="container">
-    <h2>Quem Somos</h2>
-    <p>
-      O OfertaPrimeX é uma plataforma de divulgação e comparação de produtos.
-      Não vendemos, não entregamos e não recebemos pagamentos.
-      Nosso objetivo é conectar você às melhores ofertas através de links afiliados.
-    </p>
-  </div>
-</section>
+    </div>
+  </section>
 
-<footer>
-  <p>© 2026 OfertaPrimeX – Todos os direitos reservados</p>
-</footer>
-<script src="js/app.js"></script>
+  <!-- ================= PERSONALIZADO ================= -->
+  <section id="personalizado" class="section highlight">
+    <div class="container">
+      <h2>⭐ Produtos Personalizados</h2>
+      <p>Produtos pesquisados sob demanda no site e WhatsApp</p>
+
+      <div class="grid">
+        <!-- PRODUTOS PERSONALIZADOS ENTRAM AQUI VIA JS -->
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= QUEM SOMOS ================= -->
+  <section id="quem-somos" class="section">
+    <div class="container">
+      <h2>👋 Quem Somos</h2>
+      <p>
+        A <strong>OfertaPrimeX</strong> é uma plataforma de divulgação e comparação
+        de produtos das maiores lojas do Brasil.
+      </p>
+      <p>
+        Nosso objetivo é ajudar você a encontrar os melhores preços,
+        vendedores bem avaliados e ofertas confiáveis, tudo em um só lugar.
+      </p>
+      <p>
+        Não vendemos produtos. Atuamos como <strong>divulgadores e afiliados</strong>,
+        direcionando você para as melhores oportunidades nas plataformas parceiras.
+      </p>
+    </div>
+  </section>
+
+  <!-- ================= FOOTER ================= -->
+  <footer class="footer">
+    <div class="container">
+      <p>© 2026 OfertaPrimeX – Todos os direitos reservados</p>
+    </div>
+  </footer>
+
+  <!-- ================= JS ================= -->
+  <!-- ESTE SCRIPT É OBRIGATÓRIO -->
+  <script src="js/app.js"></script>
+
 </body>
 </html>
