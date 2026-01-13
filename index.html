@@ -1,117 +1,264 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <title>OfertaPrimeX – As melhores ofertas da internet</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- ========================= -->
+    <!-- CONFIGURAÇÕES BÁSICAS -->
+    <!-- ========================= -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OfertaPrimeX - As Melhores Ofertas da Internet</title>
 
-  <!-- CSS principal -->
-  <link rel="stylesheet" href="css/style.css" />
+    <!-- ========================= -->
+    <!-- ESTILO (CSS) -->
+    <!-- ========================= -->
+    <style>
+        /* RESET BÁSICO */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        body {
+            background-color: #f5f5f5;
+            color: #333;
+        }
+
+        /* ========================= */
+        /* HEADER / TOPO DO SITE */
+        /* ========================= */
+        header {
+            background: #0d6efd;
+            color: #fff;
+            padding: 20px;
+        }
+
+        header h1 {
+            margin-bottom: 5px;
+        }
+
+        header p {
+            font-size: 14px;
+        }
+
+        /* MENU DE NAVEGAÇÃO */
+        nav {
+            margin-top: 15px;
+        }
+
+        nav a {
+            color: #fff;
+            margin-right: 15px;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        nav a:hover {
+            text-decoration: underline;
+        }
+
+        /* ========================= */
+        /* CONTAINER PADRÃO */
+        /* ========================= */
+        .container {
+            max-width: 1200px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+
+        /* ========================= */
+        /* TÍTULOS DE SEÇÃO */
+        /* ========================= */
+        .section-title {
+            margin-bottom: 20px;
+            border-left: 5px solid #0d6efd;
+            padding-left: 10px;
+            font-size: 22px;
+        }
+
+        /* ========================= */
+        /* GRID DE PRODUTOS */
+        /* ========================= */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .card {
+            background: #fff;
+            border-radius: 6px;
+            padding: 15px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .card img {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+            margin-bottom: 10px;
+            border-radius: 4px;
+        }
+
+        .card h3 {
+            font-size: 16px;
+            margin-bottom: 8px;
+        }
+
+        .card p {
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        .card a {
+            background: #0d6efd;
+            color: #fff;
+            text-align: center;
+            padding: 10px;
+            border-radius: 4px;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .card a:hover {
+            background: #084298;
+        }
+
+        /* ========================= */
+        /* QUEM SOMOS */
+        /* ========================= */
+        .about {
+            background: #fff;
+            padding: 25px;
+            border-radius: 6px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            line-height: 1.6;
+        }
+
+        /* ========================= */
+        /* RODAPÉ */
+        /* ========================= */
+        footer {
+            background: #222;
+            color: #fff;
+            text-align: center;
+            padding: 20px;
+            margin-top: 40px;
+            font-size: 14px;
+        }
+    </style>
 </head>
 
 <body>
 
-  <!-- ================= HEADER ================= -->
-  <header class="header">
-    <div class="container">
-      <h1>OfertaPrimeX</h1>
-      <p>As melhores ofertas, comparadas para você</p>
-    </div>
-  </header>
+    <!-- ========================= -->
+    <!-- TOPO / HEADER -->
+    <!-- ========================= -->
+    <header>
+        <h1>OfertaPrimeX</h1>
+        <p>As melhores ofertas das maiores plataformas, em um só lugar</p>
 
-  <!-- ================= MENU ================= -->
-  <nav class="menu">
-    <div class="container">
-      <a href="#top20">Top 20</a>
-      <a href="#categorias">Categorias</a>
-      <a href="#personalizado">Personalizado</a>
-      <a href="#quem-somos">Quem Somos</a>
-    </div>
-  </nav>
+        <!-- MENU -->
+        <nav>
+            <a href="#top20">TOP 20</a>
+            <a href="#categorias">Categorias</a>
+            <a href="#quem-somos">Quem Somos</a>
+        </nav>
+    </header>
 
-  <!-- ================= TOP 20 ================= -->
-  <section id="top20" class="section">
-    <div class="container">
-      <h2>🔥 Top 20 Mais Procurados</h2>
-      <div class="grid">
-        <!-- PRODUTOS DO TOP 20 ENTRAM AQUI VIA JS -->
-      </div>
-    </div>
-  </section>
+    <!-- ========================= -->
+    <!-- TOP 20 GERAL -->
+    <!-- ========================= -->
+    <section id="top20" class="container">
+        <h2 class="section-title">🔥 TOP 20 Ofertas do Momento</h2>
 
-  <!-- ================= CATEGORIAS ================= -->
-  <section id="categorias" class="section gray">
-    <div class="container">
-      <h2>📦 Categorias</h2>
+        <div class="grid">
+            <!-- CARD DE PRODUTO (EXEMPLO) -->
+            <div class="card">
+                <img src="https://via.placeholder.com/300x180" alt="Produto Exemplo">
+                <h3>Produto Exemplo Mercado Livre</h3>
+                <p>⭐⭐⭐⭐⭐ | Melhor preço encontrado</p>
+                <!-- LINK SERÁ DE AFILIADO NO FUTURO -->
+                <a href="#" target="_blank">Ver Oferta</a>
+            </div>
 
-      <!-- Eletrônicos -->
-      <h3>Eletrônicos</h3>
-      <div class="grid" id="categoria-eletronicos">
-        <!-- FUTURO: produtos por categoria -->
-      </div>
+            <!-- Você pode duplicar esse bloco para simular mais produtos -->
+        </div>
+    </section>
 
-      <!-- Informática -->
-      <h3>Informática</h3>
-      <div class="grid" id="categoria-informatica">
-        <!-- FUTURO -->
-      </div>
+    <!-- ========================= -->
+    <!-- CATEGORIAS -->
+    <!-- ========================= -->
+    <section id="categorias" class="container">
+        <h2 class="section-title">📦 Categorias</h2>
 
-      <!-- Esportes -->
-      <h3>Esportes</h3>
-      <div class="grid" id="categoria-esportes">
-        <!-- FUTURO -->
-      </div>
+        <!-- ELETRÔNICOS -->
+        <h3>Eletrônicos</h3>
+        <div class="grid">
+            <div class="card">
+                <img src="https://via.placeholder.com/300x180" alt="Eletrônicos">
+                <h3>Smartphone Exemplo</h3>
+                <p>⭐⭐⭐⭐ | Vendedor 3⭐+</p>
+                <a href="#">Ver Oferta</a>
+            </div>
+        </div>
 
-      <!-- Fitness -->
-      <h3>Fitness</h3>
-      <div class="grid" id="categoria-fitness">
-        <!-- FUTURO -->
-      </div>
+        <!-- INFORMÁTICA -->
+        <h3 style="margin-top:30px;">Informática</h3>
+        <div class="grid">
+            <div class="card">
+                <img src="https://via.placeholder.com/300x180" alt="Informática">
+                <h3>Notebook Exemplo</h3>
+                <p>⭐⭐⭐⭐⭐ | Melhor custo-benefício</p>
+                <a href="#">Ver Oferta</a>
+            </div>
+        </div>
 
-    </div>
-  </section>
+        <!-- ESPORTES E FITNESS -->
+        <h3 style="margin-top:30px;">Esportes & Fitness</h3>
+        <div class="grid">
+            <div class="card">
+                <img src="https://via.placeholder.com/300x180" alt="Esportes">
+                <h3>Equipamento Fitness</h3>
+                <p>⭐⭐⭐⭐ | Alta procura</p>
+                <a href="#">Ver Oferta</a>
+            </div>
+        </div>
+    </section>
 
-  <!-- ================= PERSONALIZADO ================= -->
-  <section id="personalizado" class="section highlight">
-    <div class="container">
-      <h2>⭐ Produtos Personalizados</h2>
-      <p>Produtos pesquisados sob demanda no site e WhatsApp</p>
+    <!-- ========================= -->
+    <!-- QUEM SOMOS -->
+    <!-- ========================= -->
+    <section id="quem-somos" class="container">
+        <h2 class="section-title">ℹ️ Quem Somos</h2>
 
-      <div class="grid">
-        <!-- PRODUTOS PERSONALIZADOS ENTRAM AQUI VIA JS -->
-      </div>
-    </div>
-  </section>
+        <div class="about">
+            <p>
+                A <strong>OfertaPrimeX</strong> é uma vitrine inteligente de ofertas.
+                Nós pesquisamos os melhores produtos nas maiores plataformas
+                como Mercado Livre, Shopee, Amazon e Magalu.
+            </p>
+            <p>
+                Nosso objetivo é economizar seu tempo, mostrando apenas
+                produtos bem avaliados, com bons preços e vendedores confiáveis.
+            </p>
+            <p>
+                Não vendemos produtos — somos afiliados e divulgadores.
+                Ao clicar em uma oferta, você é direcionado para a plataforma oficial.
+            </p>
+        </div>
+    </section>
 
-  <!-- ================= QUEM SOMOS ================= -->
-  <section id="quem-somos" class="section">
-    <div class="container">
-      <h2>👋 Quem Somos</h2>
-      <p>
-        A <strong>OfertaPrimeX</strong> é uma plataforma de divulgação e comparação
-        de produtos das maiores lojas do Brasil.
-      </p>
-      <p>
-        Nosso objetivo é ajudar você a encontrar os melhores preços,
-        vendedores bem avaliados e ofertas confiáveis, tudo em um só lugar.
-      </p>
-      <p>
-        Não vendemos produtos. Atuamos como <strong>divulgadores e afiliados</strong>,
-        direcionando você para as melhores oportunidades nas plataformas parceiras.
-      </p>
-    </div>
-  </section>
-
-  <!-- ================= FOOTER ================= -->
-  <footer class="footer">
-    <div class="container">
-      <p>© 2026 OfertaPrimeX – Todos os direitos reservados</p>
-    </div>
-  </footer>
-
-  <!-- ================= JS ================= -->
-  <!-- ESTE SCRIPT É OBRIGATÓRIO -->
-  <script src="js/app.js"></script>
+    <!-- ========================= -->
+    <!-- RODAPÉ -->
+    <!-- ========================= -->
+    <footer>
+        © 2026 - OfertaPrimeX • Todos os direitos reservados
+    </footer>
 
 </body>
 </html>
