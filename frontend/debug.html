@@ -1,102 +1,152 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<title>OfertaPrimeX — Dashboard Debug</title>
-<style>
-body {
-  font-family: Arial;
-  background: #0f172a;
-  color: #e5e7eb;
-  padding: 20px;
-}
-h1 { color: #38bdf8; }
-button {
-  margin: 5px;
-  padding: 8px 12px;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  background: #2563eb;
-  color: white;
-}
-button.danger { background: #b91c1c; }
-input {
-  padding: 6px;
-  margin: 5px;
-}
-pre {
-  background: #020617;
-  padding: 15px;
-  margin-top: 15px;
-  max-height: 400px;
-  overflow: auto;
-}
-.card {
-  background: #020617;
-  padding: 15px;
-  margin-bottom: 10px;
-  border-radius: 8px;
-}
-</style>
+  <meta charset="UTF-8" />
+  <title>OfertaPrimeX — Painel de Debug</title>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #0f172a;
+      color: #e5e7eb;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #38bdf8;
+    }
+
+    h2 {
+      margin-top: 30px;
+      color: #7dd3fc;
+    }
+
+    button {
+      margin: 5px;
+      padding: 10px 15px;
+      background: #2563eb;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #1d4ed8;
+    }
+
+    .danger {
+      background: #b91c1c;
+    }
+
+    .danger:hover {
+      background: #991b1b;
+    }
+
+    pre {
+      background: #020617;
+      padding: 15px;
+      margin-top: 20px;
+      border-radius: 6px;
+      max-height: 450px;
+      overflow: auto;
+      white-space: pre-wrap;
+    }
+
+    .group {
+      margin-bottom: 15px;
+    }
+  </style>
 </head>
 
 <body>
 
-<h1>📊 Dashboard Debug — OfertaPrimeX</h1>
+  <h1>🛠️ Painel de Debug — OfertaPrimeX</h1>
+  <p>Use este painel para validar backend, banco e integrações.</p>
 
-<div class="card">
-  <button onclick="callApi('/debug/dashboard')">Resumo Geral</button>
-</div>
+  <!-- ============================= -->
+  <!-- GRUPO: BACKEND / INFRA        -->
+  <!-- ============================= -->
+  <h2>🔧 Backend / Infra</h2>
+  <div class="group">
+    <button onclick="callApi('/debug/status')">Status Backend</button>
+    <button onclick="callApi('/debug/env')">Variáveis de Ambiente</button>
+  </div>
 
-<div class="card">
-  <h3>📦 Produtos</h3>
-  <input type="date" id="prodIni">
-  <input type="date" id="prodFim">
-  <button onclick="listarProdutos()">Listar</button>
-</div>
+  <!-- ============================= -->
+  <!-- GRUPO: BANCO DE DADOS         -->
+  <!-- ============================= -->
+  <h2>🗄️ Banco de Dados</h2>
+  <div class="group">
+    <button onclick="callApi('/debug/db')">Teste Conexão DB</button>
+    <button onclick="callApi('/debug/db/tabelas')">Listar Tabelas</button>
+    <button onclick="callApi('/debug/produtos')">Listar Produtos</button>
+    <button class="danger" onclick="postApi('/debug/db/insert-teste')">
+      Inserir Produto Teste
+    </button>
+  </div>
 
-<div class="card">
-  <h3>🔑 Tokens Mercado Livre</h3>
-  <input type="date" id="tokIni">
-  <input type="date" id="tokFim">
-  <button onclick="listarTokens()">Listar</button>
-</div>
+  <!-- ============================= -->
+  <!-- GRUPO: MERCADO LIVRE          -->
+  <!-- ============================= -->
+  <h2>🛒 Mercado Livre</h2>
+  <div class="group">
+    <button onclick="callApi('/debug/meli/tokens')">
+      Listar Tokens Mercado Livre
+    </button>
+  </div>
 
-<pre id="output">Resultado...</pre>
+  <!-- ============================= -->
+  <!-- SAÍDA                         -->
+  <!-- ============================= -->
+  <pre id="output">Resultado aparecerá aqui...</pre>
 
-<script>
-const BASE_URL = 'https://yo0g0cg4c88w88osc4s04c0c.72.61.33.248.sslip.io';
+  <script>
+    // =====================================================
+    // CONFIGURAÇÃO
+    // =====================================================
+    // 🔴 ALTERE APENAS ESTA URL SE MUDAR O BACKEND
+    const BASE_URL = 'https://yo0g0cg4c88w88osc4s04c0c.72.61.33.248.sslip.io';
 
-async function callApi(endpoint) {
-  const res = await fetch(BASE_URL + endpoint);
-  const data = await res.json();
-  output(data);
-}
+    // =====================================================
+    // FUNÇÃO PARA REQUISIÇÕES GET
+    // =====================================================
+    async function callApi(endpoint) {
+      document.getElementById('output').textContent = 'Carregando...';
 
-function listarProdutos() {
-  const ini = document.getElementById('prodIni').value;
-  const fim = document.getElementById('prodFim').value;
-  let url = '/debug/produtos?';
-  if (ini) url += `data_inicio=${ini}&`;
-  if (fim) url += `data_fim=${fim}`;
-  callApi(url);
-}
+      try {
+        const res = await fetch(BASE_URL + endpoint);
+        const data = await res.json();
 
-function listarTokens() {
-  const ini = document.getElementById('tokIni').value;
-  const fim = document.getElementById('tokFim').value;
-  let url = '/debug/meli/tokens-full?';
-  if (ini) url += `data_inicio=${ini}&`;
-  if (fim) url += `data_fim=${fim}`;
-  callApi(url);
-}
+        document.getElementById('output').textContent =
+          JSON.stringify(data, null, 2);
+      } catch (err) {
+        document.getElementById('output').textContent =
+          'Erro: ' + err.message;
+      }
+    }
 
-function output(data) {
-  document.getElementById('output').textContent =
-    JSON.stringify(data, null, 2);
-}
-</script>
+    // =====================================================
+    // FUNÇÃO PARA REQUISIÇÕES POST
+    // =====================================================
+    async function postApi(endpoint) {
+      document.getElementById('output').textContent = 'Processando...';
+
+      try {
+        const res = await fetch(BASE_URL + endpoint, {
+          method: 'POST'
+        });
+
+        const data = await res.json();
+
+        document.getElementById('output').textContent =
+          JSON.stringify(data, null, 2);
+      } catch (err) {
+        document.getElementById('output').textContent =
+          'Erro: ' + err.message;
+      }
+    }
+  </script>
 
 </body>
 </html>
