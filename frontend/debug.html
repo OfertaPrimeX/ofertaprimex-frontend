@@ -1,109 +1,102 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <title>OfertaPrimeX — Painel de Debug</title>
-
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #0f172a;
-      color: #e5e7eb;
-      padding: 20px;
-    }
-
-    h1 {
-      color: #38bdf8;
-    }
-
-    button {
-      margin: 5px;
-      padding: 10px 15px;
-      background: #2563eb;
-      color: white;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-    }
-
-    button:hover {
-      background: #1d4ed8;
-    }
-
-    .danger {
-      background: #b91c1c;
-    }
-
-    pre {
-      background: #020617;
-      padding: 15px;
-      margin-top: 20px;
-      border-radius: 6px;
-      max-height: 500px;
-      overflow: auto;
-    }
-  </style>
+<meta charset="UTF-8">
+<title>OfertaPrimeX — Dashboard Debug</title>
+<style>
+body {
+  font-family: Arial;
+  background: #0f172a;
+  color: #e5e7eb;
+  padding: 20px;
+}
+h1 { color: #38bdf8; }
+button {
+  margin: 5px;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  background: #2563eb;
+  color: white;
+}
+button.danger { background: #b91c1c; }
+input {
+  padding: 6px;
+  margin: 5px;
+}
+pre {
+  background: #020617;
+  padding: 15px;
+  margin-top: 15px;
+  max-height: 400px;
+  overflow: auto;
+}
+.card {
+  background: #020617;
+  padding: 15px;
+  margin-bottom: 10px;
+  border-radius: 8px;
+}
+</style>
 </head>
+
 <body>
 
-  <h1>🛠️ Painel de Debug — OfertaPrimeX</h1>
-  <p>Selecione o teste que deseja executar:</p>
+<h1>📊 Dashboard Debug — OfertaPrimeX</h1>
 
-  <div>
-    <!-- STATUS -->
-    <button onclick="callApi('/debug/status')">Status Backend</button>
+<div class="card">
+  <button onclick="callApi('/debug/dashboard')">Resumo Geral</button>
+</div>
 
-    <!-- ENV -->
-    <button onclick="callApi('/debug/env')">Variáveis de Ambiente</button>
+<div class="card">
+  <h3>📦 Produtos</h3>
+  <input type="date" id="prodIni">
+  <input type="date" id="prodFim">
+  <button onclick="listarProdutos()">Listar</button>
+</div>
 
-    <!-- DB -->
-    <button onclick="callApi('/debug/db')">Teste Banco</button>
-    <button onclick="callApi('/debug/db/tabelas')">Listar Tabelas</button>
+<div class="card">
+  <h3>🔑 Tokens Mercado Livre</h3>
+  <input type="date" id="tokIni">
+  <input type="date" id="tokFim">
+  <button onclick="listarTokens()">Listar</button>
+</div>
 
-    <!-- PRODUTOS -->
-    <button onclick="callApi('/debug/produtos')">📦 Listar Produtos</button>
+<pre id="output">Resultado...</pre>
 
-    <!-- TOKENS -->
-    <button onclick="callApi('/debug/meli/tokens')">🔐 Tokens Mercado Livre</button>
+<script>
+const BASE_URL = 'https://yo0g0cg4c88w88osc4s04c0c.72.61.33.248.sslip.io';
 
-    <!-- INSERT TESTE -->
-    <button class="danger" onclick="postApi('/debug/db/insert-teste')">
-      ➕ Inserir Produto Teste
-    </button>
-  </div>
+async function callApi(endpoint) {
+  const res = await fetch(BASE_URL + endpoint);
+  const data = await res.json();
+  output(data);
+}
 
-  <pre id="output">Resultado aparecerá aqui...</pre>
+function listarProdutos() {
+  const ini = document.getElementById('prodIni').value;
+  const fim = document.getElementById('prodFim').value;
+  let url = '/debug/produtos?';
+  if (ini) url += `data_inicio=${ini}&`;
+  if (fim) url += `data_fim=${fim}`;
+  callApi(url);
+}
 
-  <script>
-    // 🔴 ALTERE AQUI PARA O DOMÍNIO DO SEU BACKEND
-    const BASE_URL = 'https://yo0g0cg4c88w88osc4s04c0c.72.61.33.248.sslip.io';
+function listarTokens() {
+  const ini = document.getElementById('tokIni').value;
+  const fim = document.getElementById('tokFim').value;
+  let url = '/debug/meli/tokens-full?';
+  if (ini) url += `data_inicio=${ini}&`;
+  if (fim) url += `data_fim=${fim}`;
+  callApi(url);
+}
 
-    async function callApi(endpoint) {
-      try {
-        const res = await fetch(BASE_URL + endpoint);
-        const data = await res.json();
-        document.getElementById('output').textContent =
-          JSON.stringify(data, null, 2);
-      } catch (err) {
-        document.getElementById('output').textContent =
-          'Erro: ' + err.message;
-      }
-    }
-
-    async function postApi(endpoint) {
-      try {
-        const res = await fetch(BASE_URL + endpoint, {
-          method: 'POST'
-        });
-        const data = await res.json();
-        document.getElementById('output').textContent =
-          JSON.stringify(data, null, 2);
-      } catch (err) {
-        document.getElementById('output').textContent =
-          'Erro: ' + err.message;
-      }
-    }
-  </script>
+function output(data) {
+  document.getElementById('output').textContent =
+    JSON.stringify(data, null, 2);
+}
+</script>
 
 </body>
 </html>
