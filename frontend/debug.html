@@ -2,7 +2,8 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <title>OfertaPrimeX — Debug</title>
+  <title>OfertaPrimeX — Painel de Debug</title>
+
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -10,88 +11,97 @@
       color: #e5e7eb;
       padding: 20px;
     }
+
     h1 {
       color: #38bdf8;
     }
+
     button {
-      margin: 6px 0;
-      padding: 10px 16px;
-      border: none;
-      border-radius: 6px;
+      margin: 5px;
+      padding: 10px 15px;
       background: #2563eb;
       color: white;
+      border: none;
+      border-radius: 6px;
       cursor: pointer;
     }
+
     button:hover {
       background: #1d4ed8;
     }
+
+    .danger {
+      background: #b91c1c;
+    }
+
     pre {
       background: #020617;
-      padding: 12px;
+      padding: 15px;
+      margin-top: 20px;
       border-radius: 6px;
-      overflow-x: auto;
-      margin-top: 10px;
+      max-height: 500px;
+      overflow: auto;
     }
   </style>
 </head>
 <body>
 
-  <h1>🧪 OfertaPrimeX — Debug</h1>
+  <h1>🛠️ Painel de Debug — OfertaPrimeX</h1>
+  <p>Selecione o teste que deseja executar:</p>
 
-  <!-- STATUS -->
-  <button onclick="chamar('/debug/status')">
-    🔍 Status do Backend
-  </button>
+  <div>
+    <!-- STATUS -->
+    <button onclick="callApi('/debug/status')">Status Backend</button>
 
-  <!-- BANCO -->
-  <button onclick="chamar('/debug/db')">
-    🗄️ Testar Conexão DB
-  </button>
+    <!-- ENV -->
+    <button onclick="callApi('/debug/env')">Variáveis de Ambiente</button>
 
-  <!-- PRODUTOS -->
-  <button onclick="listarProdutos()">
-    📦 Listar Produtos
-  </button>
+    <!-- DB -->
+    <button onclick="callApi('/debug/db')">Teste Banco</button>
+    <button onclick="callApi('/debug/db/tabelas')">Listar Tabelas</button>
 
-  <!-- TOKENS -->
-  <button onclick="chamar('/debug/meli/tokens')">
-    🔑 Tokens Mercado Livre
-  </button>
+    <!-- PRODUTOS -->
+    <button onclick="callApi('/debug/produtos')">📦 Listar Produtos</button>
 
-  <pre id="resultado">Resultado aparecerá aqui...</pre>
+    <!-- TOKENS -->
+    <button onclick="callApi('/debug/meli/tokens')">🔐 Tokens Mercado Livre</button>
+
+    <!-- INSERT TESTE -->
+    <button class="danger" onclick="postApi('/debug/db/insert-teste')">
+      ➕ Inserir Produto Teste
+    </button>
+  </div>
+
+  <pre id="output">Resultado aparecerá aqui...</pre>
 
   <script>
-    // 🔧 AJUSTE A URL BASE SE NECESSÁRIO
-    const BASE_URL = '';
+    // 🔴 ALTERE AQUI PARA O DOMÍNIO DO SEU BACKEND
+    const BASE_URL = 'https://yo0g0cg4c88w88osc4s04c0c.72.61.33.248.sslip.io';
 
-    async function chamar(endpoint) {
-      const res = await fetch(BASE_URL + endpoint);
-      const data = await res.json();
-      document.getElementById('resultado').textContent =
-        JSON.stringify(data, null, 2);
+    async function callApi(endpoint) {
+      try {
+        const res = await fetch(BASE_URL + endpoint);
+        const data = await res.json();
+        document.getElementById('output').textContent =
+          JSON.stringify(data, null, 2);
+      } catch (err) {
+        document.getElementById('output').textContent =
+          'Erro: ' + err.message;
+      }
     }
 
-    async function listarProdutos() {
-      const res = await fetch(BASE_URL + '/debug/produtos');
-      const data = await res.json();
-
-      if (!data.sucesso) {
-        document.getElementById('resultado').textContent =
-          'Erro ao buscar produtos';
-        return;
+    async function postApi(endpoint) {
+      try {
+        const res = await fetch(BASE_URL + endpoint, {
+          method: 'POST'
+        });
+        const data = await res.json();
+        document.getElementById('output').textContent =
+          JSON.stringify(data, null, 2);
+      } catch (err) {
+        document.getElementById('output').textContent =
+          'Erro: ' + err.message;
       }
-
-      let texto = `📦 Total de produtos: ${data.total}\n\n`;
-
-      data.produtos.forEach(p => {
-        texto += `🆔 ID: ${p.id}\n`;
-        texto += `📛 Nome: ${p.nome}\n`;
-        texto += `💰 Preço: ${p.preco}\n`;
-        texto += `🏷️ Plataforma: ${p.plataforma}\n`;
-        texto += `--------------------------\n`;
-      });
-
-      document.getElementById('resultado').textContent = texto;
     }
   </script>
 
