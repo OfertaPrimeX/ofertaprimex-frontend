@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>OfertaPrimeX — Painel de Debug</title>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #0f172a;
+      color: #e5e7eb;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #38bdf8;
+    }
+
+    button {
+      margin: 5px;
+      padding: 10px 15px;
+      background: #2563eb;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #1d4ed8;
+    }
+
+    pre {
+      background: #020617;
+      padding: 15px;
+      margin-top: 20px;
+      border-radius: 6px;
+      max-height: 400px;
+      overflow: auto;
+    }
+
+    .danger {
+      background: #b91c1c;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>🛠️ Painel de Debug — OfertaPrimeX</h1>
+
+  <p>Selecione o teste que deseja executar:</p>
+
+  <div>
+    <button onclick="callApi('/debug/status')">Status Backend</button>
+    <button onclick="callApi('/debug/env')">Variáveis de Ambiente</button>
+    <button onclick="callApi('/debug/db')">Teste Banco</button>
+    <button onclick="callApi('/debug/db/tabelas')">Listar Tabelas</button>
+    <button onclick="callApi('/debug/meli/tokens')">Tokens Mercado Livre</button>
+    <button class="danger" onclick="postApi('/debug/db/insert-teste')">
+      Inserir Produto Teste
+    </button>
+  </div>
+
+  <pre id="output">Resultado aparecerá aqui...</pre>
+
+  <script>
+    // 🔴 ALTERE AQUI PARA O SEU BACKEND
+    const BASE_URL = 'https://yo0g0cg4c88w88osc4s04c0c.72.61.33.248.sslip.io';
+
+    async function callApi(endpoint) {
+      try {
+        const res = await fetch(BASE_URL + endpoint);
+        const data = await res.json();
+        document.getElementById('output').textContent =
+          JSON.stringify(data, null, 2);
+      } catch (err) {
+        document.getElementById('output').textContent =
+          'Erro: ' + err.message;
+      }
+    }
+
+    async function postApi(endpoint) {
+      try {
+        const res = await fetch(BASE_URL + endpoint, {
+          method: 'POST'
+        });
+        const data = await res.json();
+        document.getElementById('output').textContent =
+          JSON.stringify(data, null, 2);
+      } catch (err) {
+        document.getElementById('output').textContent =
+          'Erro: ' + err.message;
+      }
+    }
+  </script>
+
+</body>
+</html>

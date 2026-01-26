@@ -1,50 +1,24 @@
-// Carrega o arquivo de produtos
-fetch("data/produtos.json")
-  .then(response => response.json())
-  .then(produtos => {
+async function buscarProdutos() {
+  const termo = document.getElementById('busca').value;
 
-    // Seleciona as áreas do site
-    const top20Grid = document.querySelector("#top20 .grid");
-    const personalizadoGrid = document.querySelector("#personalizado .grid");
+  const response = await fetch(
+    `https://SEU_BACKEND/produtos/buscar?termo=${encodeURIComponent(termo)}`
+  );
 
-    // Percorre todos os produtos
-    produtos.forEach(produto => {
+  const produtos = await response.json();
+  const grid = document.querySelector('.products-grid');
+  grid.innerHTML = '';
 
-      // Cria o badge conforme o tipo
-      let badgeHTML = "";
-
-      if (produto.top === true) {
-        badgeHTML = `<div class="badge top">TOP</div>`;
-      }
-
-      if (produto.personalizado === true) {
-        badgeHTML = `<div class="badge personalizado">PERSONALIZADO</div>`;
-      }
-
-      // Card do produto
-      const cardHTML = `
-        <div class="card">
-          ${badgeHTML}
-          <img src="${produto.imagem}" alt="${produto.nome}">
-          <h3>${produto.nome}</h3>
-          <p>${produto.preco}</p>
-          <span>${produto.plataforma}</span>
-          <a href="${produto.link}" target="_blank" class="btn">Ver oferta</a>
-        </div>
-      `;
-
-      // Envia para o Top 20
-      if (produto.top === true && top20Grid) {
-        top20Grid.innerHTML += cardHTML;
-      }
-
-      // Envia para Personalizado
-      if (produto.personalizado === true && personalizadoGrid) {
-        personalizadoGrid.innerHTML += cardHTML;
-      }
-
-    });
-  })
-  .catch(error => {
-    console.error("Erro ao carregar produtos:", error);
+  produtos.forEach(produto => {
+    grid.innerHTML += `
+      <div class="product-card">
+        <img src="${produto.imagem}">
+        <h3>${produto.nome}</h3>
+        <p>R$ ${produto.preco}</p>
+        <a href="${produto.link}" target="_blank" class="btn">
+          Ver Oferta
+        </a>
+      </div>
+    `;
   });
+}
