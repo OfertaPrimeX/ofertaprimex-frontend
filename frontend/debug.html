@@ -19,21 +19,20 @@
       width: 260px;
       background: #020617;
       padding: 20px;
-      border-right: 1px solid #1e293b;
+      box-sizing: border-box;
     }
 
     .sidebar h2 {
       color: #38bdf8;
-      margin-bottom: 20px;
-      font-size: 18px;
+      margin-bottom: 15px;
     }
 
     .sidebar button {
       width: 100%;
-      margin-bottom: 10px;
+      margin-bottom: 8px;
       padding: 10px;
       background: #2563eb;
-      color: #fff;
+      color: white;
       border: none;
       border-radius: 6px;
       cursor: pointer;
@@ -44,12 +43,8 @@
       background: #1d4ed8;
     }
 
-    .sidebar .danger {
-      background: #b91c1c;
-    }
-
-    .sidebar .danger:hover {
-      background: #991b1b;
+    .danger {
+      background: #b91c1c !important;
     }
 
     /* ===== CONTEÚDO ===== */
@@ -61,118 +56,147 @@
 
     h1 {
       color: #38bdf8;
-      margin-top: 0;
+    }
+
+    label {
+      display: block;
+      margin-top: 10px;
+    }
+
+    input {
+      margin-top: 5px;
+      padding: 6px;
+      border-radius: 4px;
+      border: none;
+      width: 220px;
+    }
+
+    .actions button {
+      margin-top: 10px;
+      margin-right: 10px;
+      padding: 10px 15px;
+      background: #2563eb;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .actions button:hover {
+      background: #1d4ed8;
     }
 
     pre {
       background: #020617;
       padding: 15px;
       border-radius: 6px;
-      max-height: 70vh;
+      margin-top: 20px;
+      max-height: 500px;
       overflow: auto;
-      border: 1px solid #1e293b;
-    }
-
-    .filters {
-      margin-bottom: 15px;
-    }
-
-    .filters input {
-      padding: 6px;
-      margin-right: 6px;
-      border-radius: 4px;
-      border: none;
     }
   </style>
 </head>
 
 <body>
 
-  <!-- ===== MENU LATERAL ===== -->
+  <!-- ===== MENU ===== -->
   <div class="sidebar">
     <h2>🛠 Debug</h2>
 
-    <button onclick="callApi('/debug/status')">Status Backend</button>
-    <button onclick="callApi('/debug/env')">Variáveis de Ambiente</button>
-    <button onclick="callApi('/debug/db')">Teste Banco</button>
-    <button onclick="callApi('/debug/db/tabelas')">Listar Tabelas</button>
+    <button onclick="callApi('/debug/status')">Status</button>
+    <button onclick="callApi('/debug/env')">Env</button>
+    <button onclick="callApi('/debug/db')">Teste DB</button>
+    <button onclick="callApi('/debug/db/tabelas')">Tabelas</button>
+    <button onclick="callApi('/debug/dashboard')">Dashboard</button>
 
-    <hr />
+    <hr>
 
-    <button onclick="listarProdutos()">Listar Produtos</button>
-    <button onclick="listarTokens()">Listar Tokens</button>
+    <button onclick="listarProdutos()">📦 Listar Produtos</button>
+    <button onclick="listarProdutosPorData()">📅 Produtos por Data</button>
 
-    <button class="danger" onclick="insertProdutoTeste()">
-      Inserir Produto Teste
-    </button>
+    <button class="danger" onclick="excluirProduto()">🗑 Excluir Produto</button>
+
+    <hr>
+
+    <button onclick="callApi('/debug/meli/tokens')">🔑 Tokens ML</button>
   </div>
 
   <!-- ===== CONTEÚDO ===== -->
   <div class="content">
-    <h1>📊 Resultado</h1>
+    <h1>Painel de Debug — OfertaPrimeX</h1>
 
-    <div class="filters">
-      <label>Data início:</label>
-      <input type="date" id="dataInicio" />
+    <!-- FILTRO POR DATA -->
+    <label>Data início:</label>
+    <input type="date" id="data_inicio">
 
-      <label>Data fim:</label>
-      <input type="date" id="dataFim" />
+    <label>Data fim:</label>
+    <input type="date" id="data_fim">
+
+    <div class="actions">
+      <button onclick="listarProdutosPorData()">Confirmar filtro</button>
     </div>
 
-    <pre id="output">Selecione uma opção no menu à esquerda…</pre>
+    <!-- EXCLUSÃO -->
+    <label>ID do produto para excluir:</label>
+    <input type="number" id="produto_id">
+
+    <div class="actions">
+      <button class="danger" onclick="excluirProduto()">Excluir produto</button>
+    </div>
+
+    <pre id="output">Resultado aparecerá aqui...</pre>
   </div>
 
-  <!-- ===== SCRIPT ===== -->
   <script>
-    // 🔴 MUITO IMPORTANTE: backend correto
+    // 🔴 AJUSTE SEU BACKEND AQUI
     const BASE_URL = 'https://yo0g0cg4c88w88osc4s04c0c.72.61.33.248.sslip.io/';
-
-    const output = document.getElementById('output');
-
-    function mostrarResultado(data) {
-      output.textContent = JSON.stringify(data, null, 2);
-    }
 
     async function callApi(endpoint) {
       try {
         const res = await fetch(BASE_URL + endpoint);
         const data = await res.json();
-        mostrarResultado(data);
+        show(data);
       } catch (err) {
-        mostrarResultado({ erro: err.message });
+        show({ erro: err.message });
       }
     }
 
+    function show(data) {
+      document.getElementById('output').textContent =
+        JSON.stringify(data, null, 2);
+    }
+
+    // ===== PRODUTOS =====
     async function listarProdutos() {
-      const dataInicio = document.getElementById('dataInicio').value;
-      const dataFim = document.getElementById('dataFim').value;
+      callApi('/debug/produtos');
+    }
 
-      let url = '/debug/produtos';
-      const params = [];
+    async function listarProdutosPorData() {
+      const inicio = document.getElementById('data_inicio').value;
+      const fim = document.getElementById('data_fim').value;
 
-      if (dataInicio) params.push(`data_inicio=${dataInicio}`);
-      if (dataFim) params.push(`data_fim=${dataFim}`);
-
-      if (params.length) {
-        url += '?' + params.join('&');
-      }
+      let url = '/debug/produtos?';
+      if (inicio) url += `data_inicio=${inicio}&`;
+      if (fim) url += `data_fim=${fim}`;
 
       callApi(url);
     }
 
-    async function listarTokens() {
-      callApi('/debug/meli/tokens');
-    }
+    async function excluirProduto() {
+      const id = document.getElementById('produto_id').value;
+      if (!id) {
+        show({ erro: 'Informe o ID do produto' });
+        return;
+      }
 
-    async function insertProdutoTeste() {
       try {
-        const res = await fetch(BASE_URL + '/debug/db/insert-teste', {
-          method: 'POST'
+        const res = await fetch(`${BASE_URL}/debug/produtos/${id}`, {
+          method: 'DELETE'
         });
         const data = await res.json();
-        mostrarResultado(data);
+        show(data);
       } catch (err) {
-        mostrarResultado({ erro: err.message });
+        show({ erro: err.message });
       }
     }
   </script>
