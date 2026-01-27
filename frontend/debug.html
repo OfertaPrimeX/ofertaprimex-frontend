@@ -2,35 +2,23 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <title>OfertaPrimeX — Debug</title>
+  <title>OfertaPrimeX — Painel de Debug</title>
 
   <style>
     body {
-      margin: 0;
       font-family: Arial, sans-serif;
       background: #0f172a;
       color: #e5e7eb;
-      display: flex;
-      height: 100vh;
-    }
-
-    /* MENU LATERAL */
-    .sidebar {
-      width: 260px;
-      background: #020617;
       padding: 20px;
-      border-right: 1px solid #1e293b;
     }
 
-    .sidebar h2 {
+    h1 {
       color: #38bdf8;
-      margin-bottom: 20px;
     }
 
-    .sidebar button {
-      width: 100%;
-      margin-bottom: 10px;
-      padding: 10px;
+    button {
+      margin: 5px;
+      padding: 10px 15px;
       background: #2563eb;
       color: white;
       border: none;
@@ -38,102 +26,78 @@
       cursor: pointer;
     }
 
-    .sidebar button:hover {
+    button:hover {
       background: #1d4ed8;
     }
 
-    /* CONTEÚDO */
-    .content {
-      flex: 1;
-      padding: 20px;
-      overflow: auto;
+    .danger {
+      background: #b91c1c;
     }
 
-    h1 {
-      color: #38bdf8;
-    }
-
-    .card {
-      background: #020617;
-      padding: 20px;
-      border-radius: 8px;
-      margin-bottom: 20px;
-    }
-
-    input[type="file"] {
-      margin-top: 10px;
-      margin-bottom: 10px;
-      color: white;
-    }
-
-    button.action {
-      padding: 10px 15px;
-      background: #16a34a;
+    input {
+      margin: 5px;
+      padding: 8px;
+      border-radius: 4px;
       border: none;
-      border-radius: 6px;
-      color: white;
-      cursor: pointer;
-    }
-
-    button.action:hover {
-      background: #15803d;
     }
 
     pre {
       background: #020617;
       padding: 15px;
+      margin-top: 20px;
       border-radius: 6px;
       max-height: 400px;
       overflow: auto;
-      border: 1px solid #1e293b;
     }
   </style>
 </head>
 
 <body>
 
-  <!-- MENU -->
-  <div class="sidebar">
-    <h2>🛠 Debug</h2>
+  <h1>🛠️ Painel de Debug — OfertaPrimeX</h1>
+  <p>Selecione o teste que deseja executar:</p>
 
-    <button onclick="callApi('/debug/status')">Status</button>
-    <button onclick="callApi('/debug/env')">Env</button>
-    <button onclick="callApi('/debug/db')">Banco</button>
+  <!-- ===================== BOTÕES EXISTENTES ===================== -->
+  <div>
+    <button onclick="callApi('/debug/status')">Status Backend</button>
+    <button onclick="callApi('/debug/env')">Variáveis de Ambiente</button>
+    <button onclick="callApi('/debug/db')">Teste Banco</button>
+    <button onclick="callApi('/debug/db/tabelas')">Listar Tabelas</button>
     <button onclick="callApi('/debug/produtos')">Listar Produtos</button>
-    <button onclick="callApi('/debug/meli/tokens')">Tokens ML</button>
+    <button onclick="callApi('/debug/meli/tokens')">Tokens Mercado Livre</button>
+
+    <button class="danger" onclick="postApi('/debug/db/insert-teste')">
+      Inserir Produto Teste
+    </button>
   </div>
 
-  <!-- CONTEÚDO -->
-  <div class="content">
-    <h1>Importação de Produtos (CSV)</h1>
+  <hr />
 
-    <div class="card">
-      <p>
-        Formato esperado do CSV:
-      </p>
-      <pre>
-nome,descricao,preco,imagem_url,plataforma
-Produto A,Descrição A,99.9,,IMPORT
-Produto B,Descrição B,120.5,,IMPORT
-      </pre>
+  <!-- ===================== FILTRO POR DATA ===================== -->
+  <h3>📅 Filtro de Produtos por Data</h3>
 
-      <input type="file" id="csvFile" accept=".csv" />
+  <input type="date" id="dataInicio">
+  <input type="date" id="dataFim">
+  <button onclick="filtrarProdutos()">Filtrar</button>
 
-      <br />
+  <hr />
 
-      <button class="action" onclick="importCsv()">
-        Importar CSV
-      </button>
-    </div>
+  <!-- ===================== IMPORTAÇÃO CSV ===================== -->
+  <h3>📥 Importar Produtos (CSV)</h3>
 
-    <h2>Resultado</h2>
-    <pre id="output">Aguardando ação...</pre>
-  </div>
+  <input type="file" id="csvFile" accept=".csv" />
+  <button onclick="importarCSV()">Importar CSV</button>
 
+  <pre id="output">Resultado aparecerá aqui...</pre>
+
+  <!-- ===================== SCRIPT ===================== -->
   <script>
-    // 🔴 ALTERE PARA SEU BACKEND
-    const BASE_URL = 'https://SEU_BACKEND_AQUI';
+    // 🔴 ALTERE APENAS SE O BACKEND MUDAR
+    const BASE_URL = 'https://yo0g0cg4c88w88osc4s04c0c.72.61.33.248.sslip.io';
 
+    // -----------------------------
+    // GET simples
+    // -----------------------------
     async function callApi(endpoint) {
       try {
         const res = await fetch(BASE_URL + endpoint);
@@ -146,7 +110,41 @@ Produto B,Descrição B,120.5,,IMPORT
       }
     }
 
-    async function importCsv() {
+    // -----------------------------
+    // POST simples
+    // -----------------------------
+    async function postApi(endpoint) {
+      try {
+        const res = await fetch(BASE_URL + endpoint, {
+          method: 'POST'
+        });
+        const data = await res.json();
+        document.getElementById('output').textContent =
+          JSON.stringify(data, null, 2);
+      } catch (err) {
+        document.getElementById('output').textContent =
+          'Erro: ' + err.message;
+      }
+    }
+
+    // -----------------------------
+    // FILTRO DE PRODUTOS
+    // -----------------------------
+    async function filtrarProdutos() {
+      const inicio = document.getElementById('dataInicio').value;
+      const fim = document.getElementById('dataFim').value;
+
+      let url = '/debug/produtos?';
+      if (inicio) url += `data_inicio=${inicio}&`;
+      if (fim) url += `data_fim=${fim}`;
+
+      callApi(url);
+    }
+
+    // -----------------------------
+    // IMPORTAÇÃO CSV
+    // -----------------------------
+    async function importarCSV() {
       const fileInput = document.getElementById('csvFile');
 
       if (!fileInput.files.length) {
@@ -158,19 +156,14 @@ Produto B,Descrição B,120.5,,IMPORT
       formData.append('file', fileInput.files[0]);
 
       try {
-        const res = await fetch(
-          BASE_URL + '/debug/produtos/import-csv',
-          {
-            method: 'POST',
-            body: formData
-          }
-        );
+        const res = await fetch(BASE_URL + '/debug/produtos/import', {
+          method: 'POST',
+          body: formData
+        });
 
         const data = await res.json();
-
         document.getElementById('output').textContent =
           JSON.stringify(data, null, 2);
-
       } catch (err) {
         document.getElementById('output').textContent =
           'Erro: ' + err.message;
