@@ -2,218 +2,213 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <title>OfertaPrimeX — Debug</title>
-
+  <title>OfertaPrimeX – Debug</title>
   <style>
     body {
       margin: 0;
       font-family: Arial, sans-serif;
       background: #0f172a;
       color: #e5e7eb;
-      height: 100vh;
-      display: flex;
     }
-
-    /* ===== MENU LATERAL ===== */
-    .sidebar {
+    .container {
+      display: flex;
+      height: 100vh;
+    }
+    .menu {
       width: 260px;
       background: #020617;
       padding: 20px;
       box-sizing: border-box;
+      border-right: 1px solid #1e293b;
     }
-
-    .sidebar h2 {
+    .menu h2 {
       color: #38bdf8;
-      margin-bottom: 20px;
       font-size: 18px;
+      margin-bottom: 15px;
     }
-
-    .sidebar button {
+    .menu button {
       width: 100%;
-      margin-bottom: 10px;
       padding: 10px;
-      background: #2563eb;
-      color: white;
+      margin-bottom: 10px;
+      background: #1e293b;
+      color: #e5e7eb;
       border: none;
-      border-radius: 6px;
       cursor: pointer;
+      border-radius: 4px;
       text-align: left;
     }
-
-    .sidebar button:hover {
-      background: #1d4ed8;
+    .menu button:hover {
+      background: #334155;
     }
-
-    .danger {
-      background: #b91c1c !important;
-    }
-
-    /* ===== CONTEÚDO ===== */
     .content {
       flex: 1;
       padding: 20px;
-      box-sizing: border-box;
-      overflow: auto;
+      overflow-y: auto;
     }
-
-    h1 {
+    h3 {
       color: #38bdf8;
+      margin-top: 0;
     }
-
-    label {
-      display: block;
-      margin-top: 10px;
-      margin-bottom: 5px;
-    }
-
-    input {
+    input, button {
       padding: 8px;
-      width: 250px;
+      margin: 5px 0;
       border-radius: 4px;
       border: none;
     }
-
+    button.action {
+      background: #2563eb;
+      color: white;
+      cursor: pointer;
+    }
+    button.danger {
+      background: #dc2626;
+      color: white;
+      cursor: pointer;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+    }
+    th, td {
+      border: 1px solid #334155;
+      padding: 8px;
+      font-size: 14px;
+    }
+    th {
+      background: #1e293b;
+    }
     pre {
       background: #020617;
       padding: 15px;
-      border-radius: 6px;
-      margin-top: 20px;
-      max-height: 500px;
-      overflow: auto;
+      border-radius: 4px;
+      overflow-x: auto;
     }
   </style>
 </head>
-
 <body>
 
-  <!-- ===== MENU ===== -->
-  <div class="sidebar">
-    <h2>🛠 Debug</h2>
-
-    <button onclick="get('/debug/status')">Status</button>
-    <button onclick="get('/debug/env')">Env</button>
-    <button onclick="get('/debug/db')">Banco</button>
-    <button onclick="get('/debug/db/tabelas')">Tabelas</button>
-
-    <button onclick="get('/debug/produtos')">Listar Produtos</button>
-    <button onclick="get('/debug/meli/tokens')">Listar Tokens</button>
-
-    <button onclick="get('/debug/dashboard')">Dashboard</button>
-
-    <button class="danger" onclick="post('/debug/db/insert-teste')">
-      Inserir Produto Teste
-    </button>
+<div class="container">
+  <div class="menu">
+    <h2>Debug</h2>
+    <button onclick="status()">Status</button>
+    <button onclick="dashboard()">Dashboard</button>
+    <button onclick="listarProdutos()">Listar Produtos</button>
+    <button onclick="filtroProdutos()">Produtos por Data</button>
+    <button onclick="importacao()">Importar CSV</button>
   </div>
 
-  <!-- ===== CONTEÚDO ===== -->
-  <div class="content">
-    <h1>📊 Resultado</h1>
+  <div class="content" id="content">
+    <h3>OfertaPrimeX Debug</h3>
+    <p>Selecione uma opção no menu.</p>
+  </div>
+</div>
 
-    <!-- FILTRO POR DATA -->
-    <h3>Filtro de Produtos por Data</h3>
+<script>
+const API = 'https://yo0g0cg4c88w88osc4s04c0c.72.61.33.248.sslip.io';
 
-    <label>Data Início</label>
-    <input type="date" id="dataInicio">
+function setContent(html) {
+  document.getElementById('content').innerHTML = html;
+}
 
-    <label>Data Fim</label>
-    <input type="date" id="dataFim">
+async function status() {
+  const r = await fetch(API + '/debug/status');
+  const j = await r.json();
+  setContent(`<h3>Status</h3><pre>${JSON.stringify(j, null, 2)}</pre>`);
+}
 
-    <br><br>
-    <button onclick="filtrarProdutos()">Filtrar</button>
+async function dashboard() {
+  const r = await fetch(API + '/debug/dashboard');
+  const j = await r.json();
+  setContent(`
+    <h3>Dashboard</h3>
+    <p>Produtos: <b>${j.produtos}</b></p>
+    <p>Tokens: <b>${j.tokens}</b></p>
+  `);
+}
 
-    <!-- IMPORTAÇÃO CSV -->
+async function listarProdutos() {
+  const r = await fetch(API + '/debug/produtos');
+  const j = await r.json();
+
+  let rows = j.produtos.map(p => `
+    <tr>
+      <td>${p.id}</td>
+      <td>${p.nome}</td>
+      <td>${p.preco}</td>
+      <td>${p.plataforma}</td>
+      <td>
+        <button class="danger" onclick="excluir(${p.id})">Excluir</button>
+      </td>
+    </tr>
+  `).join('');
+
+  setContent(`
+    <h3>Produtos (${j.total})</h3>
+    <table>
+      <tr>
+        <th>ID</th><th>Nome</th><th>Preço</th><th>Plataforma</th><th>Ação</th>
+      </tr>
+      ${rows}
+    </table>
+  `);
+}
+
+function filtroProdutos() {
+  setContent(`
+    <h3>Produtos por Data</h3>
+    <label>Início:</label><br>
+    <input type="date" id="di"><br>
+    <label>Fim:</label><br>
+    <input type="date" id="df"><br>
+    <button class="action" onclick="buscarPorData()">Buscar</button>
+    <div id="resultado"></div>
+  `);
+}
+
+async function buscarPorData() {
+  const di = document.getElementById('di').value;
+  const df = document.getElementById('df').value;
+  const r = await fetch(`${API}/debug/produtos?data_inicio=${di}&data_fim=${df}`);
+  const j = await r.json();
+
+  document.getElementById('resultado').innerHTML =
+    `<pre>${JSON.stringify(j, null, 2)}</pre>`;
+}
+
+function importacao() {
+  setContent(`
     <h3>Importar Produtos (CSV)</h3>
+    <input type="file" id="file"><br>
+    <button class="action" onclick="enviarCSV()">Importar</button>
+    <div id="resp"></div>
+    <p><small>Padrão CSV:<br>
+    nome,descricao,preco,imagem_url,plataforma</small></p>
+  `);
+}
 
-    <input type="file" id="csvFile" accept=".csv">
-    <br><br>
-    <button onclick="importarCSV()">Importar CSV</button>
+async function enviarCSV() {
+  const file = document.getElementById('file').files[0];
+  if (!file) return alert('Selecione um arquivo');
 
-    <pre id="output">Resultado aparecerá aqui…</pre>
-  </div>
+  const fd = new FormData();
+  fd.append('file', file);
 
-  <!-- ===== SCRIPT ===== -->
-  <script>
-    // 🔴 CONFIRA SE ESTE ENDEREÇO ESTÁ CORRETO
-    const BASE_URL = 'https://yo0g0cg4c88w88osc4s04c0c.72.61.33.248.sslip.io/';
+  const r = await fetch(API + '/debug/produtos/importar', {
+    method: 'POST',
+    body: fd
+  });
+  const j = await r.json();
+  document.getElementById('resp').innerHTML =
+    `<pre>${JSON.stringify(j, null, 2)}</pre>`;
+}
 
-    const output = document.getElementById('output');
-
-    function mostrar(data) {
-      output.textContent = JSON.stringify(data, null, 2);
-    }
-
-    async function get(endpoint) {
-      try {
-        const res = await fetch(BASE_URL + endpoint);
-        const data = await res.json();
-        mostrar(data);
-      } catch (err) {
-        mostrar({ erro: err.message });
-      }
-    }
-
-    async function post(endpoint) {
-      try {
-        const res = await fetch(BASE_URL + endpoint, {
-          method: 'POST'
-        });
-        const data = await res.json();
-        mostrar(data);
-      } catch (err) {
-        mostrar({ erro: err.message });
-      }
-    }
-
-    async function filtrarProdutos() {
-      const inicio = document.getElementById('dataInicio').value;
-      const fim = document.getElementById('dataFim').value;
-
-      let url = '/debug/produtos?';
-      if (inicio) url += `data_inicio=${inicio}&`;
-      if (fim) url += `data_fim=${fim}`;
-
-      get(url);
-    }
-
-    async function importarCSV() {
-      const fileInput = document.getElementById('csvFile');
-      if (!fileInput.files.length) {
-        alert('Selecione um arquivo CSV');
-        return;
-      }
-
-      const file = fileInput.files[0];
-      const text = await file.text();
-      const linhas = text.split('\n');
-
-      const produtos = [];
-
-      for (let i = 1; i < linhas.length; i++) {
-        const linha = linhas[i].trim();
-        if (!linha) continue;
-
-        const [nome, descricao, preco, imagem_url, plataforma] = linha.split(',');
-
-        produtos.push({
-          nome,
-          descricao,
-          preco: Number(preco),
-          imagem_url: imagem_url || null,
-          plataforma
-        });
-      }
-
-      mostrar({
-        sucesso: true,
-        mensagem: 'CSV lido com sucesso',
-        total: produtos.length,
-        produtos
-      });
-
-      // OBS: aqui só exibimos
-      // o endpoint de importação no backend será o próximo passo
-    }
-  </script>
+async function excluir(id) {
+  if (!confirm('Excluir produto ' + id + '?')) return;
+  await fetch(API + '/debug/produtos/' + id, { method: 'DELETE' });
+  listarProdutos();
+}
+</script>
 
 </body>
 </html>
