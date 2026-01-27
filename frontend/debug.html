@@ -68,15 +68,11 @@
     th {
       background: #1e293b;
     }
-    pre, textarea {
+    pre {
       background: #020617;
       padding: 15px;
       border-radius: 4px;
       width: 100%;
-      color: #e5e7eb;
-    }
-    textarea {
-      height: 200px;
     }
     input {
       width: 100%;
@@ -89,9 +85,8 @@
 </head>
 
 <body>
-
 <!-- ===============================
-     MENU LATERAL (BASE ORIGINAL + 2 BOTÕES)
+     MENU LATERAL
      =============================== -->
 <div id="menu">
   <h2>Debug Backend</h2>
@@ -111,7 +106,7 @@
   <button onclick="inserirProdutoTeste()">Inserir Produto Teste</button>
   <button onclick="listarProdutos()">Listar Produtos</button>
 
-  <!-- 🔥 NOVOS (SEM QUEBRAR NADA) -->
+  <!-- EXPORT / IMPORT -->
   <button onclick="exportarProdutos()">Exportar Produtos</button>
   <button onclick="mostrarImportacao()">Importar Produtos</button>
 </div>
@@ -126,12 +121,12 @@
 
 <script>
 /* =====================================================
-   CONFIGURAÇÃO DO BACKEND
+   CONFIGURAÇÃO BACKEND
    ===================================================== */
 const API = 'https://yo0g0cg4c88w88osc4s04c0c.72.61.33.248.sslip.io';
 
 /* =====================================================
-   TOKEN (INALTERADO)
+   TOKEN
    ===================================================== */
 function getToken() {
   return localStorage.getItem('debug_token');
@@ -151,7 +146,7 @@ function output(html) {
 }
 
 /* =====================================================
-   FETCH COM AUTH (INALTERADO)
+   FETCH AUTH
    ===================================================== */
 async function fetchAuth(url, options = {}) {
   const token = getToken();
@@ -175,7 +170,7 @@ async function fetchAuth(url, options = {}) {
 }
 
 /* =====================================================
-   LOGIN / LOGOUT (INALTERADO)
+   LOGIN / LOGOUT
    ===================================================== */
 async function login() {
   const user = document.getElementById('user').value;
@@ -193,32 +188,27 @@ async function login() {
   setToken(data.token);
   output('<b>✅ Login realizado com sucesso</b>');
 }
-
 function logout() {
   clearToken();
   output('🔒 Logout realizado');
 }
 
 /* =====================================================
-   FUNÇÕES EXISTENTES (INALTERADAS)
+   FUNÇÕES EXISTENTES
    ===================================================== */
 async function statusServidor() {
   output(`<pre>${JSON.stringify(await fetchAuth(`${API}/debug/status`), null, 2)}</pre>`);
 }
-
 async function statusBanco() {
   output(`<pre>${JSON.stringify(await fetchAuth(`${API}/debug/db`), null, 2)}</pre>`);
 }
-
 async function listarTabelas() {
   output(`<pre>${JSON.stringify(await fetchAuth(`${API}/debug/db/tabelas`), null, 2)}</pre>`);
 }
-
 async function inserirProdutoTeste() {
   const data = await fetchAuth(`${API}/debug/db/insert-teste`, { method: 'POST' });
   output(`<pre>${JSON.stringify(data, null, 2)}</pre>`);
 }
-
 async function listarProdutos() {
   const produtos = await fetchAuth(`${API}/debug/produtos`);
   if (!produtos.length) {
@@ -249,7 +239,6 @@ async function listarProdutos() {
   html += '</table>';
   output(html);
 }
-
 async function excluirProduto(id) {
   if (!confirm('Confirma exclusão do produto ' + id + '?')) return;
   await fetchAuth(`${API}/debug/produtos/${id}`, { method: 'DELETE' });
@@ -257,7 +246,7 @@ async function excluirProduto(id) {
 }
 
 /* =====================================================
-   🔥 EXPORTAR PRODUTOS (NOVO)
+   EXPORTAR PRODUTOS
    ===================================================== */
 async function exportarProdutos() {
   const produtos = await fetchAuth(`${API}/debug/produtos`);
@@ -273,26 +262,40 @@ async function exportarProdutos() {
 }
 
 /* =====================================================
-   🔥 IMPORTAR PRODUTOS (NOVO)
+   🔥 IMPORTAR PRODUTOS (ARQUIVO CSV)
    ===================================================== */
 function mostrarImportacao() {
   output(`
     <h3>Importar Produtos (CSV)</h3>
+    <p>Selecione um arquivo no mesmo formato do export:</p>
     <pre>nome,descricao,preco,imagem_url,plataforma</pre>
-    <textarea id="csv"></textarea><br><br>
-    <button onclick="importarCSV()">Importar</button>
+    <input type="file" id="arquivoCSV" accept=".csv"><br><br>
+    <button onclick="importarArquivo()">Importar</button>
   `);
 }
 
-async function importarCSV() {
-  const csv = document.getElementById('csv').value;
-  const data = await fetchAuth(`${API}/debug/produtos/importar`, {
-    method: 'POST',
-    body: JSON.stringify({ csv })
-  });
-  output(`<pre>${JSON.stringify(data, null, 2)}</pre>`);
+function importarArquivo() {
+  const input = document.getElementById('arquivoCSV');
+  if (!input.files.length) {
+    alert('Selecione um arquivo CSV');
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = async () => {
+    try {
+      const csv = reader.result;
+      const data = await fetchAuth(`${API}/debug/produtos/importar`, {
+        method: 'POST',
+        body: JSON.stringify({ csv })
+      });
+      output(`<b>✅ Importação realizada com sucesso</b><pre>${JSON.stringify(data, null, 2)}</pre>`);
+    } catch (e) {
+      output(`<pre>❌ Erro ao importar\n${JSON.stringify(e, null, 2)}</pre>`);
+    }
+  };
+  reader.readAsText(input.files[0]);
 }
 </script>
-
 </body>
 </html>
