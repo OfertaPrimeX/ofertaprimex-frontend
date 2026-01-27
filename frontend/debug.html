@@ -5,7 +5,7 @@
   <title>Debug OfertaPrimeX</title>
 
   <!-- ===============================
-       ESTILO GERAL
+       ESTILO PADRÃO (IGUAL AO ANTERIOR)
        =============================== -->
   <style>
     * {
@@ -21,9 +21,7 @@
       height: 100vh;
     }
 
-    /* ===============================
-       MENU LATERAL
-       =============================== */
+    /* MENU ESQUERDO */
     #menu {
       width: 260px;
       background: #020617;
@@ -52,9 +50,7 @@
       background: #1d4ed8;
     }
 
-    /* ===============================
-       ÁREA DE CONTEÚDO
-       =============================== */
+    /* CONTEÚDO DIREITO */
     #content {
       flex: 1;
       padding: 20px;
@@ -69,7 +65,6 @@
       background: #020617;
       padding: 15px;
       border-radius: 4px;
-      overflow-x: auto;
     }
 
     table {
@@ -90,78 +85,73 @@
 
     .danger {
       background: #dc2626;
-      border: none;
       color: #fff;
+      border: none;
       padding: 6px 10px;
       cursor: pointer;
       border-radius: 4px;
-    }
-
-    .danger:hover {
-      background: #b91c1c;
     }
   </style>
 </head>
 <body>
 
-<!-- ===============================
-     MENU LATERAL
-     =============================== -->
+<!-- MENU -->
 <div id="menu">
   <h2>Debug</h2>
-
   <button onclick="statusServidor()">Status do Servidor</button>
   <button onclick="statusBanco()">Status do Banco</button>
-  <button onclick="listarTabelas()">Tabelas do Banco</button>
+  <button onclick="listarTabelas()">Tabelas</button>
   <button onclick="listarProdutos()">Listar Produtos</button>
-  <button onclick="exportarProdutos()">Exportar Produtos (CSV)</button>
+  <button onclick="exportarProdutos()">Exportar Produtos</button>
 </div>
 
-<!-- ===============================
-     CONTEÚDO
-     =============================== -->
+<!-- CONTEÚDO -->
 <div id="content">
   <h1>OfertaPrimeX — Debug</h1>
-  <div id="output">Selecione uma opção no menu.</div>
+  <div id="output">Escolha uma opção no menu.</div>
 </div>
 
 <script>
 /* ======================================================
-   CONFIGURAÇÃO DA API
+   CONFIGURAÇÃO ÚNICA DO BACKEND
    ====================================================== */
 const API_BASE = 'https://yo0g0cg4c88w88osc4s04c0c.72.61.33.248.sslip.io';
 
 /* ======================================================
-   FUNÇÃO UTILITÁRIA PARA EXIBIR JSON
+   UTILITÁRIO DE ERRO
    ====================================================== */
-function mostrarJSON(data) {
+function erro(msg) {
   document.getElementById('output').innerHTML =
-    `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+    `<pre style="color:#f87171">${msg}</pre>`;
 }
 
 /* ======================================================
-   STATUS DO SERVIDOR
+   STATUS SERVIDOR
    ====================================================== */
 async function statusServidor() {
   try {
     const res = await fetch(`${API_BASE}/debug/status`);
+    if (!res.ok) throw new Error('Erro ao acessar servidor');
     const data = await res.json();
-    mostrarJSON(data);
+    document.getElementById('output').innerHTML =
+      `<pre>${JSON.stringify(data, null, 2)}</pre>`;
   } catch (e) {
-    mostrarJSON({ erro: e.message });
+    erro(e.message);
   }
 }
 
 /* ======================================================
-   STATUS DO BANCO
+   STATUS BANCO
    ====================================================== */
 async function statusBanco() {
   try {
     const res = await fetch(`${API_BASE}/debug/db`);
+    if (!res.ok) throw new Error('Erro ao acessar banco');
     const data = await res.json();
-    mostrarJSON(data);
+    document.getElementById('output').innerHTML =
+      `<pre>${JSON.stringify(data, null, 2)}</pre>`;
   } catch (e) {
-    mostrarJSON({ erro: e.message });
+    erro(e.message);
   }
 }
 
@@ -171,10 +161,12 @@ async function statusBanco() {
 async function listarTabelas() {
   try {
     const res = await fetch(`${API_BASE}/debug/db/tabelas`);
+    if (!res.ok) throw new Error('Erro ao listar tabelas');
     const data = await res.json();
-    mostrarJSON(data);
+    document.getElementById('output').innerHTML =
+      `<pre>${JSON.stringify(data, null, 2)}</pre>`;
   } catch (e) {
-    mostrarJSON({ erro: e.message });
+    erro(e.message);
   }
 }
 
@@ -184,6 +176,8 @@ async function listarTabelas() {
 async function listarProdutos() {
   try {
     const res = await fetch(`${API_BASE}/debug/produtos`);
+    if (!res.ok) throw new Error('Erro ao listar produtos');
+
     const data = await res.json();
 
     if (!data.produtos || data.produtos.length === 0) {
@@ -199,7 +193,6 @@ async function listarProdutos() {
           <th>Nome</th>
           <th>Preço</th>
           <th>Plataforma</th>
-          <th>Ação</th>
         </tr>
     `;
 
@@ -210,11 +203,6 @@ async function listarProdutos() {
           <td>${p.nome}</td>
           <td>${p.preco}</td>
           <td>${p.plataforma}</td>
-          <td>
-            <button class="danger" onclick="excluirProduto(${p.id})">
-              Excluir
-            </button>
-          </td>
         </tr>
       `;
     });
@@ -223,43 +211,41 @@ async function listarProdutos() {
     document.getElementById('output').innerHTML = html;
 
   } catch (e) {
-    mostrarJSON({ erro: e.message });
+    erro(e.message);
   }
 }
 
 /* ======================================================
-   EXCLUIR PRODUTO
-   ====================================================== */
-async function excluirProduto(id) {
-  if (!confirm('Deseja excluir este produto?')) return;
-
-  await fetch(`${API_BASE}/debug/produtos/${id}`, {
-    method: 'DELETE'
-  });
-
-  listarProdutos();
-}
-
-/* ======================================================
-   EXPORTAR PRODUTOS (CSV)
+   EXPORTAR PRODUTOS (CORRIGIDO)
    ====================================================== */
 async function exportarProdutos() {
-  const res = await fetch(`${API_BASE}/debug/produtos`);
-  const data = await res.json();
+  try {
+    const res = await fetch(`${API_BASE}/debug/produtos`);
+    if (!res.ok) throw new Error('Erro ao exportar produtos');
 
-  let csv = 'id,nome,descricao,preco,plataforma\n';
+    const data = await res.json();
+    if (!data.produtos || data.produtos.length === 0) {
+      alert('Nenhum produto para exportar');
+      return;
+    }
 
-  data.produtos.forEach(p => {
-    csv += `${p.id},"${p.nome}","${p.descricao}",${p.preco},${p.plataforma}\n`;
-  });
+    let csv = 'id,nome,descricao,preco,plataforma\n';
 
-  const blob = new Blob([csv], { type: 'text/csv' });
-  const url = URL.createObjectURL(blob);
+    data.produtos.forEach(p => {
+      csv += `${p.id},"${p.nome}","${p.descricao}",${p.preco},${p.plataforma}\n`;
+    });
 
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = 'produtos.csv';
-  a.click();
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'produtos.csv';
+    a.click();
+
+  } catch (e) {
+    erro(e.message);
+  }
 }
 </script>
 
