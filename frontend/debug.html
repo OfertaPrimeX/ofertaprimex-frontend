@@ -4,9 +4,9 @@
   <meta charset="UTF-8">
   <title>Debug OfertaPrimeX</title>
 
-  <!-- ===============================
+  <!-- =====================================================
        ESTILO GERAL
-       =============================== -->
+       ===================================================== -->
   <style>
     * {
       box-sizing: border-box;
@@ -21,7 +21,7 @@
       color: #e5e7eb;
     }
 
-    /* MENU LATERAL */
+    /* ================= MENU LATERAL ================= */
     #menu {
       width: 280px;
       background: #020617;
@@ -51,7 +51,7 @@
       background: #1d4ed8;
     }
 
-    /* CONTEÚDO */
+    /* ================= CONTEÚDO ================= */
     #content {
       flex: 1;
       padding: 20px;
@@ -82,11 +82,12 @@
     }
   </style>
 </head>
+
 <body>
 
-<!-- ===============================
+<!-- =====================================================
      MENU LATERAL
-     =============================== -->
+     ===================================================== -->
 <div id="menu">
   <h2>Debug Backend</h2>
 
@@ -95,44 +96,49 @@
   <button onclick="statusBanco()">Status do Banco</button>
   <button onclick="listarTabelas()">Listar Tabelas</button>
 
-  <!-- 🔥 BOTÃO CRÍTICO -->
-  <button onclick="inserirProdutoTeste()">Inserir Produto Teste</button>
+  <hr>
 
+  <button onclick="inserirProdutoTeste()">Inserir Produto Teste</button>
   <button onclick="listarProdutos()">Listar Produtos</button>
-  <button onclick="exportarProdutos()">Exportar Produtos</button>
+  <button onclick="exportarProdutos()">Exportar Produtos (CSV)</button>
+
+  <hr>
 
   <button onclick="dashboard()">Dashboard</button>
 </div>
 
-<!-- ===============================
-     ÁREA DE RESULTADO
-     =============================== -->
+<!-- =====================================================
+     ÁREA DE CONTEÚDO
+     ===================================================== -->
 <div id="content">
   <h1>OfertaPrimeX — Debug</h1>
   <div id="output">Selecione uma opção no menu.</div>
 </div>
 
+<!-- =====================================================
+     SCRIPT
+     ===================================================== -->
 <script>
 /* =====================================================
    CONFIGURAÇÃO DO BACKEND
+   👉 URL BASE DO BACKEND
    ===================================================== */
 const API = 'https://yo0g0cg4c88w88osc4s04c0c.72.61.33.248.sslip.io';
 
 /* =====================================================
-   FUNÇÃO PADRÃO DE OUTPUT
+   FUNÇÃO PADRÃO PARA EXIBIR RESULTADOS
    ===================================================== */
 function output(html) {
   document.getElementById('output').innerHTML = html;
 }
 
 /* =====================================================
-   FUNÇÃO FETCH SEGURA (COM TRATAMENTO DE ERRO)
+   FETCH PADRÃO COM TRATAMENTO SIMPLES
    ===================================================== */
 async function fetchJson(url) {
   try {
     const res = await fetch(url);
-    const data = await res.json();
-    return data;
+    return await res.json();
   } catch (err) {
     output(`<pre>Erro ao acessar:\n${url}\n\n${err}</pre>`);
     throw err;
@@ -148,7 +154,7 @@ async function statusServidor() {
 }
 
 /* =====================================================
-   ENV
+   VARIÁVEIS DE AMBIENTE
    ===================================================== */
 async function statusEnv() {
   const data = await fetchJson(`${API}/debug/env`);
@@ -156,7 +162,7 @@ async function statusEnv() {
 }
 
 /* =====================================================
-   STATUS BANCO
+   STATUS DO BANCO
    ===================================================== */
 async function statusBanco() {
   const data = await fetchJson(`${API}/debug/db`);
@@ -172,8 +178,7 @@ async function listarTabelas() {
 }
 
 /* =====================================================
-   🔥 INSERIR PRODUTO TESTE
-   (USANDO GET — COMO VOCÊ VALIDOU NO NAVEGADOR)
+   INSERIR PRODUTO TESTE
    ===================================================== */
 async function inserirProdutoTeste() {
   const data = await fetchJson(`${API}/debug/db/insert-teste`);
@@ -185,12 +190,13 @@ async function inserirProdutoTeste() {
 }
 
 /* =====================================================
-   LISTAR PRODUTOS
+   LISTAR PRODUTOS (CORRIGIDO)
+   👉 BACKEND RETORNA ARRAY DIRETO
    ===================================================== */
 async function listarProdutos() {
   const data = await fetchJson(`${API}/debug/produtos`);
 
-  if (!data.produtos || data.produtos.length === 0) {
+  if (!data || data.length === 0) {
     output('<b>Nenhum produto encontrado no banco.</b>');
     return;
   }
@@ -200,16 +206,18 @@ async function listarProdutos() {
       <tr>
         <th>ID</th>
         <th>Nome</th>
+        <th>Descrição</th>
         <th>Preço</th>
         <th>Plataforma</th>
       </tr>
   `;
 
-  data.produtos.forEach(p => {
+  data.forEach(p => {
     html += `
       <tr>
         <td>${p.id}</td>
         <td>${p.nome}</td>
+        <td>${p.descricao || ''}</td>
         <td>${p.preco}</td>
         <td>${p.plataforma}</td>
       </tr>
@@ -222,28 +230,10 @@ async function listarProdutos() {
 
 /* =====================================================
    EXPORTAR PRODUTOS (CSV)
+   👉 USA ROTA DO BACKEND
    ===================================================== */
-async function exportarProdutos() {
-  const data = await fetchJson(`${API}/debug/produtos`);
-
-  if (!data.produtos || data.produtos.length === 0) {
-    alert('Nenhum produto para exportar');
-    return;
-  }
-
-  let csv = 'id,nome,descricao,preco,plataforma\n';
-
-  data.produtos.forEach(p => {
-    csv += `${p.id},"${p.nome}","${p.descricao}",${p.preco},${p.plataforma}\n`;
-  });
-
-  const blob = new Blob([csv], { type: 'text/csv' });
-  const url = URL.createObjectURL(blob);
-
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = 'produtos.csv';
-  a.click();
+function exportarProdutos() {
+  window.location.href = `${API}/debug/produtos/exportar`;
 }
 
 /* =====================================================
