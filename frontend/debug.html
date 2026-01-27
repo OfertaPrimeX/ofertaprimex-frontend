@@ -5,7 +5,7 @@
   <title>Debug OfertaPrimeX</title>
 
   <!-- ===============================
-       ESTILO GERAL
+       ESTILO
        =============================== -->
   <style>
     * {
@@ -21,7 +21,6 @@
       color: #e5e7eb;
     }
 
-    /* MENU LATERAL */
     #menu {
       width: 300px;
       background: #020617;
@@ -59,7 +58,6 @@
       background: #b91c1c;
     }
 
-    /* CONTEÚDO */
     #content {
       flex: 1;
       padding: 20px;
@@ -82,11 +80,16 @@
       background: #1e293b;
     }
 
-    pre {
+    pre, textarea {
       background: #020617;
       padding: 15px;
       border-radius: 4px;
-      overflow-x: auto;
+      width: 100%;
+      color: #e5e7eb;
+    }
+
+    textarea {
+      height: 200px;
     }
 
     input {
@@ -102,12 +105,11 @@
 <body>
 
 <!-- ===============================
-     MENU LATERAL
+     MENU
      =============================== -->
 <div id="menu">
   <h2>Debug Backend</h2>
 
-  <!-- LOGIN -->
   <input id="user" placeholder="Usuário debug">
   <input id="pass" type="password" placeholder="Senha debug">
   <button onclick="login()">Login</button>
@@ -115,16 +117,17 @@
 
   <hr>
 
-  <!-- AÇÕES -->
-  <button onclick="statusServidor()">Status do Servidor</button>
-  <button onclick="statusBanco()">Status do Banco</button>
+  <button onclick="statusServidor()">Status Servidor</button>
+  <button onclick="statusBanco()">Status Banco</button>
   <button onclick="listarTabelas()">Listar Tabelas</button>
   <button onclick="inserirProdutoTeste()">Inserir Produto Teste</button>
   <button onclick="listarProdutos()">Listar Produtos</button>
+  <button onclick="exportarProdutos()">Exportar Produtos</button>
+  <button onclick="mostrarImportacao()">Importar Produtos</button>
 </div>
 
 <!-- ===============================
-     ÁREA DE RESULTADO
+     CONTEÚDO
      =============================== -->
 <div id="content">
   <h1>OfertaPrimeX — Debug</h1>
@@ -133,27 +136,19 @@
 
 <script>
 /* =====================================================
-   CONFIGURAÇÃO DO BACKEND
+   CONFIGURAÇÃO
    ===================================================== */
-const API = 'https://yo0g0cg4c88w88osc4s04c0c.72.61.33.248.sslip.io'; // <<< TROQUE AQUI
+const API = 'https://SEU_DOMINIO_AQUI';
 
 /* =====================================================
-   TOKEN (LOCALSTORAGE)
+   TOKEN
    ===================================================== */
-function getToken() {
-  return localStorage.getItem('debug_token');
-}
-
-function setToken(token) {
-  localStorage.setItem('debug_token', token);
-}
-
-function clearToken() {
-  localStorage.removeItem('debug_token');
-}
+const getToken = () => localStorage.getItem('debug_token');
+const setToken = t => localStorage.setItem('debug_token', t);
+const clearToken = () => localStorage.removeItem('debug_token');
 
 /* =====================================================
-   OUTPUT PADRÃO
+   OUTPUT
    ===================================================== */
 function output(html) {
   document.getElementById('output').innerHTML = html;
@@ -164,26 +159,17 @@ function output(html) {
    ===================================================== */
 async function fetchAuth(url, options = {}) {
   const token = getToken();
-
-  if (!token) {
-    output('<b>⚠️ Faça login primeiro.</b>');
-    throw new Error('Sem token');
-  }
+  if (!token) throw new Error('Sem token');
 
   const res = await fetch(url, {
     ...options,
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': 'Bearer ' + token,
-      ...(options.headers || {})
+      'Authorization': 'Bearer ' + token
     }
   });
 
-  if (!res.ok) {
-    const err = await res.json();
-    throw err;
-  }
-
+  if (!res.ok) throw await res.json();
   return res.json();
 }
 
@@ -191,8 +177,8 @@ async function fetchAuth(url, options = {}) {
    LOGIN
    ===================================================== */
 async function login() {
-  const user = document.getElementById('user').value;
-  const pass = document.getElementById('pass').value;
+  const user = user.value;
+  const pass = pass.value;
 
   const res = await fetch(`${API}/debug/login`, {
     method: 'POST',
@@ -201,83 +187,42 @@ async function login() {
   });
 
   const data = await res.json();
-
-  if (!res.ok) {
-    output(`<pre>${JSON.stringify(data, null, 2)}</pre>`);
-    return;
-  }
+  if (!res.ok) return output(JSON.stringify(data));
 
   setToken(data.token);
-  output('<b>✅ Login realizado com sucesso</b>');
+  output('✅ Login realizado');
 }
 
-/* =====================================================
-   LOGOUT
-   ===================================================== */
 function logout() {
   clearToken();
-  output('🔒 Logout realizado');
+  output('Logout realizado');
 }
 
 /* =====================================================
-   STATUS SERVIDOR
+   AÇÕES
    ===================================================== */
-async function statusServidor() {
-  const data = await fetchAuth(`${API}/debug/status`);
-  output(`<pre>${JSON.stringify(data, null, 2)}</pre>`);
-}
+const statusServidor = async () =>
+  output(`<pre>${JSON.stringify(await fetchAuth(`${API}/debug/status`), null, 2)}</pre>`);
 
-/* =====================================================
-   STATUS BANCO
-   ===================================================== */
-async function statusBanco() {
-  const data = await fetchAuth(`${API}/debug/db`);
-  output(`<pre>${JSON.stringify(data, null, 2)}</pre>`);
-}
+const statusBanco = async () =>
+  output(`<pre>${JSON.stringify(await fetchAuth(`${API}/debug/db`), null, 2)}</pre>`);
 
-/* =====================================================
-   LISTAR TABELAS
-   ===================================================== */
-async function listarTabelas() {
-  const data = await fetchAuth(`${API}/debug/db/tabelas`);
-  output(`<pre>${JSON.stringify(data, null, 2)}</pre>`);
-}
+const listarTabelas = async () =>
+  output(`<pre>${JSON.stringify(await fetchAuth(`${API}/debug/db/tabelas`), null, 2)}</pre>`);
 
-/* =====================================================
-   INSERIR PRODUTO TESTE
-   ===================================================== */
 async function inserirProdutoTeste() {
-  const data = await fetchAuth(`${API}/debug/db/insert-teste`, {
-    method: 'POST'
-  });
-
-  output(`
-    <h3>Produto inserido</h3>
-    <pre>${JSON.stringify(data, null, 2)}</pre>
-  `);
+  const data = await fetchAuth(`${API}/debug/db/insert-teste`, { method: 'POST' });
+  output(`<pre>${JSON.stringify(data, null, 2)}</pre>`);
 }
 
 /* =====================================================
-   LISTAR PRODUTOS + EXCLUIR
+   LISTAR + EXCLUIR
    ===================================================== */
 async function listarProdutos() {
   const produtos = await fetchAuth(`${API}/debug/produtos`);
+  if (!produtos.length) return output('Nenhum produto');
 
-  if (!produtos.length) {
-    output('<b>Nenhum produto encontrado</b>');
-    return;
-  }
-
-  let html = `
-    <table>
-      <tr>
-        <th>ID</th>
-        <th>Nome</th>
-        <th>Preço</th>
-        <th>Ação</th>
-      </tr>
-  `;
-
+  let html = `<table><tr><th>ID</th><th>Nome</th><th>Preço</th><th>Ação</th></tr>`;
   produtos.forEach(p => {
     html += `
       <tr>
@@ -285,29 +230,59 @@ async function listarProdutos() {
         <td>${p.nome}</td>
         <td>${p.preco}</td>
         <td>
-          <button class="danger" onclick="excluirProduto(${p.id})">
-            Excluir
-          </button>
+          <button class="danger" onclick="excluirProduto(${p.id})">Excluir</button>
         </td>
-      </tr>
-    `;
+      </tr>`;
   });
-
   html += '</table>';
   output(html);
 }
 
-/* =====================================================
-   EXCLUIR PRODUTO
-   ===================================================== */
 async function excluirProduto(id) {
-  if (!confirm('Confirma exclusão do produto ' + id + '?')) return;
+  if (!confirm('Excluir produto ' + id + '?')) return;
+  await fetchAuth(`${API}/debug/produtos/${id}`, { method: 'DELETE' });
+  listarProdutos();
+}
 
-  await fetchAuth(`${API}/debug/produtos/${id}`, {
-    method: 'DELETE'
+/* =====================================================
+   EXPORTAR CSV
+   ===================================================== */
+async function exportarProdutos() {
+  const produtos = await fetchAuth(`${API}/debug/produtos`);
+  let csv = 'nome,descricao,preco,imagem_url,plataforma\n';
+
+  produtos.forEach(p => {
+    csv += `"${p.nome}","${p.descricao}",${p.preco},"${p.imagem_url || ''}","${p.plataforma}"\n`;
   });
 
-  listarProdutos();
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'produtos.csv';
+  a.click();
+}
+
+/* =====================================================
+   IMPORTAR CSV
+   ===================================================== */
+function mostrarImportacao() {
+  output(`
+    <h3>Importar Produtos (CSV)</h3>
+    <p>Formato:</p>
+    <pre>nome,descricao,preco,imagem_url,plataforma</pre>
+    <textarea id="csv"></textarea>
+    <br><br>
+    <button onclick="importarCSV()">Importar</button>
+  `);
+}
+
+async function importarCSV() {
+  const csv = document.getElementById('csv').value;
+  const data = await fetchAuth(`${API}/debug/produtos/importar`, {
+    method: 'POST',
+    body: JSON.stringify({ csv })
+  });
+  output(`<pre>${JSON.stringify(data, null, 2)}</pre>`);
 }
 </script>
 
