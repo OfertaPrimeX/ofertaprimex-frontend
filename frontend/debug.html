@@ -5,81 +5,82 @@
   <title>OfertaPrimeX — Painel de Debug</title>
 
   <style>
-    /* =========================
-       RESET BÁSICO
-    ========================= */
     * {
       box-sizing: border-box;
-      margin: 0;
-      padding: 0;
+      font-family: Arial, sans-serif;
     }
 
     body {
-      font-family: Arial, sans-serif;
+      margin: 0;
       background: #020617;
       color: #e5e7eb;
-      height: 100vh;
       display: flex;
+      height: 100vh;
     }
 
-    /* =========================
-       MENU LATERAL
-    ========================= */
-    .sidebar {
+    /* ================= MENU LATERAL ================= */
+    aside {
       width: 260px;
-      background: #0f172a;
-      padding: 20px;
+      background: #020617;
       border-right: 1px solid #1e293b;
+      padding: 20px;
     }
 
-    .sidebar h2 {
+    aside h2 {
       color: #38bdf8;
       margin-bottom: 20px;
-      font-size: 18px;
     }
 
-    .sidebar button {
+    aside button {
       width: 100%;
-      margin-bottom: 10px;
+      margin-bottom: 8px;
       padding: 10px;
-      background: #1e40af;
-      color: #fff;
+      background: #1e293b;
+      color: white;
       border: none;
       border-radius: 6px;
       cursor: pointer;
       text-align: left;
-      font-size: 14px;
     }
 
-    .sidebar button:hover {
-      background: #1d4ed8;
+    aside button:hover {
+      background: #334155;
     }
 
-    .sidebar button.danger {
-      background: #b91c1c;
-    }
-
-    .sidebar button.danger:hover {
-      background: #991b1b;
-    }
-
-    /* =========================
-       ÁREA PRINCIPAL
-    ========================= */
-    .main {
+    /* ================= CONTEÚDO ================= */
+    main {
       flex: 1;
       padding: 20px;
       overflow: auto;
     }
 
-    .main h1 {
+    h1 {
       color: #38bdf8;
-      margin-bottom: 10px;
     }
 
-    .main p {
+    .actions {
       margin-bottom: 15px;
-      color: #cbd5f5;
+    }
+
+    input, button.action {
+      padding: 8px;
+      margin-right: 5px;
+      border-radius: 5px;
+      border: none;
+    }
+
+    button.action {
+      background: #2563eb;
+      color: white;
+      cursor: pointer;
+    }
+
+    button.action:hover {
+      background: #1d4ed8;
+    }
+
+    button.danger {
+      background: #b91c1c;
     }
 
     pre {
@@ -89,86 +90,115 @@
       border-radius: 6px;
       max-height: 70vh;
       overflow: auto;
-      font-size: 13px;
     }
   </style>
 </head>
 
 <body>
 
-  <!-- =========================
-       MENU LATERAL
-  ========================= -->
-  <aside class="sidebar">
+  <!-- ================= MENU ================= -->
+  <aside>
     <h2>🛠 Debug</h2>
 
-    <button onclick="callApi('/debug/status')">Status Backend</button>
-    <button onclick="callApi('/debug/env')">Variáveis de Ambiente</button>
-    <button onclick="callApi('/debug/db')">Teste Banco</button>
-    <button onclick="callApi('/debug/db/tabelas')">Listar Tabelas</button>
+    <button onclick="get('/debug/status')">Status Backend</button>
+    <button onclick="get('/debug/env')">Variáveis de Ambiente</button>
+    <button onclick="get('/debug/db')">Teste Banco</button>
+    <button onclick="get('/debug/db/tabelas')">Listar Tabelas</button>
+    <button onclick="get('/debug/dashboard')">Dashboard</button>
 
-    <hr style="margin:15px 0;border-color:#1e293b">
+    <hr />
 
-    <button onclick="callApi('/debug/produtos')">Listar Produtos</button>
-    <button onclick="callApi('/debug/meli/tokens')">Listar Tokens</button>
-    <button onclick="callApi('/debug/dashboard')">Dashboard Resumo</button>
+    <button onclick="listarProdutos()">📦 Listar Produtos</button>
+    <button onclick="listarProdutosPorData()">📅 Produtos por Data</button>
+    <button onclick="exportarProdutos()">⬇ Exportar Produtos</button>
 
-    <hr style="margin:15px 0;border-color:#1e293b">
+    <input type="file" id="fileInput" />
+    <button onclick="importarProdutos()">⬆ Importar Produtos</button>
 
-    <button class="danger" onclick="postApi('/debug/db/insert-teste')">
-      Inserir Produto Teste
-    </button>
+    <hr />
+
+    <button onclick="get('/debug/meli/tokens')">🔑 Listar Tokens</button>
   </aside>
 
-  <!-- =========================
-       ÁREA DE RESULTADO
-  ========================= -->
-  <main class="main">
-    <h1>OfertaPrimeX — Painel de Debug</h1>
-    <p>Selecione uma opção no menu lateral para executar a verificação.</p>
+  <!-- ================= CONTEÚDO ================= -->
+  <main>
+    <h1>Painel de Debug — OfertaPrimeX</h1>
 
-    <pre id="output">Resultado aparecerá aqui…</pre>
+    <div class="actions">
+      <input type="number" id="deleteId" placeholder="ID Produto" />
+      <button class="action danger" onclick="excluirProduto()">Excluir Produto</button>
+    </div>
+
+    <pre id="output">Selecione uma opção no menu...</pre>
   </main>
 
-  <!-- =========================
-       SCRIPT
-  ========================= -->
+  <!-- ================= SCRIPT ================= -->
   <script>
-    // 🔴 URL DO BACKEND (MANTER A SUA)
-    const BASE_URL = 'https://yo0g0cg4c88w88osc4s04c0c.72.61.33.248.sslip.io';
+    const BASE_URL = 'https://SEU_BACKEND_AQUI'; // 🔴 ALTERE
 
-    // =========================
-    // GET
-    // =========================
-    async function callApi(endpoint) {
-      document.getElementById('output').textContent = 'Carregando...';
-      try {
-        const res = await fetch(BASE_URL + endpoint);
-        const data = await res.json();
-        document.getElementById('output').textContent =
-          JSON.stringify(data, null, 2);
-      } catch (err) {
-        document.getElementById('output').textContent =
-          'Erro: ' + err.message;
-      }
+    async function get(endpoint) {
+      const res = await fetch(BASE_URL + endpoint);
+      const data = await res.json();
+      mostrar(data);
     }
 
-    // =========================
-    // POST
-    // =========================
-    async function postApi(endpoint) {
-      document.getElementById('output').textContent = 'Executando...';
-      try {
-        const res = await fetch(BASE_URL + endpoint, {
-          method: 'POST'
-        });
-        const data = await res.json();
-        document.getElementById('output').textContent =
-          JSON.stringify(data, null, 2);
-      } catch (err) {
-        document.getElementById('output').textContent =
-          'Erro: ' + err.message;
-      }
+    function mostrar(data) {
+      document.getElementById('output').textContent =
+        JSON.stringify(data, null, 2);
+    }
+
+    /* ================= PRODUTOS ================= */
+
+    function listarProdutos() {
+      get('/debug/produtos');
+    }
+
+    function listarProdutosPorData() {
+      const inicio = prompt('Data início (YYYY-MM-DD)');
+      const fim = prompt('Data fim (YYYY-MM-DD)');
+      get(`/debug/produtos?data_inicio=${inicio}&data_fim=${fim}`);
+    }
+
+    async function excluirProduto() {
+      const id = document.getElementById('deleteId').value;
+      if (!id) return alert('Informe o ID');
+      const res = await fetch(`${BASE_URL}/debug/produtos/${id}`, {
+        method: 'DELETE'
+      });
+      mostrar(await res.json());
+    }
+
+    /* ================= IMPORTAÇÃO ================= */
+    async function importarProdutos() {
+      const file = document.getElementById('fileInput').files[0];
+      if (!file) return alert('Selecione um arquivo');
+
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const res = await fetch(`${BASE_URL}/debug/produtos/import`, {
+        method: 'POST',
+        body: formData
+      });
+
+      mostrar(await res.json());
+    }
+
+    /* ================= EXPORTAÇÃO ================= */
+    async function exportarProdutos() {
+      const res = await fetch(`${BASE_URL}/debug/produtos`);
+      const data = await res.json();
+
+      const csv = [
+        Object.keys(data.produtos[0]).join(','),
+        ...data.produtos.map(p => Object.values(p).join(','))
+      ].join('\n');
+
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'produtos.csv';
+      a.click();
     }
   </script>
 
