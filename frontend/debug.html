@@ -3,176 +3,75 @@
 <head>
 <meta charset="UTF-8">
 <title>Debug OfertaPrimeX</title>
-
 <style>
-body {
-  margin: 0;
-  display: flex;
-  height: 100vh;
-  font-family: Arial, sans-serif;
-  background: #0f172a;
-  color: #e5e7eb;
-}
-#menu {
-  width: 260px;
-  background: #020617;
-  padding: 20px;
-}
-#menu h2 {
-  color: #38bdf8;
-}
-#menu button {
-  width: 100%;
-  margin-bottom: 8px;
-  padding: 10px;
-  background: #2563eb;
-  border: none;
-  color: white;
-  cursor: pointer;
-  text-align: left;
-}
-#menu button:hover {
-  background: #1d4ed8;
-}
-#content {
-  flex: 1;
-  padding: 20px;
-  overflow-y: auto;
-}
-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-th, td {
-  border: 1px solid #334155;
-  padding: 6px;
-}
-th {
-  background: #1e293b;
-}
+body { margin:0; display:flex; height:100vh; font-family:Arial; background:#0f172a; color:#e5e7eb }
+#menu { width:260px; background:#020617; padding:20px }
+#menu button { width:100%; margin-bottom:8px; padding:10px; cursor:pointer }
+#content { flex:1; padding:20px }
+input { width:100%; padding:8px; margin-bottom:8px }
 </style>
 </head>
 
 <body>
 
 <div id="menu">
-  <h2>Debug Backend</h2>
-  <button onclick="statusServidor()">Status Servidor</button>
-  <button onclick="statusBanco()">Status Banco</button>
-  <button onclick="listarTabelas()">Listar Tabelas</button>
-  <button onclick="inserirProduto()">Inserir Produto Teste</button>
-  <button onclick="listarProdutos()">Listar Produtos</button>
-  <button onclick="dashboard()">Dashboard</button>
+  <h3>Login Debug</h3>
+  <input id="user" placeholder="Usuário">
+  <input id="pass" type="password" placeholder="Senha">
+  <button onclick="login()">Entrar</button>
+
+  <hr>
+
+  <button onclick="call('/debug/status')">Status</button>
+  <button onclick="call('/debug/db')">Banco</button>
+  <button onclick="call('/debug/db/tabelas')">Tabelas</button>
+  <button onclick="call('/debug/db/insert-teste')">Inserir Produto</button>
+  <button onclick="call('/debug/produtos')">Listar Produtos</button>
 </div>
 
 <div id="content">
-  <h1>OfertaPrimeX Debug</h1>
-  <div id="output">Selecione uma opção</div>
+  <pre id="out">Faça login</pre>
 </div>
 
 <script>
-// =====================================================
-// CONFIGURAÇÃO
-// =====================================================
-const API = 'https://yo0g0cg4c88w88osc4s04c0c.72.61.33.248.sslip.io';
-const TOKEN = 'ofertaprimex123';
+const API = 'https://SEU_BACKEND_AQUI';
+let TOKEN = localStorage.getItem('debug_token');
 
-// =====================================================
-// FUNÇÕES AUXILIARES
-// =====================================================
-function output(html) {
-  document.getElementById('output').innerHTML = html;
+function out(t) {
+  document.getElementById('out').textContent = t;
 }
 
-async function fetchJson(url, options = {}) {
-  const res = await fetch(url, {
-    ...options,
-    headers: {
-      'x-debug-token': TOKEN
-    }
+async function login() {
+  const res = await fetch(API + '/debug/login', {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({
+      user: user.value,
+      pass: pass.value
+    })
   });
-  return await res.json();
-}
 
-// =====================================================
-// AÇÕES
-// =====================================================
-async function statusServidor() {
-  const data = await fetchJson(`${API}/debug/status`);
-  output(`<pre>${JSON.stringify(data, null, 2)}</pre>`);
-}
+  const data = await res.json();
 
-async function statusBanco() {
-  const data = await fetchJson(`${API}/debug/db`);
-  output(`<pre>${JSON.stringify(data, null, 2)}</pre>`);
-}
-
-async function listarTabelas() {
-  const data = await fetchJson(`${API}/debug/db/tabelas`);
-  output(`<pre>${JSON.stringify(data, null, 2)}</pre>`);
-}
-
-async function inserirProduto() {
-  const data = await fetchJson(`${API}/debug/db/insert-teste`);
-  output(`<pre>${JSON.stringify(data, null, 2)}</pre>`);
-}
-
-async function listarProdutos() {
-  const data = await fetchJson(`${API}/debug/produtos`);
-
-  if (data.length === 0) {
-    output('Nenhum produto encontrado');
-    return;
+  if (data.token) {
+    TOKEN = data.token;
+    localStorage.setItem('debug_token', TOKEN);
+    out('✅ Login efetuado');
+  } else {
+    out('❌ Login inválido');
   }
-
-  let html = `
-    <table>
-      <tr>
-        <th>ID</th>
-        <th>Nome</th>
-        <th>Preço</th>
-        <th>Plataforma</th>
-        <th>Ações</th>
-      </tr>
-  `;
-
-  data.forEach(p => {
-    html += `
-      <tr>
-        <td>${p.id}</td>
-        <td>${p.nome}</td>
-        <td>${p.preco}</td>
-        <td>${p.plataforma}</td>
-        <td>
-          <button onclick="excluir(${p.id})"
-            style="background:#dc2626;color:white;border:none;padding:4px">
-            Excluir
-          </button>
-        </td>
-      </tr>
-    `;
-  });
-
-  html += '</table>';
-  output(html);
 }
 
-async function excluir(id) {
-  if (!confirm('Excluir produto ' + id + '?')) return;
+async function call(path) {
+  if (!TOKEN) return out('❌ Faça login primeiro');
 
-  await fetch(`${API}/debug/produtos/${id}`, {
-    method: 'DELETE',
-    headers: { 'x-debug-token': TOKEN }
+  const r = await fetch(API + path, {
+    headers:{ Authorization: TOKEN }
   });
 
-  listarProdutos();
-}
-
-async function dashboard() {
-  const data = await fetchJson(`${API}/debug/dashboard`);
-  output(`<pre>${JSON.stringify(data, null, 2)}</pre>`);
+  const d = await r.json();
+  out(JSON.stringify(d, null, 2));
 }
 </script>
-
 </body>
 </html>
