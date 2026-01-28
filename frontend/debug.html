@@ -3,10 +3,6 @@
 <head>
   <meta charset="UTF-8">
   <title>Debug OfertaPrimeX</title>
-
-  <!-- ===============================
-       ESTILO (INALTERADO)
-       =============================== -->
   <style>
     * {
       box-sizing: border-box;
@@ -83,15 +79,11 @@
     }
   </style>
 </head>
-
 <body>
-<!-- ===============================
-     MENU LATERAL
-     =============================== -->
+
 <div id="menu">
   <h2>Debug Backend</h2>
 
-  <!-- LOGIN -->
   <input id="user" placeholder="Usuário debug">
   <input id="pass" type="password" placeholder="Senha debug">
   <button onclick="login()">Login</button>
@@ -99,35 +91,32 @@
 
   <hr>
 
-  <!-- AÇÕES -->
   <button onclick="statusServidor()">Status do Servidor</button>
   <button onclick="statusBanco()">Status do Banco</button>
   <button onclick="listarTabelas()">Listar Tabelas</button>
   <button onclick="inserirProdutoTeste()">Inserir Produto Teste</button>
   <button onclick="listarProdutos()">Listar Produtos</button>
 
-  <!-- EXPORT / IMPORT -->
+  <hr>
+
   <button onclick="exportarProdutos()">Exportar Produtos</button>
   <button onclick="mostrarImportacao()">Importar Produtos</button>
+
+  <hr>
+
+  <!-- 🔥 NOVO -->
+  <button onclick="statusMeli()">Status Mercado Livre</button>
 </div>
 
-<!-- ===============================
-     CONTEÚDO
-     =============================== -->
 <div id="content">
   <h1>OfertaPrimeX — Debug</h1>
   <div id="output">Faça login para começar.</div>
 </div>
 
 <script>
-/* =====================================================
-   CONFIGURAÇÃO BACKEND
-   ===================================================== */
 const API = 'https://yo0g0cg4c88w88osc4s04c0c.72.61.33.248.sslip.io';
 
-/* =====================================================
-   TOKEN
-   ===================================================== */
+/* TOKEN */
 function getToken() {
   return localStorage.getItem('debug_token');
 }
@@ -138,16 +127,12 @@ function clearToken() {
   localStorage.removeItem('debug_token');
 }
 
-/* =====================================================
-   OUTPUT
-   ===================================================== */
+/* OUTPUT */
 function output(html) {
   document.getElementById('output').innerHTML = html;
 }
 
-/* =====================================================
-   FETCH AUTH
-   ===================================================== */
+/* FETCH AUTH */
 async function fetchAuth(url, options = {}) {
   const token = getToken();
   if (!token) {
@@ -169,9 +154,7 @@ async function fetchAuth(url, options = {}) {
   return res.json();
 }
 
-/* =====================================================
-   LOGIN / LOGOUT
-   ===================================================== */
+/* LOGIN */
 async function login() {
   const user = document.getElementById('user').value;
   const pass = document.getElementById('pass').value;
@@ -193,9 +176,7 @@ function logout() {
   output('🔒 Logout realizado');
 }
 
-/* =====================================================
-   FUNÇÕES EXISTENTES
-   ===================================================== */
+/* DEBUG */
 async function statusServidor() {
   output(`<pre>${JSON.stringify(await fetchAuth(`${API}/debug/status`), null, 2)}</pre>`);
 }
@@ -245,9 +226,7 @@ async function excluirProduto(id) {
   listarProdutos();
 }
 
-/* =====================================================
-   EXPORTAR PRODUTOS
-   ===================================================== */
+/* EXPORT */
 async function exportarProdutos() {
   const produtos = await fetchAuth(`${API}/debug/produtos`);
   let csv = 'nome,descricao,preco,imagem_url,plataforma\n';
@@ -261,26 +240,21 @@ async function exportarProdutos() {
   a.click();
 }
 
-/* =====================================================
-   🔥 IMPORTAR PRODUTOS (ARQUIVO CSV)
-   ===================================================== */
+/* IMPORT */
 function mostrarImportacao() {
   output(`
     <h3>Importar Produtos (CSV)</h3>
-    <p>Selecione um arquivo no mesmo formato do export:</p>
     <pre>nome,descricao,preco,imagem_url,plataforma</pre>
     <input type="file" id="arquivoCSV" accept=".csv"><br><br>
     <button onclick="importarArquivo()">Importar</button>
   `);
 }
-
 function importarArquivo() {
   const input = document.getElementById('arquivoCSV');
   if (!input.files.length) {
     alert('Selecione um arquivo CSV');
     return;
   }
-
   const reader = new FileReader();
   reader.onload = async () => {
     try {
@@ -291,10 +265,16 @@ function importarArquivo() {
       });
       output(`<b>✅ Importação realizada com sucesso</b><pre>${JSON.stringify(data, null, 2)}</pre>`);
     } catch (e) {
-      output(`<pre>❌ Erro ao importar\n${JSON.stringify(e, null, 2)}</pre>`);
+      output(`<pre>❌ Erro\n${JSON.stringify(e, null, 2)}</pre>`);
     }
   };
   reader.readAsText(input.files[0]);
+}
+
+/* 🔥 MERCADO LIVRE */
+async function statusMeli() {
+  const data = await fetchAuth(`${API}/debug/meli/status`);
+  output(`<pre>${JSON.stringify(data, null, 2)}</pre>`);
 }
 </script>
 </body>
