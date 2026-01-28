@@ -278,14 +278,17 @@ async function statusMeli() {
   output(`<pre>${JSON.stringify(data, null, 2)}</pre>`);
 }
 function authMeli() {
-  // Redireciona o navegador (OAuth precisa disso)
-  window.location.href = `${API}/meli/auth/mercadolivre`;
+  window.open(
+    `${API}/meli/auth/mercadolivre`,
+    '_blank'
+  );
+  output(`
+    <b>🔐 Autenticação Mercado Livre iniciada</b><br><br>
+    Após concluir o login na nova aba, clique em:<br><br>
+    <b>➡️ Status Mercado Livre</b>
+  `);
 }
 
-async function statusMeli() {
-  const data = await fetchAuth(`${API}/debug/meli/status`);
-  output(`<pre>${JSON.stringify(data, null, 2)}</pre>`);
-}
 </script>
 </body>
 </html>
