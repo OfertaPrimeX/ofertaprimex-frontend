@@ -278,15 +278,36 @@ async function statusMeli() {
   output(`<pre>${JSON.stringify(data, null, 2)}</pre>`);
 }
 function authMeli() {
-  window.open(
+  const w = 600;
+  const h = 700;
+  const left = (screen.width / 2) - (w / 2);
+  const top = (screen.height / 2) - (h / 2);
+
+  const popup = window.open(
     `${API}/meli/auth/mercadolivre`,
-    '_blank'
+    'meli_oauth',
+    `width=${w},height=${h},top=${top},left=${left}`
   );
+
   output(`
     <b>🔐 Autenticação Mercado Livre iniciada</b><br><br>
-    Após concluir o login na nova aba, clique em:<br><br>
+    Uma janela foi aberta para login no Mercado Livre.<br><br>
+    ✅ Após concluir o login, a janela fechará automaticamente.<br><br>
+    Em seguida, clique em:<br><br>
     <b>➡️ Status Mercado Livre</b>
   `);
+
+  // Fallback de segurança caso o backend não feche o popup
+  const timer = setInterval(() => {
+    if (popup.closed) {
+      clearInterval(timer);
+      output(`
+        <b>✅ Autenticação finalizada</b><br><br>
+        Agora clique em:<br><br>
+        <b>➡️ Status Mercado Livre</b>
+      `);
+    }
+  }, 500);
 }
 
 </script>
