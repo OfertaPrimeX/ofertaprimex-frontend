@@ -3,16 +3,12 @@
 <head>
     <meta charset="UTF-8">
 
-    <!--
-        Título da página
-        (SEO básico – pode otimizar depois)
-    -->
+    <!-- ================= SEO BÁSICO ================= -->
     <title>OfertaPrimeX - Compare os Melhores Preços</title>
-
-    <!-- Responsividade -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <!-- CSS principal (layout estilo Shopee – NÃO ALTERADO) -->
+    <!-- ================= CSS ================= -->
+    <!-- Layout estilo Shopee (NÃO ALTERAR) -->
     <link rel="stylesheet" href="css/style.css">
 </head>
 
@@ -48,7 +44,8 @@
 
         <!--
             Campo de busca
-            A função buscarProdutos() já está no app.js
+            A função buscarProdutos() está no js/app.js
+            Ela chama: /api/search?q=termo
         -->
         <input id="busca" type="text" placeholder="Buscar produto">
         <button onclick="buscarProdutos()">Pesquisar</button>
@@ -62,10 +59,10 @@
 
         <!--
             IMPORTANTE:
-            Esse container começa VAZIO.
-            O app.js irá:
-            - Buscar no backend (/api/procurados ou /api/top)
-            - Criar os cards dinamicamente
+            Este container começa VAZIO.
+            O app.js:
+            - Chama /api/trending
+            - Cria os cards dinamicamente
         -->
         <div class="products-grid" id="mais-procurados">
             <!-- Cards entram aqui via JavaScript -->
@@ -78,15 +75,16 @@
     <div class="container">
         <h2 class="section-title">🏆 Top 20 das Plataformas</h2>
 
-        <!-- ================= Mercado Livre ================= -->
+        <!-- ===== Mercado Livre ===== -->
         <h3 class="platform-title">Mercado Livre</h3>
 
         <!--
             Grid do TOP 20
-            Preenchido dinamicamente pelo app.js
+            O app.js chama /api/top
+            e preenche este container
         -->
         <div class="products-grid small-grid" id="top20-mercadolivre">
-            <!-- Cards TOP entram aqui via JavaScript -->
+            <!-- Cards entram aqui via JavaScript -->
         </div>
     </div>
 </section>
@@ -111,20 +109,18 @@
     <p>© 2026 OfertaPrimeX - Todos os direitos reservados</p>
 </footer>
 
-<!-- ================= JS ================= -->
+<!-- ================= JAVASCRIPT ================= -->
 
-<!--
-    main.js
-    (caso tenha interações visuais, sliders, etc)
--->
+<!-- JS visual (se existir animação, slider, etc) -->
 <script src="js/main.js"></script>
 
 <!--
     app.js
-    ⚠️ PRINCIPAL SCRIPT DO PROJETO
-    - Faz fetch no backend
-    - Monta os cards
-    - Usa links /click/:id
+    SCRIPT PRINCIPAL DO PROJETO
+    - fetch /api/top
+    - fetch /api/trending
+    - fetch /api/search
+    - links /click/:id
 -->
 <script src="js/app.js"></script>
 

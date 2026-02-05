@@ -1,4 +1,4 @@
-const API_BASE = 'https://ofertaprimex.com.br; // ex: https://ofertaprimex.com
+const API_BASE = 'https://ofertaprimex.com.br'; // ex: https://ofertaprimex.com
 
 /* =========================
    UTIL
