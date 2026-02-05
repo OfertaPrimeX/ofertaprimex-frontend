@@ -1,4 +1,4 @@
-const API_BASE = 'https://ofertaprimex.com.br'; // ex: https://ofertaprimex.com
+const API_BASE = 'https://yo0g0cg4c88w88osc4s04c0c.72.61.33.248.sslip.io'; // ex: dominio backend
 
 /* =========================
    UTIL
@@ -76,12 +76,49 @@ async function buscarProdutos() {
   const termo = document.getElementById('busca').value;
   if (!termo) return;
 
-  const res = await fetch(`${API_BASE}/api/search?q=${encodeURIComponent(termo)}`);
-  const products = await res.json();
+  try {
+    const res = await fetch(
+      `${API_BASE}/api/search?q=${encodeURIComponent(termo)}`
+    );
+    const products = await res.json();
 
-  // você pode reaproveitar qualquer grid existente
-  console.log('Resultado busca:', products);
+    const section = document.getElementById('resultado-busca');
+    const grid = document.getElementById('grid-busca');
+
+    // Limpa resultados anteriores
+    grid.innerHTML = '';
+
+    // Mostra a seção de resultados
+    section.style.display = 'block';
+
+    // Caso não encontre nada
+    if (!products.length) {
+      grid.innerHTML = '<p>Nenhum produto encontrado.</p>';
+      return;
+    }
+
+    // Cria os cards
+    products.forEach(p => {
+      grid.innerHTML += `
+        <div class="product-card">
+          <img src="${p.thumbnail}" alt="${p.title}">
+          <h3 class="product-title">${p.title}</h3>
+          <p class="price">${formatPrice(p.price)}</p>
+          <a href="${API_BASE}/click/${p.id}" class="btn">
+            Ver Oferta
+          </a>
+        </div>
+      `;
+    });
+
+    // Scroll suave até os resultados
+    section.scrollIntoView({ behavior: 'smooth' });
+
+  } catch (err) {
+    console.error('Erro na busca:', err);
+  }
 }
+
 
 /* =========================
    INIT

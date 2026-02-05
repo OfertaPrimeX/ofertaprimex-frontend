@@ -2,16 +2,13 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-
     <!-- ================= SEO BÁSICO ================= -->
     <title>OfertaPrimeX - Compare os Melhores Preços</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <!-- ================= CSS ================= -->
     <!-- Layout estilo Shopee (NÃO ALTERAR) -->
     <link rel="stylesheet" href="css/style.css">
 </head>
-
 <body>
 
 <!-- ================= HEADER ================= -->
@@ -20,7 +17,6 @@
         <div class="logo">
             OfertaPrime<span>X</span>
         </div>
-
         <!-- Menu apenas navegação visual -->
         <nav class="menu">
             <a href="#home">Home</a>
@@ -37,11 +33,9 @@
         <h1 class="hero-title">
             Compare preços nas maiores plataformas
         </h1>
-
         <p class="hero-subtitle">
             Mercado Livre • Amazon • Shopee • Magalu
         </p>
-
         <!--
             Campo de busca
             A função buscarProdutos() está no js/app.js
@@ -52,11 +46,25 @@
     </div>
 </section>
 
+<!-- ================= RESULTADOS DA BUSCA ================= -->
+<section class="section" id="resultado-busca" style="display:none;">
+    <div class="container">
+        <h2 class="section-title">🔎 Resultado da busca</h2>
+
+        <!--
+            Este grid é preenchido dinamicamente
+            pela função buscarProdutos() no app.js
+        -->
+        <div class="products-grid" id="grid-busca">
+            <!-- Cards da busca entram aqui -->
+        </div>
+    </div>
+</section>
+
 <!-- ================= MAIS PROCURADOS ================= -->
 <section class="section" id="procurados">
     <div class="container">
         <h2 class="section-title">🔥 Mais Procurados</h2>
-
         <!--
             IMPORTANTE:
             Este container começa VAZIO.
@@ -74,10 +82,8 @@
 <section class="section section-gray" id="top20">
     <div class="container">
         <h2 class="section-title">🏆 Top 20 das Plataformas</h2>
-
         <!-- ===== Mercado Livre ===== -->
         <h3 class="platform-title">Mercado Livre</h3>
-
         <!--
             Grid do TOP 20
             O app.js chama /api/top
@@ -93,7 +99,6 @@
 <section class="section" id="sobre">
     <div class="container">
         <h2 class="section-title">Quem Somos</h2>
-
         <p class="about-text">
             O OfertaPrimeX é uma vitrine inteligente de ofertas.
             Pesquisamos produtos nas maiores plataformas do Brasil,
@@ -110,10 +115,8 @@
 </footer>
 
 <!-- ================= JAVASCRIPT ================= -->
-
 <!-- JS visual (se existir animação, slider, etc) -->
 <script src="js/main.js"></script>
-
 <!--
     app.js
     SCRIPT PRINCIPAL DO PROJETO
