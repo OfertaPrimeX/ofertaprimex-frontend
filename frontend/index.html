@@ -2,12 +2,20 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
+
+    <!--
+        Título da página
+        (SEO básico – pode otimizar depois)
+    -->
     <title>OfertaPrimeX - Compare os Melhores Preços</title>
+
+    <!-- Responsividade -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <!-- CSS -->
+    <!-- CSS principal (layout estilo Shopee – NÃO ALTERADO) -->
     <link rel="stylesheet" href="css/style.css">
 </head>
+
 <body>
 
 <!-- ================= HEADER ================= -->
@@ -17,27 +25,33 @@
             OfertaPrime<span>X</span>
         </div>
 
+        <!-- Menu apenas navegação visual -->
         <nav class="menu">
             <a href="#home">Home</a>
             <a href="#procurados">Mais Procurados</a>
             <a href="#top20">Top 20</a>
-            <a href="#categorias">Categorias</a>
             <a href="#sobre">Quem Somos</a>
         </nav>
     </div>
 </header>
 
-<!-- ================= HERO ================= -->
+<!-- ================= HERO / BUSCA ================= -->
 <section class="hero" id="home">
     <div class="container">
         <h1 class="hero-title">
             Compare preços nas maiores plataformas
         </h1>
+
         <p class="hero-subtitle">
             Mercado Livre • Amazon • Shopee • Magalu
         </p>
-		<input id="busca" type="text" placeholder="Buscar produto">
-		<button onclick="buscarProdutos()">Pesquisar</button>
+
+        <!--
+            Campo de busca
+            A função buscarProdutos() já está no app.js
+        -->
+        <input id="busca" type="text" placeholder="Buscar produto">
+        <button onclick="buscarProdutos()">Pesquisar</button>
     </div>
 </section>
 
@@ -46,22 +60,15 @@
     <div class="container">
         <h2 class="section-title">🔥 Mais Procurados</h2>
 
-        <div class="products-grid">
-            <div class="product-card">
-                <img src="images/placeholder.png" alt="Produto">
-                <h3 class="product-title">Produto Exemplo</h3>
-                <p class="platform">Mercado Livre</p>
-                <p class="price">R$ 199,90</p>
-                <a href="#" class="btn">Ver Oferta</a>
-            </div>
-
-            <div class="product-card">
-                <img src="images/placeholder.png" alt="Produto">
-                <h3 class="product-title">Produto Exemplo</h3>
-                <p class="platform">Amazon</p>
-                <p class="price">R$ 189,90</p>
-                <a href="#" class="btn">Ver Oferta</a>
-            </div>
+        <!--
+            IMPORTANTE:
+            Esse container começa VAZIO.
+            O app.js irá:
+            - Buscar no backend (/api/procurados ou /api/top)
+            - Criar os cards dinamicamente
+        -->
+        <div class="products-grid" id="mais-procurados">
+            <!-- Cards entram aqui via JavaScript -->
         </div>
     </div>
 </section>
@@ -71,26 +78,15 @@
     <div class="container">
         <h2 class="section-title">🏆 Top 20 das Plataformas</h2>
 
-        <!-- Mercado Livre -->
+        <!-- ================= Mercado Livre ================= -->
         <h3 class="platform-title">Mercado Livre</h3>
-        <div class="products-grid small-grid">
-            <div class="product-card small">
-                <img src="images/placeholder.png" alt="Produto">
-                <h3 class="product-title">Produto Top</h3>
-                <p class="price">R$ 99,90</p>
-                <a href="#" class="btn small">Ver</a>
-            </div>
-        </div>
 
-        <!-- Amazon -->
-        <h3 class="platform-title">Amazon</h3>
-        <div class="products-grid small-grid">
-            <div class="product-card small">
-                <img src="images/placeholder.png" alt="Produto">
-                <h3 class="product-title">Produto Top</h3>
-                <p class="price">R$ 109,90</p>
-                <a href="#" class="btn small">Ver</a>
-            </div>
+        <!--
+            Grid do TOP 20
+            Preenchido dinamicamente pelo app.js
+        -->
+        <div class="products-grid small-grid" id="top20-mercadolivre">
+            <!-- Cards TOP entram aqui via JavaScript -->
         </div>
     </div>
 </section>
@@ -99,6 +95,7 @@
 <section class="section" id="sobre">
     <div class="container">
         <h2 class="section-title">Quem Somos</h2>
+
         <p class="about-text">
             O OfertaPrimeX é uma vitrine inteligente de ofertas.
             Pesquisamos produtos nas maiores plataformas do Brasil,
@@ -114,8 +111,21 @@
     <p>© 2026 OfertaPrimeX - Todos os direitos reservados</p>
 </footer>
 
-<!-- JS -->
+<!-- ================= JS ================= -->
+
+<!--
+    main.js
+    (caso tenha interações visuais, sliders, etc)
+-->
 <script src="js/main.js"></script>
+
+<!--
+    app.js
+    ⚠️ PRINCIPAL SCRIPT DO PROJETO
+    - Faz fetch no backend
+    - Monta os cards
+    - Usa links /click/:id
+-->
 <script src="js/app.js"></script>
 
 </body>
