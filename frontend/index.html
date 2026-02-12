@@ -2,11 +2,8 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <!-- ================= SEO BÁSICO ================= -->
     <title>OfertaPrimeX - Compare os Melhores Preços</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- ================= CSS ================= -->
-    <!-- Layout estilo Shopee (NÃO ALTERAR) -->
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -17,7 +14,6 @@
         <div class="logo">
             OfertaPrime<span>X</span>
         </div>
-        <!-- Menu apenas navegação visual -->
         <nav class="menu">
             <a href="#home">Home</a>
             <a href="#procurados">Mais Procurados</a>
@@ -36,13 +32,9 @@
         <p class="hero-subtitle">
             Mercado Livre • Amazon • Shopee • Magalu
         </p>
-        <!--
-            Campo de busca
-            A função buscarProdutos() está no js/app.js
-            Ela chama: /api/search?q=termo
-        -->
+
         <input id="busca" type="text" placeholder="Buscar produto">
-        <button onclick="buscarProdutos()">Pesquisar</button>
+        <button id="btnBuscar">Pesquisar</button>
     </div>
 </section>
 
@@ -50,14 +42,7 @@
 <section class="section" id="resultado-busca" style="display:none;">
     <div class="container">
         <h2 class="section-title">🔎 Resultado da busca</h2>
-
-        <!--
-            Este grid é preenchido dinamicamente
-            pela função buscarProdutos() no app.js
-        -->
-        <div class="products-grid" id="grid-busca">
-            <!-- Cards da busca entram aqui -->
-        </div>
+        <div class="products-grid" id="grid-busca"></div>
     </div>
 </section>
 
@@ -65,16 +50,7 @@
 <section class="section" id="procurados">
     <div class="container">
         <h2 class="section-title">🔥 Mais Procurados</h2>
-        <!--
-            IMPORTANTE:
-            Este container começa VAZIO.
-            O app.js:
-            - Chama /api/trending
-            - Cria os cards dinamicamente
-        -->
-        <div class="products-grid" id="mais-procurados">
-            <!-- Cards entram aqui via JavaScript -->
-        </div>
+        <div class="products-grid" id="mais-procurados"></div>
     </div>
 </section>
 
@@ -82,16 +58,8 @@
 <section class="section section-gray" id="top20">
     <div class="container">
         <h2 class="section-title">🏆 Top 20 das Plataformas</h2>
-        <!-- ===== Mercado Livre ===== -->
         <h3 class="platform-title">Mercado Livre</h3>
-        <!--
-            Grid do TOP 20
-            O app.js chama /api/top
-            e preenche este container
-        -->
-        <div class="products-grid small-grid" id="top20-mercadolivre">
-            <!-- Cards entram aqui via JavaScript -->
-        </div>
+        <div class="products-grid small-grid" id="top20-mercadolivre"></div>
     </div>
 </section>
 
@@ -102,8 +70,7 @@
         <p class="about-text">
             O OfertaPrimeX é uma vitrine inteligente de ofertas.
             Pesquisamos produtos nas maiores plataformas do Brasil,
-            comparamos preços, reputação dos vendedores
-            e exibimos os mais procurados e mais vendidos,
+            comparamos preços e exibimos os mais procurados,
             sempre com links oficiais de afiliados.
         </p>
     </div>
@@ -114,18 +81,45 @@
     <p>© 2026 OfertaPrimeX - Todos os direitos reservados</p>
 </footer>
 
-<!-- ================= JAVASCRIPT ================= -->
-<!-- JS visual (se existir animação, slider, etc) -->
+<!-- ================= JS ================= -->
 <script src="js/main.js"></script>
-<!--
-    app.js
-    SCRIPT PRINCIPAL DO PROJETO
-    - fetch /api/top
-    - fetch /api/trending
-    - fetch /api/search
-    - links /click/:id
--->
-<script src="js/app.js"></script>
+
+<!-- 🔥 INTEGRAÇÃO REAL COM BACKEND -->
+<script type="module">
+    import { getProducts, searchProducts } from './js/api.js';
+    import { renderProducts } from './js/render.js';
+
+    const gridBusca = document.getElementById('grid-busca');
+    const sectionBusca = document.getElementById('resultado-busca');
+    const gridProcurados = document.getElementById('mais-procurados');
+    const gridTop20 = document.getElementById('top20-mercadolivre');
+
+    // 🔎 BUSCA
+    document.getElementById('btnBuscar').addEventListener('click', async () => {
+        const termo = document.getElementById('busca').value;
+        if (!termo) return;
+
+        sectionBusca.style.display = 'block';
+
+        const res = await searchProducts(termo);
+        renderProducts(gridBusca, res.products || res);
+    });
+
+    // 🔥 MAIS PROCURADOS (usa products por enquanto)
+    async function carregarProcurados() {
+        const res = await getProducts({ limit: 8 });
+        renderProducts(gridProcurados, res.products);
+    }
+
+    // 🏆 TOP 20
+    async function carregarTop20() {
+        const res = await getProducts({ limit: 20 });
+        renderProducts(gridTop20, res.products);
+    }
+
+    carregarProcurados();
+    carregarTop20();
+</script>
 
 </body>
 </html>

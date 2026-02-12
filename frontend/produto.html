@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Produto</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <div id="produto"></div>
+
+  <script type="module">
+    import { getProductBySlug } from './js/api.js';
+
+    const params = new URLSearchParams(window.location.search);
+    const slug = params.get('slug');
+
+    const container = document.getElementById('produto');
+
+    async function load() {
+      try {
+        const p = await getProductBySlug(slug);
+
+        container.innerHTML = `
+          <h1>${p.title}</h1>
+          <img src="${p.thumbnail || 'images/placeholder.png'}">
+          <p class="price">R$ ${Number(p.price).toFixed(2)}</p>
+          <a href="${p.affiliate_url}" target="_blank" class="btn">
+            Comprar agora
+          </a>
+        `;
+      } catch (e) {
+        container.innerHTML = '<p>Produto não encontrado</p>';
+      }
+    }
+
+    load();
+  </script>
+
+</body>
+</html>
