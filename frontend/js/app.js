@@ -17,7 +17,7 @@ function formatPrice(price) {
 ========================= */
 async function carregarTop20() {
   try {
-    const res = await fetch(`${API_BASE}/api/top`);
+    const res = await fetch(`${API_BASE}/api/trending`);
     const products = await res.json();
 
     const container = document.getElementById('top20-mercadolivre');
@@ -37,10 +37,12 @@ async function carregarTop20() {
         </div>
       `;
     });
+
   } catch (err) {
     console.error('Erro ao carregar TOP 20', err);
   }
 }
+
 
 /* =========================
    MAIS PROCURADOS
@@ -88,15 +90,13 @@ async function buscarProdutos() {
       `${API_BASE}/api/search?q=${encodeURIComponent(termo)}`
     );
     const data = await res.json();
+
     const products = data.products || [];
 
     const section = document.getElementById('resultado-busca');
     const grid = document.getElementById('grid-busca');
 
-    if (!section || !grid) {
-      console.error('Elementos da busca não encontrados');
-      return;
-    }
+    if (!section || !grid) return;
 
     grid.innerHTML = '';
     section.style.display = 'block';
@@ -107,18 +107,17 @@ async function buscarProdutos() {
     }
 
     products.forEach(p => {
-      const link = p.temporary
-        ? `${API_BASE}/click/imported/${p.external_id}`
-        : `${API_BASE}/click/${p.id}`;
-
       grid.innerHTML += `
         <div class="product-card">
-          <img src="${p.thumbnail}" alt="${p.title}">
+          <img src="${p.thumbnail || 'images/placeholder.png'}" alt="${p.title}">
           <h3 class="product-title">${p.title}</h3>
           <p class="price">${formatPrice(p.price)}</p>
-          <a href="${link}" class="btn">
-            Ver Oferta
-          </a>
+
+          ${
+            p.id
+              ? `<a href="${API_BASE}/click/${p.id}" class="btn">Ver Oferta</a>`
+              : `<a href="${p.original_url}" target="_blank" class="btn">Ver no Mercado Livre</a>`
+          }
         </div>
       `;
     });
@@ -129,6 +128,7 @@ async function buscarProdutos() {
     console.error('Erro na busca:', err);
   }
 }
+
 
 /* =========================
    INIT
