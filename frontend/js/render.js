@@ -14,7 +14,7 @@ export function renderProducts(container, products) {
       <img src="${p.thumbnail || 'images/placeholder.png'}" alt="${p.title}">
       <h3>${p.title}</h3>
       <p class="price">R$ ${Number(p.price).toFixed(2)}</p>
-      <a href="/click/${p.id}" class="btn" target="_blank">Ver oferta</a>
+      <a href="/click/${p.id}" class="btn">Ver oferta</a>
     `;
 
     container.appendChild(card);

@@ -2,40 +2,94 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <title>Produto</title>
+
+  <!-- SEO BÁSICO (dinâmico via JS) -->
+  <title>Produto | OfertaPrimeX</title>
+  <meta name="description" content="Confira detalhes e ofertas do produto no OfertaPrimeX">
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 
-  <div id="produto"></div>
+<header class="header">
+  <div class="container header-content">
+    <div class="logo">
+      <a href="/" style="color:#fff;text-decoration:none;">
+        OfertaPrime<span>X</span>
+      </a>
+    </div>
+  </div>
+</header>
 
-  <script type="module">
-    import { getProductBySlug } from './js/api.js';
+<section class="section">
+  <div class="container" id="produto">
+    <p>Carregando produto...</p>
+  </div>
+</section>
 
-    const params = new URLSearchParams(window.location.search);
-    const slug = params.get('slug');
+<footer class="footer">
+  <p>© 2026 OfertaPrimeX - Todos os direitos reservados</p>
+</footer>
 
-    const container = document.getElementById('produto');
+<script type="module">
+  import { getProductBySlug } from './js/api.js';
 
-    async function load() {
-      try {
-        const p = await getProductBySlug(slug);
+  const params = new URLSearchParams(window.location.search);
+  const slug = params.get('slug');
+  const container = document.getElementById('produto');
 
-        container.innerHTML = `
-          <h1>${p.title}</h1>
-          <img src="${p.thumbnail || 'images/placeholder.png'}">
-          <p class="price">R$ ${Number(p.price).toFixed(2)}</p>
-          <a href="${p.affiliate_url}" target="_blank" class="btn">
-            Comprar agora
-          </a>
-        `;
-      } catch (e) {
-        container.innerHTML = '<p>Produto não encontrado</p>';
-      }
+  async function load() {
+    if (!slug) {
+      container.innerHTML = '<p>Produto inválido</p>';
+      return;
     }
 
-    load();
-  </script>
+    try {
+      const p = await getProductBySlug(slug);
+
+      // SEO dinâmico
+      document.title = `${p.title} | OfertaPrimeX`;
+      const meta = document.querySelector('meta[name="description"]');
+      if (meta) {
+        meta.setAttribute(
+          'content',
+          `Veja preço e detalhes de ${p.title} nas melhores plataformas`
+        );
+      }
+
+      container.innerHTML = `
+        <div class="product-page">
+          <h1>${p.title}</h1>
+
+          <img
+            src="${p.thumbnail || 'images/placeholder.png'}"
+            alt="${p.title}"
+            style="max-width:300px"
+          >
+
+          <p class="price">
+            R$ ${Number(p.price).toFixed(2)}
+          </p>
+
+          <a
+            href="/click/${p.id}"
+            target="_blank"
+            rel="nofollow noopener"
+            class="btn"
+          >
+            🔗 Ver oferta
+          </a>
+        </div>
+      `;
+    } catch (e) {
+      container.innerHTML = '<p>Produto não encontrado</p>';
+    }
+  }
+
+  load();
+</script>
 
 </body>
 </html>
