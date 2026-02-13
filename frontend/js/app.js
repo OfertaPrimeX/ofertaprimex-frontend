@@ -76,6 +76,9 @@ async function carregarMaisProcurados() {
 /* =========================
    BUSCA
 ========================= */
+/* =========================
+   BUSCA (HÍBRIDA)
+========================= */
 async function buscarProdutos() {
   const termo = document.getElementById('busca')?.value;
   if (!termo) return;
@@ -84,43 +87,42 @@ async function buscarProdutos() {
     const res = await fetch(
       `${API_BASE}/api/search?q=${encodeURIComponent(termo)}`
     );
-    const products = await res.json();
+    const data = await res.json();
+    const products = data.products || [];
 
     const section = document.getElementById('resultado-busca');
     const grid = document.getElementById('grid-busca');
 
     if (!section || !grid) {
-      console.error('Elementos de resultado da busca não encontrados no HTML');
+      console.error('Elementos da busca não encontrados');
       return;
     }
 
-    // Limpa resultados anteriores
     grid.innerHTML = '';
-
-    // Mostra a seção
     section.style.display = 'block';
 
-    // Caso não encontre nada
-    if (!products.length) {
+    if (products.length === 0) {
       grid.innerHTML = '<p>Nenhum produto encontrado.</p>';
       return;
     }
 
-    // Renderiza os cards
     products.forEach(p => {
+      const link = p.temporary
+        ? `${API_BASE}/click/imported/${p.external_id}`
+        : `${API_BASE}/click/${p.id}`;
+
       grid.innerHTML += `
         <div class="product-card">
           <img src="${p.thumbnail}" alt="${p.title}">
           <h3 class="product-title">${p.title}</h3>
           <p class="price">${formatPrice(p.price)}</p>
-          <a href="${API_BASE}/click/${p.id}" class="btn">
+          <a href="${link}" class="btn">
             Ver Oferta
           </a>
         </div>
       `;
     });
 
-    // Scroll suave até os resultados
     section.scrollIntoView({ behavior: 'smooth' });
 
   } catch (err) {
