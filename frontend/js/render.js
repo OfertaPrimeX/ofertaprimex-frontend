@@ -1,13 +1,4 @@
-const API_BASE = 'https://yo0g0cg4c88w88osc4s04c0c.72.61.33.248.sslip.io';
-
-function formatPrice(price) {
-  const value = Number(price);
-  return value.toLocaleString('pt-BR', {
-    style: 'currency',
-    currency: 'BRL'
-  });
-}
-
+// js/render.js
 export function renderProducts(container, products) {
   container.innerHTML = '';
 
@@ -20,20 +11,26 @@ export function renderProducts(container, products) {
     const card = document.createElement('div');
     card.className = 'product-card';
 
-    // 🔗 Define link corretamente (interno ou externo)
-    const link = p.id
-      ? `${API_BASE}/click/${p.id}`
-      : p.affiliate_url;
+    const price =
+      p.price !== null && p.price !== undefined
+        ? Number(p.price).toLocaleString('pt-BR', {
+            style: 'currency',
+            currency: 'BRL'
+          })
+        : '—';
 
-    const target = p.id ? '_self' : '_blank';
+    // 🔥 SE É PRODUTO DO BANCO
+    const actionButton = p.id
+      ? `<a href="${API_BASE}/click/${p.id}" class="btn">Ver oferta</a>`
+      : `<a href="${p.affiliate_url}" target="_blank" rel="noopener" class="btn">
+           Ver no Mercado Livre
+         </a>`;
 
     card.innerHTML = `
       <img src="${p.thumbnail || 'images/placeholder.png'}" alt="${p.title}">
-      <h3>${p.title}</h3>
-      <p class="price">${formatPrice(p.price)}</p>
-      <a href="${link}" target="${target}" class="btn">
-        Ver oferta
-      </a>
+      <h3 class="product-title">${p.title}</h3>
+      <p class="price">${price}</p>
+      ${actionButton}
     `;
 
     container.appendChild(card);

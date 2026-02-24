@@ -86,24 +86,39 @@
 
 <!-- 🔥 INTEGRAÇÃO REAL COM BACKEND -->
 <script type="module">
-  const API_BASE = 'https://yo0g0cg4c88w88osc4s04c0c.72.61.33.248.sslip.io';
+    import { getProducts, searchProducts } from './js/api.js';
+    import { renderProducts } from './js/render.js';
 
-  import { searchProducts, getProducts } from './js/api.js';
-  import { renderProducts } from './js/render.js';
+    const gridBusca = document.getElementById('grid-busca');
+    const sectionBusca = document.getElementById('resultado-busca');
+    const gridProcurados = document.getElementById('mais-procurados');
+    const gridTop20 = document.getElementById('top20-mercadolivre');
 
-  const gridBusca = document.getElementById('grid-busca');
-  const sectionBusca = document.getElementById('resultado-busca');
+    // 🔎 BUSCA
+    document.getElementById('btnBuscar').addEventListener('click', async () => {
+        const termo = document.getElementById('busca').value;
+        if (!termo) return;
 
-  document.getElementById('btnBuscar').addEventListener('click', async () => {
-    const termo = document.getElementById('busca').value;
-    if (!termo) return;
+        sectionBusca.style.display = 'block';
 
-    sectionBusca.style.display = 'block';
-    const res = await searchProducts(termo);
+        const res = await searchProducts(termo);
+        renderProducts(gridBusca, res.products || res);
+    });
 
-    // 🔥 IMPORTANTE: usa res.products
-    renderProducts(gridBusca, res.products);
-  });
+    // 🔥 MAIS PROCURADOS (usa products por enquanto)
+    async function carregarProcurados() {
+        const res = await getProducts({ limit: 8 });
+        renderProducts(gridProcurados, res.products);
+    }
+
+    // 🏆 TOP 20
+    async function carregarTop20() {
+        const res = await getProducts({ limit: 20 });
+        renderProducts(gridTop20, res.products);
+    }
+
+    carregarProcurados();
+    carregarTop20();
 </script>
 
 </body>
