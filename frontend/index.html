@@ -85,26 +85,7 @@
 <script src="js/main.js"></script>
 
 <!-- 🔥 INTEGRAÇÃO REAL COM BACKEND -->
-<script type="module">
-  const API_BASE = 'https://yo0g0cg4c88w88osc4s04c0c.72.61.33.248.sslip.io';
-
-  import { searchProducts, getProducts } from './js/api.js';
-  import { renderProducts } from './js/render.js';
-
-  const gridBusca = document.getElementById('grid-busca');
-  const sectionBusca = document.getElementById('resultado-busca');
-
-  document.getElementById('btnBuscar').addEventListener('click', async () => {
-    const termo = document.getElementById('busca').value;
-    if (!termo) return;
-
-    sectionBusca.style.display = 'block';
-    const res = await searchProducts(termo);
-
-    // 🔥 IMPORTANTE: usa res.products
-    renderProducts(gridBusca, res.products);
-  });
-</script>
+<script src="js/search.js"></script>
 
 </body>
 </html>
