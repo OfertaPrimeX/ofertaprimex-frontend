@@ -1,4 +1,3 @@
-// js/render.js
 export function renderProducts(container, products) {
   container.innerHTML = '';
 
@@ -12,25 +11,27 @@ export function renderProducts(container, products) {
     card.className = 'product-card';
 
     const price =
-      p.price !== null && p.price !== undefined
+      p.price != null
         ? Number(p.price).toLocaleString('pt-BR', {
             style: 'currency',
             currency: 'BRL'
           })
         : '—';
 
-    // 🔥 SE É PRODUTO DO BANCO
-    const actionButton = p.id
-      ? `<a href="${API_BASE}/click/${p.id}" class="btn">Ver oferta</a>`
-      : `<a href="${p.affiliate_url}" target="_blank" rel="noopener" class="btn">
-           Ver no Mercado Livre
-         </a>`;
+    // 🔥 REGRA DE OURO
+    const link = p.id
+      ? `/click/${p.id}`               // produto do banco
+      : p.affiliate_url;               // produto Mercado Livre
+
+    const target = p.id ? '_self' : '_blank';
 
     card.innerHTML = `
-      <img src="${p.thumbnail || 'images/placeholder.png'}" alt="${p.title}">
-      <h3 class="product-title">${p.title}</h3>
+      <img src="${p.thumbnail}" alt="${p.title}">
+      <h3>${p.title}</h3>
       <p class="price">${price}</p>
-      ${actionButton}
+      <a href="${link}" target="${target}" class="btn">
+        Ver oferta
+      </a>
     `;
 
     container.appendChild(card);

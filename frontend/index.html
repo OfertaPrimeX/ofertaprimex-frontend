@@ -86,6 +86,23 @@
 
 <!-- 🔥 INTEGRAÇÃO REAL COM BACKEND -->
 <script src="js/search.js"></script>
+<script type="module">
+  import { searchProducts } from './js/api.js';
+  import { renderProducts } from './js/render.js';
+
+  const gridBusca = document.getElementById('grid-busca');
+  const sectionBusca = document.getElementById('resultado-busca');
+
+  document.getElementById('btnBuscar').addEventListener('click', async () => {
+    const termo = document.getElementById('busca').value;
+    if (!termo) return;
+
+    sectionBusca.style.display = 'block';
+
+    const res = await searchProducts(termo);
+    renderProducts(gridBusca, res.products);
+  });
+</script>
 
 </body>
 </html>

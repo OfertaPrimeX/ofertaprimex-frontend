@@ -13,7 +13,7 @@ export async function searchProducts(query) {
     `${API_BASE}/api/search?q=${encodeURIComponent(query)}`
   );
   if (!res.ok) throw new Error('Erro na busca');
-  return res.json();
+  return res.json(); // { products: [] }
 }
 
 export async function getProducts({ page = 1, limit = 20 } = {}) {
