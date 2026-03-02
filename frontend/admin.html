@@ -415,11 +415,13 @@
 
         <!-- AÇÕES GLOBAIS -->
         <div class="admin-card">
-            <h3 class="admin-title">⚡ Ações Globais</h3>
-            <button class="admin-btn" onclick="importarTodas()">📥 Importar Todas</button>
-            <button class="admin-btn secondary" onclick="exportarTodas('csv')">📄 Exportar Todas (CSV)</button>
-            <button class="admin-btn secondary" onclick="exportarTodas('excel')">📊 Exportar Todas (Excel)</button>
-        </div>
+			<h3 class="admin-title">⚡ Ações Globais</h3>
+			<button class="admin-btn" onclick="importarTodas()">📥 Importar Todas</button>
+			<button class="admin-btn secondary" onclick="exportarTodas('csv')">📄 Exportar Todas (CSV)</button>
+			<button class="admin-btn secondary" onclick="exportarTodas('excel')">📊 Exportar Todas (Excel)</button>
+			<!-- NOVO BOTÃO -->
+			<button class="admin-btn secondary" onclick="window.open('/logs/importacao/', '_blank')">📋 Ver Logs</button>
+		</div>
 
         <!-- TABELA DE PRODUTOS RECENTES -->
         <div class="admin-card">

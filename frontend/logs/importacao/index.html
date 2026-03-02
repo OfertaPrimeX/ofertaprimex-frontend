@@ -1,0 +1,166 @@
+cat > /app/public/logs/importacao/index.html << 'EOF'
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Logs de Importação - OfertaPrimeX</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../../css/style.css">
+    <style>
+        .log-container {
+            background: #1e1e1e;
+            color: #00ff00;
+            font-family: 'Courier New', monospace;
+            padding: 20px;
+            border-radius: 5px;
+            height: 500px;
+            overflow-y: scroll;
+            margin-top: 20px;
+        }
+        
+        .log-line {
+            margin: 2px 0;
+            font-size: 13px;
+            border-bottom: 1px solid #333;
+            padding: 2px 0;
+        }
+        
+        .log-info { color: #00ff00; }
+        .log-erro { color: #ff5555; }
+        .log-aviso { color: #ffff00; }
+        
+        .controls {
+            margin: 20px 0;
+            display: flex;
+            gap: 10px;
+        }
+        
+        .btn-log {
+            background-color: #ff6a00;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        .btn-log:hover {
+            background-color: #e85f00;
+        }
+        
+        .btn-log.secondary {
+            background-color: #2e7d32;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            margin-left: 10px;
+        }
+        
+        .status-ok { background-color: #00ff00; color: black; }
+        .status-erro { background-color: #ff5555; color: white; }
+        .status-warning { background-color: #ffff00; color: black; }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="container header-content">
+            <div class="logo">OfertaPrime<span>X</span></div>
+            <nav class="menu">
+                <a href="../../admin.html">Admin</a>
+                <a href="../../index.html">Home</a>
+            </nav>
+        </div>
+    </header>
+
+    <section class="section">
+        <div class="container">
+            <h2 class="section-title">📋 Logs de Importação</h2>
+            
+            <div class="controls">
+                <button class="btn-log" onclick="carregarLogs()">🔄 Atualizar Logs</button>
+                <button class="btn-log secondary" onclick="limparTela()">🧹 Limpar Tela</button>
+                <span id="status-badge" class="status-badge">Aguardando...</span>
+            </div>
+            
+            <div id="log-container" class="log-container">
+                <div class="log-line">Aguardando carregamento dos logs...</div>
+            </div>
+            
+            <div style="margin-top: 20px;">
+                <button class="btn-log" onclick="window.location.reload()">🔄 Recarregar Página</button>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        const API_URL = 'https://yo0g0cg4c88w88osc4s04c0c.72.61.33.248.sslip.io'; // URL do backend
+        
+        async function carregarLogs() {
+            const container = document.getElementById('log-container');
+            const badge = document.getElementById('status-badge');
+            
+            container.innerHTML = '<div class="log-line">⏳ Carregando logs...</div>';
+            badge.className = 'status-badge status-warning';
+            badge.textContent = 'Carregando...';
+            
+            try {
+                const response = await fetch(`${API_URL}/api/admin/logs/importacao`);
+                const data = await response.json();
+                
+                if (response.ok) {
+                    container.innerHTML = '';
+                    
+                    if (data.logs && data.logs.length > 0) {
+                        data.logs.forEach(log => {
+                            const div = document.createElement('div');
+                            div.className = 'log-line';
+                            
+                            // Colorir baseado no tipo
+                            if (log.includes('ERRO') || log.includes('❌')) {
+                                div.classList.add('log-erro');
+                            } else if (log.includes('AVISO') || log.includes('⚠️')) {
+                                div.classList.add('log-aviso');
+                            } else {
+                                div.classList.add('log-info');
+                            }
+                            
+                            div.textContent = log;
+                            container.appendChild(div);
+                        });
+                        
+                        badge.className = 'status-badge status-ok';
+                        badge.textContent = `✅ ${data.logs.length} linhas`;
+                    } else {
+                        container.innerHTML = '<div class="log-line">📭 Nenhum log encontrado</div>';
+                        badge.className = 'status-badge status-warning';
+                        badge.textContent = '⚠️ Vazio';
+                    }
+                } else {
+                    container.innerHTML = `<div class="log-line log-erro">❌ Erro: ${data.error || 'Desconhecido'}</div>`;
+                    badge.className = 'status-badge status-erro';
+                    badge.textContent = '❌ Erro';
+                }
+            } catch (error) {
+                container.innerHTML = `<div class="log-line log-erro">❌ Erro de conexão: ${error.message}</div>`;
+                badge.className = 'status-badge status-erro';
+                badge.textContent = '❌ Erro';
+            }
+        }
+        
+        function limparTela() {
+            document.getElementById('log-container').innerHTML = '<div class="log-line">🧹 Tela limpa</div>';
+        }
+        
+        // Carregar logs automaticamente ao abrir a página
+        document.addEventListener('DOMContentLoaded', carregarLogs);
+        
+        // Atualizar a cada 30 segundos
+        setInterval(carregarLogs, 30000);
+    </script>
+</body>
+</html>
+EOF
