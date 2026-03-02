@@ -8,41 +8,29 @@
 </head>
 <body>
 
-<!-- ================= HEADER ================= -->
 <header class="header">
     <div class="container header-content">
-        <div class="logo">
-            OfertaPrime<span>X</span>
-        </div>
+        <div class="logo">OfertaPrime<span>X</span></div>
         <nav class="menu">
             <a href="#home">Home</a>
             <a href="#procurados">Mais Procurados</a>
             <a href="#top20">Top 20</a>
             <a href="#sobre">Quem Somos</a>
-            <!-- NOVO: Link Admin (aparece apenas quando logado, via CSS/JS) -->
             <a href="admin.html" id="admin-link" style="display: none;">Admin</a>
-            <!-- NOVO: Login/Logout (gerenciado via JS) -->
             <a href="#" id="auth-link">Login</a>
         </nav>
     </div>
 </header>
 
-<!-- ================= HERO / BUSCA ================= -->
 <section class="hero" id="home">
     <div class="container">
-        <h1 class="hero-title">
-            Compare preços nas maiores plataformas
-        </h1>
-        <p class="hero-subtitle">
-            Mercado Livre • Amazon • Shopee • Magalu
-        </p>
-
+        <h1 class="hero-title">Compare preços nas maiores plataformas</h1>
+        <p class="hero-subtitle">Mercado Livre • Amazon • Shopee • Magalu</p>
         <input id="busca" type="text" placeholder="Buscar produto">
         <button id="btnBuscar">Pesquisar</button>
     </div>
 </section>
 
-<!-- ================= RESULTADOS DA BUSCA ================= -->
 <section class="section" id="resultado-busca" style="display:none;">
     <div class="container">
         <h2 class="section-title">🔎 Resultado da busca</h2>
@@ -50,7 +38,6 @@
     </div>
 </section>
 
-<!-- ================= MAIS PROCURADOS ================= -->
 <section class="section" id="procurados">
     <div class="container">
         <h2 class="section-title">🔥 Mais Procurados</h2>
@@ -58,7 +45,6 @@
     </div>
 </section>
 
-<!-- ================= TOP 20 ================= -->
 <section class="section section-gray" id="top20">
     <div class="container">
         <h2 class="section-title">🏆 Top 20 das Plataformas</h2>
@@ -67,28 +53,18 @@
     </div>
 </section>
 
-<!-- ================= QUEM SOMOS ================= -->
 <section class="section" id="sobre">
     <div class="container">
         <h2 class="section-title">Quem Somos</h2>
-        <p class="about-text">
-            O OfertaPrimeX é uma vitrine inteligente de ofertas.
-            Pesquisamos produtos nas maiores plataformas do Brasil,
-            comparamos preços e exibimos os mais procurados,
-            sempre com links oficiais de afiliados.
-        </p>
+        <p class="about-text">O OfertaPrimeX é uma vitrine inteligente de ofertas. Pesquisamos produtos nas maiores plataformas do Brasil, comparamos preços e exibimos os mais procurados, sempre com links oficiais de afiliados.</p>
     </div>
 </section>
 
-<!-- ================= FOOTER ================= -->
 <footer class="footer">
     <p>© 2026 OfertaPrimeX - Todos os direitos reservados</p>
 </footer>
 
-<!-- ================= JS ================= -->
 <script src="js/main.js"></script>
-
-<!-- 🔥 INTEGRAÇÃO REAL COM BACKEND -->
 <script src="js/search.js"></script>
 <script type="module">
   import { searchProducts } from './js/api.js';
@@ -100,13 +76,10 @@
   document.getElementById('btnBuscar').addEventListener('click', async () => {
     const termo = document.getElementById('busca').value;
     if (!termo) return;
-
     sectionBusca.style.display = 'block';
-
     const res = await searchProducts(termo);
     renderProducts(gridBusca, res.products);
   });
 </script>
-
 </body>
 </html>
