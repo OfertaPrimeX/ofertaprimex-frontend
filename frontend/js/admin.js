@@ -87,8 +87,9 @@ document.getElementById('btn-login')?.addEventListener('click', async () => {
             loginError.textContent = 'Usuário ou senha inválidos';
         }
     } catch (error) {
-        loginError.textContent = 'Erro de conexão com o servidor';
-    }
+		console.error('Erro detalhado:', error);
+		loginError.textContent = `Erro: ${error.message}. Verifique se o backend está acessível.`;
+	}
 });
 
 // ============================================
