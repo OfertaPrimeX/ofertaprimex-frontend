@@ -72,13 +72,70 @@
 
   const gridBusca = document.getElementById('grid-busca');
   const sectionBusca = document.getElementById('resultado-busca');
+  const buscaInput = document.getElementById('busca');
+  const btnBuscar = document.getElementById('btnBuscar');
 
-  document.getElementById('btnBuscar').addEventListener('click', async () => {
-    const termo = document.getElementById('busca').value;
+  // Função para registrar pesquisa
+  async function registrarPesquisa(termo, origem, quantidade, tempoMs) {
+      try {
+          let sessaoId = localStorage.getItem('sessaoId');
+          if (!sessaoId) {
+              sessaoId = 'sess_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+              localStorage.setItem('sessaoId', sessaoId);
+          }
+
+          await fetch('https://yo0g0cg4c88w88osc4s04c0c.72.61.33.248.sslip.io/api/pesquisas/registrar', {
+              method: 'POST',
+              headers: {
+                  'Content-Type': 'application/json',
+                  'X-Session-Id': sessaoId
+              },
+              body: JSON.stringify({
+                  termo: termo,
+                  origem: origem,
+                  quantidade_resultados: quantidade,
+                  tempo_resposta_ms: tempoMs
+              })
+          });
+      } catch (error) {
+          console.error('Erro ao registrar pesquisa:', error);
+      }
+  }
+
+  async function realizarBusca() {
+    const termo = buscaInput.value.trim();
     if (!termo) return;
+
     sectionBusca.style.display = 'block';
-    const res = await searchProducts(termo);
-    renderProducts(gridBusca, res.products);
+    gridBusca.innerHTML = '<p style="text-align: center;">🔍 Buscando...</p>';
+
+    const inicio = performance.now();
+
+    try {
+      const res = await searchProducts(termo);
+      const fim = performance.now();
+      const tempoResposta = Math.round(fim - inicio);
+
+      let origem = 'nao_localizado';
+      let quantidade = res.products?.length || 0;
+
+      if (quantidade > 0) {
+          origem = 'mercadolivre'; // Ajuste conforme sua API
+      }
+
+      await registrarPesquisa(termo, origem, quantidade, tempoResposta);
+      renderProducts(gridBusca, res.products || []);
+
+    } catch (error) {
+      console.error('Erro na busca:', error);
+      gridBusca.innerHTML = '<p style="text-align: center; color: red;">❌ Erro ao buscar produtos</p>';
+      await registrarPesquisa(termo, 'erro', 0, null);
+    }
+  }
+
+  btnBuscar.addEventListener('click', realizarBusca);
+  buscaInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') realizarBusca();
   });
 </script>
 </body>

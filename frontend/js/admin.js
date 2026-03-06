@@ -2,15 +2,9 @@
 // ADMIN.JS - Painel Administrativo (VERSÃO FINAL)
 // ============================================
 
-// Configuração da API (backend)
 const API_URL = 'https://yo0g0cg4c88w88osc4s04c0c.72.61.33.248.sslip.io';
-
-// Estado da aplicação
 let produtos = [];
 
-// ============================================
-// FUNÇÃO PARA FAZER REQUISIÇÕES COM BASIC AUTH
-// ============================================
 async function apiRequest(url, options = {}) {
     const user = localStorage.getItem('adminUser');
     const pass = localStorage.getItem('adminPass');
@@ -43,9 +37,6 @@ async function apiRequest(url, options = {}) {
     }
 }
 
-// ============================================
-// MOSTRAR/ESCONDER TELA DE LOGIN
-// ============================================
 function mostrarLogin() {
     const modal = document.getElementById('login-modal');
     const adminMain = document.getElementById('admin-main');
@@ -60,9 +51,6 @@ function mostrarAdmin() {
     if (adminMain) adminMain.style.display = 'block';
 }
 
-// ============================================
-// LOGIN
-// ============================================
 document.getElementById('btn-login')?.addEventListener('click', async () => {
     const user = document.getElementById('login-user').value;
     const pass = document.getElementById('login-pass').value;
@@ -86,11 +74,7 @@ document.getElementById('btn-login')?.addEventListener('click', async () => {
             
             loginError.textContent = '';
             mostrarAdmin();
-            
-            // Carrega dados simulados para teste
             carregarDadosSimulados();
-            
-            // Tenta carregar os logs
             carregarLogs();
         } else {
             loginError.textContent = 'Usuário ou senha inválidos';
@@ -101,9 +85,6 @@ document.getElementById('btn-login')?.addEventListener('click', async () => {
     }
 });
 
-// ============================================
-// LOGOUT
-// ============================================
 document.getElementById('logout-link')?.addEventListener('click', (e) => {
     e.preventDefault();
     localStorage.removeItem('adminUser');
@@ -111,54 +92,18 @@ document.getElementById('logout-link')?.addEventListener('click', (e) => {
     mostrarLogin();
 });
 
-// ============================================
-// FECHAR MODAL
-// ============================================
 document.getElementById('close-modal')?.addEventListener('click', () => {
     document.getElementById('login-modal').style.display = 'none';
 });
 
-// ============================================
-// CARREGAR DADOS SIMULADOS (já que as rotas não existem)
-// ============================================
 function carregarDadosSimulados() {
-    // Dados de exemplo para teste
     produtos = [
-        {
-            id: 1,
-            titulo: "PlayStation 5 Slim 1TB",
-            plataforma: "Mercado Livre",
-            preco: "3.599",
-            cliques: 45,
-            ativo: true
-        },
-        {
-            id: 2,
-            titulo: "iPhone 17 Pro Max 256GB",
-            plataforma: "Amazon",
-            preco: "8.999",
-            cliques: 32,
-            ativo: true
-        },
-        {
-            id: 3,
-            titulo: "Samsung Galaxy S25 Ultra",
-            plataforma: "Shopee",
-            preco: "7.499",
-            cliques: 28,
-            ativo: true
-        },
-        {
-            id: 4,
-            titulo: "Notebook Gamer Dell G15",
-            plataforma: "Magalu",
-            preco: "5.299",
-            cliques: 15,
-            ativo: false
-        }
+        { id: 1, titulo: "PlayStation 5 Slim 1TB", plataforma: "Mercado Livre", preco: "3.599", cliques: 45, ativo: true },
+        { id: 2, titulo: "iPhone 17 Pro Max 256GB", plataforma: "Amazon", preco: "8.999", cliques: 32, ativo: true },
+        { id: 3, titulo: "Samsung Galaxy S25 Ultra", plataforma: "Shopee", preco: "7.499", cliques: 28, ativo: true },
+        { id: 4, titulo: "Notebook Gamer Dell G15", plataforma: "Magalu", preco: "5.299", cliques: 15, ativo: false }
     ];
     
-    // Atualiza contadores
     document.getElementById('ml-contador').textContent = "1";
     document.getElementById('amazon-contador').textContent = "1";
     document.getElementById('shopee-contador').textContent = "1";
@@ -168,38 +113,24 @@ function carregarDadosSimulados() {
     atualizarTabela();
 }
 
-// ============================================
-// CARREGAR LOGS DO BACKEND (rota REAL)
-// ============================================
 async function carregarLogs() {
     try {
         const response = await apiRequest('/api/admin/logs/importacao');
         const data = await response.json();
-        
         if (data.logs && data.logs.length > 0) {
             console.log('📋 Últimos logs:', data.logs.slice(-5));
-            // Aqui você pode exibir os logs em algum lugar se quiser
-        } else {
-            console.log('📭 Nenhum log encontrado');
         }
     } catch (error) {
         console.error('Erro ao carregar logs:', error);
     }
 }
 
-// ============================================
-// ATUALIZAR DASHBOARD
-// ============================================
 function atualizarDashboard() {
     document.getElementById('total-produtos').textContent = produtos.length;
-    
     const totalCliques = produtos.reduce((acc, p) => acc + (p.cliques || 0), 0);
     document.getElementById('total-cliques').textContent = totalCliques;
 }
 
-// ============================================
-// ATUALIZAR TABELA
-// ============================================
 function atualizarTabela() {
     const tbody = document.getElementById('tabela-body');
     if (!tbody) return;
@@ -221,9 +152,6 @@ function atualizarTabela() {
     `).join('');
 }
 
-// ============================================
-// IMPORTAR PRODUTOS (MERCADO LIVRE)
-// ============================================
 document.getElementById('btn-importar')?.addEventListener('click', async () => {
     const btn = document.getElementById('btn-importar');
     const status = document.getElementById('import-status');
@@ -233,10 +161,7 @@ document.getElementById('btn-importar')?.addEventListener('click', async () => {
     status.innerHTML = '<p style="color: #ff6a00;">⏳ Iniciando importação...</p>';
     
     try {
-        const response = await apiRequest('/api/admin/importar/mercadolivre', {
-            method: 'POST'
-        });
-        
+        const response = await apiRequest('/api/admin/importar/mercadolivre', { method: 'POST' });
         const data = await response.json();
         
         if (response.ok) {
@@ -249,7 +174,6 @@ document.getElementById('btn-importar')?.addEventListener('click', async () => {
             status.innerHTML = `<p style="color: #d32f2f;">❌ Erro: ${data.error || 'Desconhecido'}</p>`;
         }
     } catch (error) {
-        console.error('Erro na importação:', error);
         status.innerHTML = `<p style="color: #d32f2f;">❌ Erro de conexão: ${error.message}</p>`;
     } finally {
         btn.disabled = false;
@@ -257,14 +181,10 @@ document.getElementById('btn-importar')?.addEventListener('click', async () => {
     }
 });
 
-// ============================================
-// EXPORTAR CSV
-// ============================================
 document.getElementById('btn-export-csv')?.addEventListener('click', () => {
     if (produtos.length === 0) return;
     
     let csv = 'ID,Plataforma,Título,Preço,Cliques,Status\n';
-    
     produtos.forEach(p => {
         csv += `${p.id},${p.plataforma || ''},"${p.titulo}",${p.preco},${p.cliques || 0},${p.ativo ? 'Ativo' : 'Inativo'}\n`;
     });
@@ -276,14 +196,10 @@ document.getElementById('btn-export-csv')?.addEventListener('click', () => {
     link.click();
 });
 
-// ============================================
-// EXPORTAR EXCEL
-// ============================================
 document.getElementById('btn-export-excel')?.addEventListener('click', () => {
     if (produtos.length === 0) return;
     
     let html = '<table><tr><th>ID</th><th>Plataforma</th><th>Título</th><th>Preço</th><th>Cliques</th><th>Status</th></tr>';
-    
     produtos.forEach(p => {
         html += `<tr>
             <td>${p.id}</td>
@@ -294,7 +210,6 @@ document.getElementById('btn-export-excel')?.addEventListener('click', () => {
             <td>${p.ativo ? 'Ativo' : 'Inativo'}</td>
         </tr>`;
     });
-    
     html += '</table>';
     
     const blob = new Blob([html], { type: 'application/vnd.ms-excel' });
@@ -304,11 +219,7 @@ document.getElementById('btn-export-excel')?.addEventListener('click', () => {
     link.click();
 });
 
-// ============================================
-// INICIALIZAÇÃO
-// ============================================
 if (window.location.pathname.includes('admin.html')) {
-    // Esconde o admin main inicialmente
     document.getElementById('admin-main').style.display = 'none';
     
     const user = localStorage.getItem('adminUser');
@@ -316,9 +227,7 @@ if (window.location.pathname.includes('admin.html')) {
     
     if (user && pass) {
         fetch(`${API_URL}/api/admin/logs/importacao`, {
-            headers: {
-                'Authorization': 'Basic ' + btoa(user + ':' + pass)
-            }
+            headers: { 'Authorization': 'Basic ' + btoa(user + ':' + pass) }
         }).then(response => {
             if (response.ok) {
                 mostrarAdmin();
@@ -335,16 +244,11 @@ if (window.location.pathname.includes('admin.html')) {
     }
 }
 
-// ============================================
-// FUNÇÕES DOS BOTÕES (agora funcionais)
-// ============================================
 function importarPlataforma(plataforma) {
     const statusDiv = document.getElementById(`${plataforma}-status`);
     if (statusDiv) {
         statusDiv.innerHTML = '<div class="import-status info">⏳ Funcionalidade em desenvolvimento</div>';
-        setTimeout(() => {
-            statusDiv.innerHTML = '';
-        }, 3000);
+        setTimeout(() => { statusDiv.innerHTML = ''; }, 3000);
     }
 }
 
