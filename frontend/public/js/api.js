@@ -11,43 +11,38 @@ export async function searchProducts(termo) {
         const response = await fetch(url);
         console.log('📡 Status HTTP:', response.status);
         
-        // Verifica se a resposta HTTP foi bem-sucedida
         if (!response.ok) {
-            console.error('❌ HTTP Error:', response.status, response.statusText);
-            
-            // Tenta ler o erro como texto
-            const errorText = await response.text();
-            console.error('📄 Resposta de erro:', errorText.substring(0, 200));
-            
+            console.error('❌ HTTP Error:', response.status);
             return { products: [], origin: 'erro' };
         }
         
-        // Tenta parsear o JSON
-        let data;
-        try {
-            data = await response.json();
-            console.log('📦 Dados recebidos:', data);
-        } catch (jsonError) {
-            console.error('❌ Erro ao parsear JSON:', jsonError);
-            const text = await response.text();
-            console.error('📄 Resposta (não JSON):', text.substring(0, 200));
-            return { products: [], origin: 'erro' };
-        }
+        const data = await response.json();
+        console.log('📦 Dados recebidos:', data);
         
-        // Verifica se o backend retornou success:true
         if (data && data.success === true) {
-            console.log(`✅ Busca concluída: ${data.products?.length || 0} produtos encontrados`);
             return {
                 products: data.products || [],
                 origin: data.origin || 'nao_localizado'
             };
         } else {
-            console.error('❌ Erro no backend:', data?.error || 'Resposta inválida');
+            console.error('❌ Erro no backend:', data?.error);
             return { products: [], origin: 'erro' };
         }
     } catch (error) {
-        console.error('❌ Erro crítico na busca:', error);
-        console.error('Stack:', error.stack);
+        console.error('❌ Erro crítico:', error);
         return { products: [], origin: 'erro' };
     }
+}
+
+// Mantenha as outras funções se existirem
+export async function getTrending() {
+    const res = await fetch(`${API_URL}/api/trending`);
+    if (!res.ok) throw new Error('Erro ao buscar trending');
+    return res.json();
+}
+
+export async function getProducts({ page = 1, limit = 20 } = {}) {
+    const res = await fetch(`${API_URL}/api/products?page=${page}&limit=${limit}`);
+    if (!res.ok) throw new Error('Erro ao buscar produtos');
+    return res.json();
 }
