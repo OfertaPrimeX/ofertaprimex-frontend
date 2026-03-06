@@ -65,7 +65,6 @@
 </footer>
 
 <script src="js/main.js"></script>
-<script src="js/search.js"></script>
 <script type="module">
   import { searchProducts } from './js/api.js';
   import { renderProducts } from './js/render.js';
@@ -75,7 +74,6 @@
   const buscaInput = document.getElementById('busca');
   const btnBuscar = document.getElementById('btnBuscar');
 
-  // Função para registrar pesquisa
   async function registrarPesquisa(termo, origem, quantidade, tempoMs) {
       try {
           let sessaoId = localStorage.getItem('sessaoId');
@@ -107,7 +105,7 @@
     if (!termo) return;
 
     sectionBusca.style.display = 'block';
-    gridBusca.innerHTML = '<p style="text-align: center; grid-column: 1/-1;">🔍 Buscando...</p>';
+    gridBusca.innerHTML = '<p style="text-align: center;">🔍 Buscando...</p>';
 
     const inicio = performance.now();
 
@@ -127,7 +125,7 @@
 
     } catch (error) {
       console.error('Erro na busca:', error);
-      gridBusca.innerHTML = '<p style="text-align: center; color: red; grid-column: 1/-1;">❌ Erro ao buscar produtos</p>';
+      gridBusca.innerHTML = '<p style="text-align: center; color: red;">❌ Erro ao buscar produtos</p>';
       await registrarPesquisa(termo, 'erro', 0, null);
     }
   }
