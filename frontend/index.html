@@ -107,7 +107,7 @@
     if (!termo) return;
 
     sectionBusca.style.display = 'block';
-    gridBusca.innerHTML = '<p style="text-align: center;">🔍 Buscando...</p>';
+    gridBusca.innerHTML = '<p style="text-align: center; grid-column: 1/-1;">🔍 Buscando...</p>';
 
     const inicio = performance.now();
 
@@ -116,19 +116,18 @@
       const fim = performance.now();
       const tempoResposta = Math.round(fim - inicio);
 
-      let origem = 'nao_localizado';
-      let quantidade = res.products?.length || 0;
-
-      if (quantidade > 0) {
-          origem = 'mercadolivre'; // Ajuste conforme sua API
-      }
-
-      await registrarPesquisa(termo, origem, quantidade, tempoResposta);
+      await registrarPesquisa(
+          termo, 
+          res.origin || 'nao_localizado', 
+          res.products?.length || 0, 
+          tempoResposta
+      );
+      
       renderProducts(gridBusca, res.products || []);
 
     } catch (error) {
       console.error('Erro na busca:', error);
-      gridBusca.innerHTML = '<p style="text-align: center; color: red;">❌ Erro ao buscar produtos</p>';
+      gridBusca.innerHTML = '<p style="text-align: center; color: red; grid-column: 1/-1;">❌ Erro ao buscar produtos</p>';
       await registrarPesquisa(termo, 'erro', 0, null);
     }
   }
