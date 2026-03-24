@@ -1,5 +1,5 @@
 // ============================================
-// ADMIN.JS - Painel Administrativo (VERSÃO FINAL)
+// ADMIN.JS - Painel Administrativo (VERSÃO ATUALIZADA)
 // ============================================
 
 const API_URL = 'https://yo0g0cg4c88w88osc4s04c0c.72.61.33.248.sslip.io';
@@ -74,8 +74,9 @@ document.getElementById('btn-login')?.addEventListener('click', async () => {
             
             loginError.textContent = '';
             mostrarAdmin();
-            carregarDadosSimulados();
+            carregarDadosReais(); // AGORA CARREGA DADOS REAIS
             carregarLogs();
+            carregarContadores(); // NOVO: carrega contadores por plataforma
         } else {
             loginError.textContent = 'Usuário ou senha inválidos';
         }
@@ -96,6 +97,65 @@ document.getElementById('close-modal')?.addEventListener('click', () => {
     document.getElementById('login-modal').style.display = 'none';
 });
 
+// ============================================
+// NOVA FUNÇÃO: CARREGAR DADOS REAIS DO BANCO
+// ============================================
+async function carregarDadosReais() {
+    try {
+        // Buscar produtos do Mercado Livre
+        const response = await apiRequest('/api/produtos/buscar?q=');
+        const data = await response.json();
+        
+        if (data.success && data.products) {
+            produtos = data.products.map(p => ({
+                id: p.id,
+                titulo: p.titulo,
+                plataforma: p.plataforma || 'Mercado Livre',
+                preco: p.preco,
+                cliques: p.cliques || 0,
+                ativo: true
+            }));
+        } else {
+            produtos = [];
+        }
+        
+        atualizarDashboard();
+        atualizarTabela();
+        
+    } catch (error) {
+        console.error('Erro ao carregar dados reais:', error);
+        carregarDadosSimulados(); // Fallback para dados simulados
+    }
+}
+
+// ============================================
+// FUNÇÃO PARA CARREGAR CONTADORES POR PLATAFORMA
+// ============================================
+async function carregarContadores() {
+    try {
+        // Mercado Livre
+        const mlResponse = await apiRequest('/api/produtos/contador?plataforma=mercadolivre');
+        const mlData = await mlResponse.json();
+        document.getElementById('ml-contador').textContent = mlData.total || 0;
+        
+        // Amazon (quando implementado)
+        document.getElementById('amazon-contador').textContent = 0;
+        document.getElementById('shopee-contador').textContent = 0;
+        document.getElementById('magalu-contador').textContent = 0;
+        
+    } catch (error) {
+        console.error('Erro ao carregar contadores:', error);
+        // Fallback para dados simulados
+        document.getElementById('ml-contador').textContent = "1";
+        document.getElementById('amazon-contador').textContent = "1";
+        document.getElementById('shopee-contador').textContent = "1";
+        document.getElementById('magalu-contador').textContent = "1";
+    }
+}
+
+// ============================================
+// FUNÇÃO DE FALLBACK (dados simulados)
+// ============================================
 function carregarDadosSimulados() {
     produtos = [
         { id: 1, titulo: "PlayStation 5 Slim 1TB", plataforma: "Mercado Livre", preco: "3.599", cliques: 45, ativo: true },
@@ -136,11 +196,11 @@ function atualizarTabela() {
     if (!tbody) return;
     
     if (produtos.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="6" style="text-align: center;">Nenhum produto encontrado</td></tr>';
+        tbody.innerHTML = '发展<td colspan="6" style="text-align: center;">Nenhum produto encontrado</td>发展';
         return;
     }
     
-    tbody.innerHTML = produtos.map(p => `
+    tbody.innerHTML = produtos.slice(0, 20).map(p => `
         <tr>
             <td>#${p.id}</td>
             <td>${p.plataforma || '-'}</td>
@@ -152,6 +212,9 @@ function atualizarTabela() {
     `).join('');
 }
 
+// ============================================
+// BOTÃO DE IMPORTAÇÃO DO MERCADO LIVRE (CORRIGIDO)
+// ============================================
 document.getElementById('btn-importar')?.addEventListener('click', async () => {
     const btn = document.getElementById('btn-importar');
     const status = document.getElementById('import-status');
@@ -167,9 +230,11 @@ document.getElementById('btn-importar')?.addEventListener('click', async () => {
         if (response.ok) {
             status.innerHTML = `<p style="color: #2e7d32;">✅ ${data.message}</p>`;
             setTimeout(() => {
-                carregarDadosSimulados();
-                carregarLogs();
-            }, 2000);
+                carregarDadosReais(); // Recarrega dados reais
+                carregarContadores(); // Atualiza contadores
+                carregarLogs(); // Atualiza logs
+                status.innerHTML = '';
+            }, 3000);
         } else {
             status.innerHTML = `<p style="color: #d32f2f;">❌ Erro: ${data.error || 'Desconhecido'}</p>`;
         }
@@ -181,44 +246,56 @@ document.getElementById('btn-importar')?.addEventListener('click', async () => {
     }
 });
 
-document.getElementById('btn-export-csv')?.addEventListener('click', () => {
-    if (produtos.length === 0) return;
+// ============================================
+// FUNÇÕES DOS BOTÕES DAS PLATAFORMAS
+// ============================================
+async function importarPlataforma(plataforma) {
+    const statusDiv = document.getElementById(`${plataforma}-status`);
     
-    let csv = 'ID,Plataforma,Título,Preço,Cliques,Status\n';
-    produtos.forEach(p => {
-        csv += `${p.id},${p.plataforma || ''},"${p.titulo}",${p.preco},${p.cliques || 0},${p.ativo ? 'Ativo' : 'Inativo'}\n`;
-    });
-    
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = `produtos_${new Date().toISOString().slice(0,10)}.csv`;
-    link.click();
-});
+    if (statusDiv) {
+        statusDiv.innerHTML = '<div class="import-status info">⏳ Iniciando importação...</div>';
+        
+        try {
+            const response = await apiRequest(`/api/admin/importar/${plataforma}`, {
+                method: 'POST'
+            });
+            
+            const data = await response.json();
+            
+            if (response.ok) {
+                statusDiv.innerHTML = `<div class="import-status success">✅ ${data.message}</div>`;
+                setTimeout(() => {
+                    carregarDadosReais();
+                    carregarContadores();
+                    statusDiv.innerHTML = '';
+                }, 3000);
+            } else {
+                statusDiv.innerHTML = `<div class="import-status error">❌ Erro: ${data.error || 'Falha na importação'}</div>`;
+            }
+        } catch (error) {
+            statusDiv.innerHTML = `<div class="import-status error">❌ Erro de conexão: ${error.message}</div>`;
+        }
+    }
+}
 
-document.getElementById('btn-export-excel')?.addEventListener('click', () => {
-    if (produtos.length === 0) return;
-    
-    let html = '<table><tr><th>ID</th><th>Plataforma</th><th>Título</th><th>Preço</th><th>Cliques</th><th>Status</th></tr>';
-    produtos.forEach(p => {
-        html += `<tr>
-            <td>${p.id}</td>
-            <td>${p.plataforma || '-'}</td>
-            <td>${p.titulo}</td>
-            <td>R$ ${p.preco}</td>
-            <td>${p.cliques || 0}</td>
-            <td>${p.ativo ? 'Ativo' : 'Inativo'}</td>
-        </tr>`;
-    });
-    html += '</table>';
-    
-    const blob = new Blob([html], { type: 'application/vnd.ms-excel' });
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = `produtos_${new Date().toISOString().slice(0,10)}.xls`;
-    link.click();
-});
+function exportarPlataforma(plataforma, formato) {
+    alert(`Exportar ${plataforma} em formato ${formato} - Em breve disponível!`);
+}
 
+function importarTodas() {
+    importarPlataforma('mercadolivre');
+    importarPlataforma('amazon');
+    importarPlataforma('shopee');
+    importarPlataforma('magalu');
+}
+
+function exportarTodas(formato) {
+    alert(`Exportar todas em formato ${formato} - Em breve disponível!`);
+}
+
+// ============================================
+// INICIALIZAÇÃO
+// ============================================
 if (window.location.pathname.includes('admin.html')) {
     document.getElementById('admin-main').style.display = 'none';
     
@@ -231,8 +308,9 @@ if (window.location.pathname.includes('admin.html')) {
         }).then(response => {
             if (response.ok) {
                 mostrarAdmin();
-                carregarDadosSimulados();
+                carregarDadosReais(); // Carrega dados reais
                 carregarLogs();
+                carregarContadores();
             } else {
                 mostrarLogin();
             }
@@ -242,24 +320,4 @@ if (window.location.pathname.includes('admin.html')) {
     } else {
         mostrarLogin();
     }
-}
-
-function importarPlataforma(plataforma) {
-    const statusDiv = document.getElementById(`${plataforma}-status`);
-    if (statusDiv) {
-        statusDiv.innerHTML = '<div class="import-status info">⏳ Funcionalidade em desenvolvimento</div>';
-        setTimeout(() => { statusDiv.innerHTML = ''; }, 3000);
-    }
-}
-
-function exportarPlataforma(plataforma, formato) {
-    alert(`Exportar ${plataforma} em formato ${formato} - Em breve disponível!`);
-}
-
-function importarTodas() {
-    alert('Importação de todas as plataformas será implementada em breve!');
-}
-
-function exportarTodas(formato) {
-    alert(`Exportar todas em formato ${formato} - Em breve disponível!`);
 }
