@@ -1,5 +1,5 @@
 // ============================================
-// ADMIN.JS - Painel Administrativo (VERSÃO ATUALIZADA)
+// ADMIN.JS - Painel Administrativo (COM UPLOAD DE CSV)
 // ============================================
 
 const API_URL = 'https://yo0g0cg4c88w88osc4s04c0c.72.61.33.248.sslip.io';
@@ -74,9 +74,9 @@ document.getElementById('btn-login')?.addEventListener('click', async () => {
             
             loginError.textContent = '';
             mostrarAdmin();
-            carregarDadosReais(); // AGORA CARREGA DADOS REAIS
+            carregarDadosReais();
             carregarLogs();
-            carregarContadores(); // NOVO: carrega contadores por plataforma
+            carregarContadores();
         } else {
             loginError.textContent = 'Usuário ou senha inválidos';
         }
@@ -97,12 +97,8 @@ document.getElementById('close-modal')?.addEventListener('click', () => {
     document.getElementById('login-modal').style.display = 'none';
 });
 
-// ============================================
-// NOVA FUNÇÃO: CARREGAR DADOS REAIS DO BANCO
-// ============================================
 async function carregarDadosReais() {
     try {
-        // Buscar produtos do Mercado Livre
         const response = await apiRequest('/api/produtos/buscar?q=');
         const data = await response.json();
         
@@ -124,28 +120,22 @@ async function carregarDadosReais() {
         
     } catch (error) {
         console.error('Erro ao carregar dados reais:', error);
-        carregarDadosSimulados(); // Fallback para dados simulados
+        carregarDadosSimulados();
     }
 }
 
-// ============================================
-// FUNÇÃO PARA CARREGAR CONTADORES POR PLATAFORMA
-// ============================================
 async function carregarContadores() {
     try {
-        // Mercado Livre
         const mlResponse = await apiRequest('/api/produtos/contador?plataforma=mercadolivre');
         const mlData = await mlResponse.json();
         document.getElementById('ml-contador').textContent = mlData.total || 0;
         
-        // Amazon (quando implementado)
         document.getElementById('amazon-contador').textContent = 0;
         document.getElementById('shopee-contador').textContent = 0;
         document.getElementById('magalu-contador').textContent = 0;
         
     } catch (error) {
         console.error('Erro ao carregar contadores:', error);
-        // Fallback para dados simulados
         document.getElementById('ml-contador').textContent = "1";
         document.getElementById('amazon-contador').textContent = "1";
         document.getElementById('shopee-contador').textContent = "1";
@@ -153,9 +143,6 @@ async function carregarContadores() {
     }
 }
 
-// ============================================
-// FUNÇÃO DE FALLBACK (dados simulados)
-// ============================================
 function carregarDadosSimulados() {
     produtos = [
         { id: 1, titulo: "PlayStation 5 Slim 1TB", plataforma: "Mercado Livre", preco: "3.599", cliques: 45, ativo: true },
@@ -213,71 +200,83 @@ function atualizarTabela() {
 }
 
 // ============================================
-// BOTÃO DE IMPORTAÇÃO DO MERCADO LIVRE (CORRIGIDO)
-// ============================================
-document.getElementById('btn-importar')?.addEventListener('click', async () => {
-    const btn = document.getElementById('btn-importar');
-    const status = document.getElementById('import-status');
-    
-    btn.disabled = true;
-    btn.textContent = 'Importando...';
-    status.innerHTML = '<p style="color: #ff6a00;">⏳ Iniciando importação...</p>';
-    
-    try {
-        const response = await apiRequest('/api/admin/importar/mercadolivre', { method: 'POST' });
-        const data = await response.json();
-        
-        if (response.ok) {
-            status.innerHTML = `<p style="color: #2e7d32;">✅ ${data.message}</p>`;
-            setTimeout(() => {
-                carregarDadosReais(); // Recarrega dados reais
-                carregarContadores(); // Atualiza contadores
-                carregarLogs(); // Atualiza logs
-                status.innerHTML = '';
-            }, 3000);
-        } else {
-            status.innerHTML = `<p style="color: #d32f2f;">❌ Erro: ${data.error || 'Desconhecido'}</p>`;
-        }
-    } catch (error) {
-        status.innerHTML = `<p style="color: #d32f2f;">❌ Erro de conexão: ${error.message}</p>`;
-    } finally {
-        btn.disabled = false;
-        btn.textContent = 'Iniciar Importação';
-    }
-});
-
-// ============================================
-// FUNÇÕES DOS BOTÕES DAS PLATAFORMAS
+// FUNÇÃO DE IMPORTAÇÃO COM SELEÇÃO DE ARQUIVO
 // ============================================
 async function importarPlataforma(plataforma) {
-    const statusDiv = document.getElementById(`${plataforma}-status`);
+    console.log(`🔄 Importando para: ${plataforma}`);
     
-    if (statusDiv) {
-        statusDiv.innerHTML = '<div class="import-status info">⏳ Iniciando importação...</div>';
+    // Cria um input de arquivo dinamicamente
+    const fileInput = document.createElement('input');
+    fileInput.type = 'file';
+    fileInput.accept = '.csv';
+    fileInput.style.display = 'none';
+    
+    // Quando um arquivo for selecionado
+    fileInput.onchange = async (event) => {
+        const file = event.target.files[0];
+        if (!file) return;
+        
+        console.log(`📄 Arquivo selecionado: ${file.name} (${(file.size / 1024).toFixed(2)} KB)`);
+        
+        const statusDiv = document.getElementById(`${plataforma}-status`);
+        if (statusDiv) {
+            statusDiv.innerHTML = '<div class="import-status info">⏳ Enviando arquivo e importando...</div>';
+        }
+        
+        // Prepara o FormData para upload
+        const formData = new FormData();
+        formData.append('arquivo', file);
+        formData.append('plataforma', plataforma);
         
         try {
-            const response = await apiRequest(`/api/admin/importar/${plataforma}`, {
-                method: 'POST'
+            const user = localStorage.getItem('adminUser');
+            const pass = localStorage.getItem('adminPass');
+            const basicAuth = 'Basic ' + btoa(user + ':' + pass);
+            
+            const response = await fetch(`${API_URL}/api/admin/importar/upload`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': basicAuth
+                },
+                body: formData
             });
             
             const data = await response.json();
+            console.log('📦 Resposta:', data);
             
             if (response.ok) {
-                statusDiv.innerHTML = `<div class="import-status success">✅ ${data.message}</div>`;
+                if (statusDiv) {
+                    statusDiv.innerHTML = `<div class="import-status success">✅ ${data.message || 'Importação concluída!'}</div>`;
+                }
                 setTimeout(() => {
                     carregarDadosReais();
                     carregarContadores();
-                    statusDiv.innerHTML = '';
-                }, 3000);
+                    if (statusDiv) {
+                        setTimeout(() => { statusDiv.innerHTML = ''; }, 3000);
+                    }
+                }, 2000);
             } else {
-                statusDiv.innerHTML = `<div class="import-status error">❌ Erro: ${data.error || 'Falha na importação'}</div>`;
+                if (statusDiv) {
+                    statusDiv.innerHTML = `<div class="import-status error">❌ Erro: ${data.error || 'Falha na importação'}</div>`;
+                }
             }
         } catch (error) {
-            statusDiv.innerHTML = `<div class="import-status error">❌ Erro de conexão: ${error.message}</div>`;
+            console.error('❌ Erro no upload:', error);
+            if (statusDiv) {
+                statusDiv.innerHTML = `<div class="import-status error">❌ Erro de conexão: ${error.message}</div>`;
+            }
         }
-    }
+        
+        document.body.removeChild(fileInput);
+    };
+    
+    document.body.appendChild(fileInput);
+    fileInput.click();
 }
 
+// ============================================
+// FUNÇÕES DOS BOTÕES
+// ============================================
 function exportarPlataforma(plataforma, formato) {
     alert(`Exportar ${plataforma} em formato ${formato} - Em breve disponível!`);
 }
@@ -308,7 +307,7 @@ if (window.location.pathname.includes('admin.html')) {
         }).then(response => {
             if (response.ok) {
                 mostrarAdmin();
-                carregarDadosReais(); // Carrega dados reais
+                carregarDadosReais();
                 carregarLogs();
                 carregarContadores();
             } else {
