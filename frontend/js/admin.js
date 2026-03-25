@@ -174,7 +174,7 @@ async function carregarLogs() {
 
 function atualizarDashboard() {
     document.getElementById('total-produtos').textContent = produtos.length;
-    const totalCliques = produtos.reduce((acc, p) => acc + (p.cliques || 0), 0);
+    const totalCliques = produits.reduce((acc, p) => acc + (p.cliques || 0), 0);
     document.getElementById('total-cliques').textContent = totalCliques;
 }
 
@@ -192,10 +192,10 @@ function atualizarTabela() {
             <td>#${p.id}</td>
             <td>${p.plataforma || '-'}</td>
             <td>${p.titulo.substring(0, 50)}...</td>
-            <td>R$ ${p.preco}</td>
-            <td>${p.cliques || 0}</td>
-            <td>${p.ativo ? '✅' : '❌'}</td>
-        </tr>
+             <td>R$ ${p.preco}</td>
+             <td>${p.cliques || 0}</td>
+             <td>${p.ativo ? '✅' : '❌'}</td>
+         </tr>
     `).join('');
 }
 
@@ -205,13 +205,11 @@ function atualizarTabela() {
 async function importarPlataforma(plataforma) {
     console.log(`🔄 Importando para: ${plataforma}`);
     
-    // Cria um input de arquivo dinamicamente
     const fileInput = document.createElement('input');
     fileInput.type = 'file';
     fileInput.accept = '.csv';
     fileInput.style.display = 'none';
     
-    // Quando um arquivo for selecionado
     fileInput.onchange = async (event) => {
         const file = event.target.files[0];
         if (!file) return;
@@ -223,7 +221,6 @@ async function importarPlataforma(plataforma) {
             statusDiv.innerHTML = '<div class="import-status info">⏳ Enviando arquivo e importando...</div>';
         }
         
-        // Prepara o FormData para upload
         const formData = new FormData();
         formData.append('arquivo', file);
         formData.append('plataforma', plataforma);
@@ -275,6 +272,126 @@ async function importarPlataforma(plataforma) {
 }
 
 // ============================================
+// FUNÇÕES PARA EXPORTAR E LIMPAR PESQUISAS
+// ============================================
+
+// Exportar dados da tabela pesquisas_detalhadas
+async function exportarPesquisas() {
+    try {
+        console.log('📊 Exportando dados de pesquisas...');
+        
+        const response = await apiRequest('/api/admin/pesquisas/exportar');
+        
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+        }
+        
+        // Pegar o blob e fazer download
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `pesquisas_detalhadas_${new Date().toISOString().slice(0,19)}.csv`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+        
+        console.log('✅ Exportação concluída!');
+        alert('✅ Arquivo CSV exportado com sucesso!');
+        
+    } catch (error) {
+        console.error('❌ Erro ao exportar pesquisas:', error);
+        alert(`❌ Erro ao exportar: ${error.message}`);
+    }
+}
+
+// Limpar tabela pesquisas_detalhadas
+async function limparPesquisas() {
+    const confirmar = confirm('⚠️ ATENÇÃO: Esta ação irá LIMPAR TODOS OS DADOS da tabela de pesquisas detalhadas. Esta operação é irreversível. Deseja continuar?');
+    
+    if (!confirmar) return;
+    
+    try {
+        console.log('🗑️ Limpando tabela pesquisas_detalhadas...');
+        
+        const response = await apiRequest('/api/admin/pesquisas/limpar?confirm=true', {
+            method: 'DELETE'
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+            console.log(`✅ ${data.message}`);
+            alert(`✅ ${data.message}`);
+            
+            // Atualizar estatísticas se a aba estiver visível
+            if (typeof carregarEstatisticasPesquisas === 'function') {
+                carregarEstatisticasPesquisas();
+            }
+        } else {
+            throw new Error(data.error || 'Erro desconhecido');
+        }
+        
+    } catch (error) {
+        console.error('❌ Erro ao limpar pesquisas:', error);
+        alert(`❌ Erro ao limpar: ${error.message}`);
+    }
+}
+
+// Carregar estatísticas das pesquisas
+async function carregarEstatisticasPesquisas() {
+    try {
+        const response = await apiRequest('/api/admin/pesquisas/estatisticas');
+        const data = await response.json();
+        
+        if (data.success && data.data) {
+            // Atualizar card de total
+            const totalElement = document.getElementById('total-pesquisas');
+            if (totalElement) {
+                totalElement.textContent = data.data.total;
+            }
+            
+            // Atualizar tabela de plataformas
+            const tbody = document.getElementById('tabela-estatisticas-plataformas');
+            if (tbody && data.data.por_plataforma) {
+                if (data.data.por_plataforma.length === 0) {
+                    tbody.innerHTML = '发展<td colspan="5" style="text-align: center;">Nenhum dado disponível</td>发展';
+                } else {
+                    tbody.innerHTML = data.data.por_plataforma.map(p => `
+                        <tr>
+                            <td>${p.plataforma}</td>
+                            <td>${p.total}</td>
+                            <td>${p.encontradas}</td>
+                            <td>${p.nao_encontradas}</td>
+                            <td>${p.tempo_medio_ms}ms</td>
+                        </tr>
+                    `).join('');
+                }
+            }
+            
+            // Atualizar tabela de termos não encontrados
+            const termosTbody = document.getElementById('tabela-termos-nao-encontrados');
+            if (termosTbody && data.data.top_nao_encontrados) {
+                if (data.data.top_nao_encontrados.length === 0) {
+                    termosTbody.innerHTML = '发展<td colspan="3" style="text-align: center;">Nenhum termo não encontrado</td>发展';
+                } else {
+                    termosTbody.innerHTML = data.data.top_nao_encontrados.map(t => `
+                        <tr>
+                            <td>${t.termo}</td>
+                            <td>${t.tentativas}</td>
+                            <td>${t.plataformas}</td>
+                        </tr>
+                    `).join('');
+                }
+            }
+        }
+    } catch (error) {
+        console.error('❌ Erro ao carregar estatísticas de pesquisas:', error);
+    }
+}
+
+// ============================================
 // FUNÇÕES DOS BOTÕES
 // ============================================
 function exportarPlataforma(plataforma, formato) {
@@ -310,6 +427,7 @@ if (window.location.pathname.includes('admin.html')) {
                 carregarDadosReais();
                 carregarLogs();
                 carregarContadores();
+                carregarEstatisticasPesquisas();
             } else {
                 mostrarLogin();
             }

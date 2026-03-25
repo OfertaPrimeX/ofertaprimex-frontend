@@ -301,13 +301,14 @@
             color: #333;
         }
 
-        /* ===== NOVA ABA DE ESTATÍSTICAS ===== */
+        /* ===== TABS ===== */
         .admin-tabs {
             display: flex;
             gap: 10px;
             margin-bottom: 20px;
             border-bottom: 2px solid #ff6a00;
             padding-bottom: 10px;
+            flex-wrap: wrap;
         }
 
         .admin-tab {
@@ -316,11 +317,16 @@
             border-radius: 4px 4px 0 0;
             background-color: #f0f0f0;
             color: #666;
+            transition: all 0.2s;
         }
 
         .admin-tab.active {
             background-color: #ff6a00;
             color: white;
+        }
+
+        .admin-tab:hover:not(.active) {
+            background-color: #e0e0e0;
         }
 
         .tab-content {
@@ -329,6 +335,51 @@
 
         .tab-content.active {
             display: block;
+        }
+
+        /* ===== BOTÕES DE AÇÃO ===== */
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .action-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+
+        .action-btn.export {
+            background-color: #2e7d32;
+            color: white;
+        }
+
+        .action-btn.export:hover {
+            background-color: #1f5a23;
+        }
+
+        .action-btn.delete {
+            background-color: #c62828;
+            color: white;
+        }
+
+        .action-btn.delete:hover {
+            background-color: #b71c1c;
+        }
+
+        .action-btn.refresh {
+            background-color: #ff6a00;
+            color: white;
+        }
+
+        .action-btn.refresh:hover {
+            background-color: #e85f00;
         }
     </style>
 </head>
@@ -356,6 +407,7 @@
         <!-- TABS -->
         <div class="admin-tabs">
             <div class="admin-tab active" onclick="mostrarTab('produtos')">📦 Produtos</div>
+            <div class="admin-tab" onclick="mostrarTab('pesquisas')">🔍 Pesquisas</div>
             <div class="admin-tab" onclick="mostrarTab('estatisticas')">📊 Estatísticas</div>
             <div class="admin-tab" onclick="mostrarTab('logs')">📋 Logs</div>
         </div>
@@ -461,10 +513,58 @@
                                 <th>Preço</th>
                                 <th>Cliques</th>
                                 <th>Status</th>
-                            </tr>
+                             </tr>
                         </thead>
                         <tbody id="tabela-body">
-                            <tr><td colspan="6" style="text-align: center; padding: 30px;">Carregando...</td></tr>
+                             <td colspan="6" style="text-align: center; padding: 30px;">Carregando...</td>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB PESQUISAS (NOVA) -->
+        <div id="tab-pesquisas" class="tab-content">
+            <div class="admin-card">
+                <h3 class="admin-title">🔍 Dados de Pesquisas Detalhadas</h3>
+                <p class="admin-subtitle">Registro detalhado de pesquisas por plataforma</p>
+                
+                <div class="action-buttons">
+                    <button class="action-btn export" onclick="exportarPesquisas()">📥 Exportar CSV</button>
+                    <button class="action-btn delete" onclick="limparPesquisas()">🗑️ Limpar Tabela</button>
+                    <button class="action-btn refresh" onclick="carregarEstatisticasPesquisas()">🔄 Atualizar</button>
+                </div>
+                
+                <h4 class="platform-title">📊 Estatísticas por Plataforma</h4>
+                <div style="overflow-x: auto;">
+                    <table class="admin-table">
+                        <thead>
+                             <tr>
+                                <th>Plataforma</th>
+                                <th>Total</th>
+                                <th>Encontradas</th>
+                                <th>Não Encontradas</th>
+                                <th>Tempo Médio</th>
+                             </tr>
+                        </thead>
+                        <tbody id="tabela-estatisticas-plataformas">
+                             <td colspan="5" style="text-align: center;">Carregando...</td>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <h4 class="platform-title" style="margin-top: 30px;">🔝 Termos Mais Buscados (não encontrados)</h4>
+                <div style="overflow-x: auto;">
+                    <table class="admin-table">
+                        <thead>
+                             <tr>
+                                <th>Termo</th>
+                                <th>Tentativas</th>
+                                <th>Plataformas</th>
+                             </tr>
+                        </thead>
+                        <tbody id="tabela-termos-nao-encontrados">
+                             <td colspan="3" style="text-align: center;">Carregando...</td>
                         </tbody>
                     </table>
                 </div>
@@ -495,16 +595,16 @@
                 <div style="overflow-x: auto;">
                     <table class="admin-table">
                         <thead>
-                            <tr>
+                             <tr>
                                 <th>Termo</th>
                                 <th>Buscas</th>
                                 <th>No Banco</th>
                                 <th>Na Plataforma</th>
                                 <th>Não Encontrado</th>
-                            </tr>
+                             </tr>
                         </thead>
                         <tbody id="tabela-termos">
-                            <tr><td colspan="5" style="text-align: center;">Carregando...</td></tr>
+                             <td colspan="5" style="text-align: center;">Carregando...</td>
                         </tbody>
                     </table>
                 </div>
@@ -552,6 +652,7 @@
         document.getElementById(`tab-${tab}`).classList.add('active');
         
         if (tab === 'estatisticas') carregarEstatisticas();
+        if (tab === 'pesquisas') carregarEstatisticasPesquisas();
         if (tab === 'logs') carregarLogsDisplay();
     }
 
@@ -573,16 +674,16 @@
 
                 const tbody = document.getElementById('tabela-termos');
                 if (data.data.top_termos.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="5" style="text-align: center;">Nenhum termo buscado</td></tr>';
+                    tbody.innerHTML = '发展<td colspan="5" style="text-align: center;">Nenhum termo buscado</td>发展';
                 } else {
                     tbody.innerHTML = data.data.top_termos.map(t => `
-                        <tr>
-                            <td>${t.termo}</td>
-                            <td>${t.buscas}</td>
-                            <td>${t.encontrados_banco}</td>
-                            <td>${t.encontrados_plataforma}</td>
-                            <td>${t.nao_encontrados}</td>
-                        </tr>
+                         <tr>
+                             <td>${t.termo}</td>
+                             <td>${t.buscas}</td>
+                             <td>${t.encontrados_banco}</td>
+                             <td>${t.encontrados_plataforma}</td>
+                             <td>${t.nao_encontrados}</td>
+                         </tr>
                     `).join('');
                 }
             }
