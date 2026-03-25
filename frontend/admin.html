@@ -381,34 +381,6 @@
         .action-btn.refresh:hover {
             background-color: #e85f00;
         }
-
-        .platform-title {
-            font-size: 18px;
-            color: #333;
-            margin: 20px 0 10px 0;
-            font-weight: bold;
-        }
-
-        .toast-message {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            padding: 12px 20px;
-            border-radius: 4px;
-            color: white;
-            font-weight: bold;
-            z-index: 2000;
-            animation: slideIn 0.3s ease;
-        }
-
-        .toast-message.success { background-color: #2e7d32; }
-        .toast-message.error { background-color: #c62828; }
-        .toast-message.info { background-color: #ff6a00; }
-
-        @keyframes slideIn {
-            from { transform: translateX(100%); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
-        }
     </style>
 </head>
 <body>
@@ -551,7 +523,7 @@
             </div>
         </div>
 
-        <!-- TAB PESQUISAS (NOVA) -->
+        <!-- TAB PESQUISAS -->
         <div id="tab-pesquisas" class="tab-content">
             <div class="admin-card">
                 <h3 class="admin-title">🔍 Dados de Pesquisas Detalhadas</h3>
@@ -567,13 +539,13 @@
                 <div style="overflow-x: auto;">
                     <table class="admin-table">
                         <thead>
-                             <tr>
+                            <tr>
                                 <th>Plataforma</th>
                                 <th>Total</th>
                                 <th>Encontradas</th>
                                 <th>Não Encontradas</th>
                                 <th>Tempo Médio</th>
-                             </tr>
+                              </tr>
                         </thead>
                         <tbody id="tabela-estatisticas-plataformas">
                              <td colspan="5" style="text-align: center;">Carregando...</td>
@@ -585,11 +557,11 @@
                 <div style="overflow-x: auto;">
                     <table class="admin-table">
                         <thead>
-                             <tr>
+                            <tr>
                                 <th>Termo</th>
                                 <th>Tentativas</th>
                                 <th>Plataformas</th>
-                             </tr>
+                              </tr>
                         </thead>
                         <tbody id="tabela-termos-nao-encontrados">
                              <td colspan="3" style="text-align: center;">Carregando...</td>
@@ -623,13 +595,13 @@
                 <div style="overflow-x: auto;">
                     <table class="admin-table">
                         <thead>
-                             <tr>
+                            <tr>
                                 <th>Termo</th>
                                 <th>Buscas</th>
                                 <th>No Banco</th>
                                 <th>Na Plataforma</th>
                                 <th>Não Encontrado</th>
-                             </tr>
+                              </tr>
                         </thead>
                         <tbody id="tabela-termos">
                              <td colspan="5" style="text-align: center;">Carregando...</td>
@@ -686,37 +658,55 @@
 
     async function carregarEstatisticas() {
         try {
-            const response = await apiRequest('/api/pesquisas/estatisticas');
+            // CORRIGIDO: rota correta com /admin/
+            const response = await apiRequest('/api/admin/pesquisas/estatisticas');
             const data = await response.json();
             
             if (data.success) {
-                const ultimas24h = data.data.ultimas_24h;
-                document.getElementById('total-pesquisas-24h').textContent = ultimas24h.total || 0;
+                const totalRegistros = data.data.total || 0;
+                document.getElementById('total-pesquisas-24h').textContent = totalRegistros;
                 
-                const taxaBanco = ultimas24h.total > 0 
-                    ? Math.round((ultimas24h.banco / ultimas24h.total) * 100) 
-                    : 0;
-                document.getElementById('taxa-sucesso-banco').textContent = taxaBanco + '%';
+                // Calcular taxa de sucesso baseado nos dados por plataforma
+                let totalEncontradas = 0;
+                let totalGeral = 0;
+                let somaTempos = 0;
+                let qtdPlataformas = 0;
                 
-                document.getElementById('tempo-medio').textContent = (ultimas24h.tempo_medio || 0) + 'ms';
+                if (data.data.por_plataforma && data.data.por_plataforma.length > 0) {
+                    data.data.por_plataforma.forEach(p => {
+                        totalEncontradas += p.encontradas;
+                        totalGeral += p.total;
+                        if (p.tempo_medio_ms) {
+                            somaTempos += p.tempo_medio_ms;
+                            qtdPlataformas++;
+                        }
+                    });
+                }
+                
+                const taxaSucesso = totalGeral > 0 ? Math.round((totalEncontradas / totalGeral) * 100) : 0;
+                document.getElementById('taxa-sucesso-banco').textContent = taxaSucesso + '%';
+                
+                const tempoMedioGlobal = qtdPlataformas > 0 ? Math.round(somaTempos / qtdPlataformas) : 0;
+                document.getElementById('tempo-medio').textContent = tempoMedioGlobal + 'ms';
 
                 const tbody = document.getElementById('tabela-termos');
-                if (data.data.top_termos.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="5" style="text-align: center;">Nenhum termo buscado</td></tr>';
-                } else {
-                    tbody.innerHTML = data.data.top_termos.map(t => `
+                if (data.data.top_nao_encontrados && data.data.top_nao_encontrados.length > 0) {
+                    tbody.innerHTML = data.data.top_nao_encontrados.slice(0, 10).map(t => `
                         <tr>
                             <td>${t.termo}</td>
-                            <td>${t.buscas}</td>
-                            <td>${t.encontrados_banco}</td>
-                            <td>${t.encontrados_plataforma}</td>
-                            <td>${t.nao_encontrados}</td>
+                            <td>${t.tentativas}</td>
+                            <td>${t.tentativas}</td>
+                            <td>0</td>
+                            <td>${t.tentativas}</td>
                         </tr>
                     `).join('');
+                } else {
+                    tbody.innerHTML = '<tr><td colspan="5" style="text-align: center;">Nenhum termo buscado</td></tr>';
                 }
             }
         } catch (error) {
             console.error('Erro ao carregar estatísticas:', error);
+            document.getElementById('total-pesquisas-24h').textContent = 'Erro';
         }
     }
 
@@ -737,136 +727,6 @@
             document.getElementById('logs-container').innerHTML = '<div style="color: #ff5555;">❌ Erro ao carregar logs</div>';
         }
     }
-
-    // ============================================
-    // FUNÇÕES CORRIGIDAS PARA EXPORTAR E LIMPAR
-    // ============================================
-    
-    /**
-     * Exportar dados de pesquisas para CSV
-     * ROTA CORRETA: /api/admin/pesquisas/exportar
-     */
-    async function exportarPesquisas() {
-        try {
-            mostrarToast('📥 Gerando arquivo CSV...', 'info');
-            
-            // Usar a rota correta do backend
-            const url = `${API_BASE_URL}/admin/pesquisas/exportar?format=csv`;
-            
-            // Abrir em nova aba para download
-            window.open(url, '_blank');
-            
-            mostrarToast('✅ Download iniciado!', 'success');
-        } catch (error) {
-            console.error('Erro ao exportar pesquisas:', error);
-            mostrarToast('❌ Erro ao exportar: ' + error.message, 'error');
-        }
-    }
-
-    /**
-     * Limpar tabela de pesquisas detalhadas
-     * ROTA CORRETA: /api/admin/pesquisas/limpar?confirm=true
-     */
-    async function limparPesquisas() {
-        // Confirmar com o usuário
-        const confirmar = confirm('⚠️ ATENÇÃO: Isso irá remover TODOS os registros de pesquisas. Esta ação não pode ser desfeita. Deseja continuar?');
-        
-        if (!confirmar) return;
-        
-        try {
-            mostrarToast('🗑️ Limpando tabela de pesquisas...', 'info');
-            
-            const response = await apiRequest('/admin/pesquisas/limpar?confirm=true', {
-                method: 'DELETE'
-            });
-            
-            const data = await response.json();
-            
-            if (data.success) {
-                mostrarToast(`✅ ${data.message}`, 'success');
-                // Recarregar as estatísticas após limpar
-                setTimeout(() => {
-                    carregarEstatisticasPesquisas();
-                }, 1000);
-            } else {
-                mostrarToast(`❌ Erro: ${data.error}`, 'error');
-            }
-        } catch (error) {
-            console.error('Erro ao limpar pesquisas:', error);
-            mostrarToast('❌ Erro ao limpar tabela: ' + error.message, 'error');
-        }
-    }
-
-    /**
-     * Carregar estatísticas de pesquisas
-     */
-    async function carregarEstatisticasPesquisas() {
-        try {
-            const response = await apiRequest('/admin/pesquisas/estatisticas');
-            const data = await response.json();
-            
-            if (data.success) {
-                // Preencher tabela de estatísticas por plataforma
-                const tbodyPlataformas = document.getElementById('tabela-estatisticas-plataformas');
-                if (data.data.por_plataforma && data.data.por_plataforma.length > 0) {
-                    tbodyPlataformas.innerHTML = data.data.por_plataforma.map(p => `
-                        <tr>
-                            <td><strong>${p.plataforma}</strong></td>
-                            <td>${p.total}</td>
-                            <td>${p.encontradas}</td>
-                            <td>${p.nao_encontradas}</td>
-                            <td>${p.tempo_medio_ms}ms</td>
-                        </tr>
-                    `).join('');
-                } else {
-                    tbodyPlataformas.innerHTML = '<tr><td colspan="5" style="text-align: center;">Nenhum dado encontrado</td></tr>';
-                }
-                
-                // Preencher tabela de termos não encontrados
-                const tbodyTermos = document.getElementById('tabela-termos-nao-encontrados');
-                if (data.data.top_nao_encontrados && data.data.top_nao_encontrados.length > 0) {
-                    tbodyTermos.innerHTML = data.data.top_nao_encontrados.map(t => `
-                        <tr>
-                            <td>${t.termo}</td>
-                            <td>${t.tentativas}</td>
-                            <td>${t.plataformas}</td>
-                        </tr>
-                    `).join('');
-                } else {
-                    tbodyTermos.innerHTML = '<tr><td colspan="3" style="text-align: center;">Nenhum termo não encontrado</td></tr>';
-                }
-            } else {
-                console.error('Erro na resposta:', data);
-                mostrarToast('❌ Erro ao carregar estatísticas', 'error');
-            }
-        } catch (error) {
-            console.error('Erro ao carregar estatísticas de pesquisas:', error);
-            mostrarToast('❌ Erro ao carregar estatísticas', 'error');
-        }
-    }
-
-    /**
-     * Mostrar toast de notificação
-     */
-    function mostrarToast(mensagem, tipo = 'info') {
-        // Remover toast existente
-        const toastExistente = document.querySelector('.toast-message');
-        if (toastExistente) toastExistente.remove();
-        
-        // Criar novo toast
-        const toast = document.createElement('div');
-        toast.className = `toast-message ${tipo}`;
-        toast.textContent = mensagem;
-        document.body.appendChild(toast);
-        
-        // Remover após 3 segundos
-        setTimeout(() => {
-            toast.remove();
-        }, 3000);
-    }
-
-    // Variável global para API_BASE_URL (se não existir em main.js)
-    const API_BASE_URL = window.API_BASE_URL || '/api';
 </script>
 </body>
 </html>
