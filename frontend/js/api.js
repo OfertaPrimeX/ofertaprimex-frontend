@@ -55,3 +55,47 @@ export async function getProducts({ page = 1, limit = 20 } = {}) {
         return { products: [] };
     }
 }
+
+// ============================================
+// NOVAS FUNÇÕES PARA TOP 10 E TOP 20
+// ============================================
+
+// Buscar Top 10 (produtos mais pesquisados)
+export async function getTop10() {
+    try {
+        console.log('📊 Buscando Top 10 produtos...');
+        const response = await fetch(`${API_URL}/api/pesquisas/top10`);
+        const data = await response.json();
+        
+        if (data.success) {
+            console.log(`✅ Top 10 carregado: ${data.products?.length || 0} produtos`);
+            return data.products || [];
+        } else {
+            console.error('❌ Erro ao buscar Top 10:', data.error);
+            return [];
+        }
+    } catch (error) {
+        console.error('❌ Erro no Top 10:', error);
+        return [];
+    }
+}
+
+// Buscar Top 20 Mercado Livre (melhores produtos)
+export async function getTop20MercadoLivre() {
+    try {
+        console.log('📊 Buscando Top 20 Mercado Livre...');
+        const response = await fetch(`${API_URL}/api/produtos/top20/mercadolivre`);
+        const data = await response.json();
+        
+        if (data.success) {
+            console.log(`✅ Top 20 Mercado Livre carregado: ${data.products?.length || 0} produtos`);
+            return data.products || [];
+        } else {
+            console.error('❌ Erro ao buscar Top 20 ML:', data.error);
+            return [];
+        }
+    } catch (error) {
+        console.error('❌ Erro no Top 20 ML:', error);
+        return [];
+    }
+}
