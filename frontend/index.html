@@ -38,21 +38,33 @@
     </div>
 </section>
 
-<!-- ================= TOP 10 ================= -->
+<!-- ================= TOP 10 CARROSSEL ================= -->
 <section class="section" id="top10">
     <div class="container">
         <h2 class="section-title">🏆 Top 10 Produtos Mais Pesquisados</h2>
         <p class="section-subtitle">Os produtos mais procurados por você na última semana</p>
-        <div class="products-grid" id="top10-grid"></div>
+        <div class="carousel-container">
+            <button class="carousel-btn prev" onclick="scrollCarousel('top10-grid', -1)">‹</button>
+            <div class="carousel">
+                <div class="products-grid" id="top10-grid"></div>
+            </div>
+            <button class="carousel-btn next" onclick="scrollCarousel('top10-grid', 1)">›</button>
+        </div>
     </div>
 </section>
 
-<!-- ================= TOP 20 MERCADO LIVRE ================= -->
+<!-- ================= TOP 20 MERCADO LIVRE CARROSSEL ================= -->
 <section class="section section-gray" id="top20">
     <div class="container">
         <h2 class="section-title">🏅 Top 20 - Mercado Livre</h2>
         <p class="section-subtitle">Os 20 produtos mais bem avaliados e com melhor preço</p>
-        <div class="products-grid small-grid" id="top20-mercadolivre"></div>
+        <div class="carousel-container">
+            <button class="carousel-btn prev" onclick="scrollCarousel('top20-mercadolivre', -1)">‹</button>
+            <div class="carousel">
+                <div class="products-grid small-grid" id="top20-mercadolivre"></div>
+            </div>
+            <button class="carousel-btn next" onclick="scrollCarousel('top20-mercadolivre', 1)">›</button>
+        </div>
     </div>
 </section>
 
@@ -79,6 +91,19 @@
   const btnBuscar = document.getElementById('btnBuscar');
   const top10Grid = document.getElementById('top10-grid');
   const top20MlGrid = document.getElementById('top20-mercadolivre');
+
+  // Função de scroll do carrossel
+  window.scrollCarousel = function(gridId, direction) {
+      const grid = document.getElementById(gridId);
+      if (!grid) return;
+      
+      const card = grid.querySelector('.product-card');
+      if (!card) return;
+      
+      const cardWidth = card.offsetWidth + 20; // 20 é o gap
+      const scrollAmount = cardWidth * direction;
+      grid.parentElement.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+  };
 
   async function registrarPesquisa(termo, origem, quantidade, tempoMs) {
       try {
@@ -144,6 +169,11 @@
           
           if (data.success && data.products) {
               renderProducts(top10Grid, data.products, true);
+              // Ajusta o carrossel após carregar
+              setTimeout(() => {
+                  const container = top10Grid.parentElement;
+                  if (container) container.style.scrollBehavior = 'smooth';
+              }, 100);
           } else {
               top10Grid.innerHTML = '<p style="text-align: center; grid-column: 1/-1;">Nenhum produto no Top 10 ainda</p>';
           }
@@ -158,6 +188,11 @@
       try {
           const produtos = await getTop20MercadoLivre();
           renderProducts(top20MlGrid, produtos, true);
+          // Ajusta o carrossel após carregar
+          setTimeout(() => {
+              const container = top20MlGrid.parentElement;
+              if (container) container.style.scrollBehavior = 'smooth';
+          }, 100);
       } catch (error) {
           console.error('Erro ao carregar Top 20 ML:', error);
           top20MlGrid.innerHTML = '<p style="text-align: center; grid-column: 1/-1;">⚠️ Não foi possível carregar o Top 20</p>';

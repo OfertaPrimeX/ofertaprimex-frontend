@@ -117,6 +117,7 @@ body {
     text-align: center;
     border: 1px solid #e0e0e0;
     transition: transform 0.2s, box-shadow 0.2s;
+    position: relative;
 }
 
 .product-card:hover {
@@ -150,6 +151,101 @@ body {
     font-weight: bold;
     color: #2e7d32;
     margin-bottom: 8px;
+}
+
+/* ================= RANKING BADGE ================= */
+.rank-badge {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background: #ff6a00;
+    color: white;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 14px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    z-index: 5;
+}
+
+/* ================= CARROSSEL ================= */
+.carousel-container {
+    position: relative;
+    margin: 20px 0;
+}
+
+.carousel {
+    overflow-x: auto;
+    scroll-behavior: smooth;
+    scrollbar-width: thin;
+    -webkit-overflow-scrolling: touch;
+}
+
+.carousel::-webkit-scrollbar {
+    height: 8px;
+}
+
+.carousel::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+.carousel::-webkit-scrollbar-thumb {
+    background: #ff6a00;
+    border-radius: 10px;
+}
+
+.carousel .products-grid {
+    display: flex;
+    gap: 20px;
+    flex-wrap: nowrap;
+    padding: 10px 5px;
+}
+
+.carousel .product-card {
+    flex: 0 0 220px;
+    min-width: 220px;
+    transition: transform 0.3s;
+}
+
+.carousel .product-card:hover {
+    transform: translateY(-5px);
+}
+
+.carousel-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(255, 106, 0, 0.9);
+    color: white;
+    border: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s;
+    z-index: 10;
+}
+
+.carousel-btn:hover {
+    background: #e85f00;
+    transform: translateY(-50%) scale(1.1);
+}
+
+.carousel-btn.prev {
+    left: -20px;
+}
+
+.carousel-btn.next {
+    right: -20px;
 }
 
 /* ================= BOTÕES ================= */
@@ -216,5 +312,24 @@ body {
     
     #busca {
         width: 200px;
+    }
+    
+    .carousel-btn {
+        width: 32px;
+        height: 32px;
+        font-size: 16px;
+    }
+    
+    .carousel-btn.prev {
+        left: -10px;
+    }
+    
+    .carousel-btn.next {
+        right: -10px;
+    }
+    
+    .carousel .product-card {
+        flex: 0 0 180px;
+        min-width: 180px;
     }
 }
