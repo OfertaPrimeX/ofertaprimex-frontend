@@ -15,6 +15,7 @@
             <a href="#home">Home</a>
             <a href="#top10">Top 10</a>
             <a href="#top20">Top 20</a>
+            <a href="#random">Aleatórios</a>
             <a href="#sobre">Quem Somos</a>
             <a href="admin.html" id="admin-link" style="display: none;">Admin</a>
             <a href="#" id="auth-link">Login</a>
@@ -54,16 +55,76 @@
 </section>
 
 <!-- ================= TOP 20 MERCADO LIVRE CARROSSEL ================= -->
-<section class="section section-gray" id="top20">
+<section class="section section-gray" id="top20-mercadolivre">
     <div class="container">
         <h2 class="section-title">🏅 Top 20 - Mercado Livre</h2>
         <p class="section-subtitle">Os 20 produtos mais bem avaliados e com melhor preço</p>
         <div class="carousel-container">
-            <button class="carousel-btn prev" onclick="scrollCarousel('top20-mercadolivre', -1)">‹</button>
+            <button class="carousel-btn prev" onclick="scrollCarousel('top20-ml-grid', -1)">‹</button>
             <div class="carousel">
-                <div class="products-grid small-grid" id="top20-mercadolivre"></div>
+                <div class="products-grid small-grid" id="top20-ml-grid"></div>
             </div>
-            <button class="carousel-btn next" onclick="scrollCarousel('top20-mercadolivre', 1)">›</button>
+            <button class="carousel-btn next" onclick="scrollCarousel('top20-ml-grid', 1)">›</button>
+        </div>
+    </div>
+</section>
+
+<!-- ================= TOP 20 AMAZON CARROSSEL ================= -->
+<section class="section" id="top20-amazon">
+    <div class="container">
+        <h2 class="section-title">📚 Top 20 - Amazon</h2>
+        <p class="section-subtitle">Os produtos mais bem avaliados na Amazon</p>
+        <div class="carousel-container">
+            <button class="carousel-btn prev" onclick="scrollCarousel('top20-amazon-grid', -1)">‹</button>
+            <div class="carousel">
+                <div class="products-grid small-grid" id="top20-amazon-grid"></div>
+            </div>
+            <button class="carousel-btn next" onclick="scrollCarousel('top20-amazon-grid', 1)">›</button>
+        </div>
+    </div>
+</section>
+
+<!-- ================= TOP 20 SHOPEE CARROSSEL ================= -->
+<section class="section section-gray" id="top20-shopee">
+    <div class="container">
+        <h2 class="section-title">🛍️ Top 20 - Shopee</h2>
+        <p class="section-subtitle">Os produtos mais bem avaliados na Shopee</p>
+        <div class="carousel-container">
+            <button class="carousel-btn prev" onclick="scrollCarousel('top20-shopee-grid', -1)">‹</button>
+            <div class="carousel">
+                <div class="products-grid small-grid" id="top20-shopee-grid"></div>
+            </div>
+            <button class="carousel-btn next" onclick="scrollCarousel('top20-shopee-grid', 1)">›</button>
+        </div>
+    </div>
+</section>
+
+<!-- ================= TOP 20 MAGALU CARROSSEL ================= -->
+<section class="section" id="top20-magalu">
+    <div class="container">
+        <h2 class="section-title">🪄 Top 20 - Magalu</h2>
+        <p class="section-subtitle">Os produtos mais bem avaliados no Magalu</p>
+        <div class="carousel-container">
+            <button class="carousel-btn prev" onclick="scrollCarousel('top20-magalu-grid', -1)">‹</button>
+            <div class="carousel">
+                <div class="products-grid small-grid" id="top20-magalu-grid"></div>
+            </div>
+            <button class="carousel-btn next" onclick="scrollCarousel('top20-magalu-grid', 1)">›</button>
+        </div>
+    </div>
+</section>
+
+<!-- ================= 50 PRODUTOS ALEATÓRIOS CARROSSEL ================= -->
+<section class="section section-gray" id="random">
+    <div class="container">
+        <h2 class="section-title">🎲 Produtos Aleatórios</h2>
+        <p class="section-subtitle">Descubra ofertas variadas de todas as plataformas (atualiza a cada visita)</p>
+        <div class="carousel-container">
+            <button class="carousel-btn prev" onclick="scrollCarousel('random-grid', -1)">‹</button>
+            <div class="carousel">
+                <div class="products-grid" id="random-grid"></div>
+            </div>
+            <button class="carousel-btn next" onclick="scrollCarousel('random-grid', 1)">›</button>
         </div>
     </div>
 </section>
@@ -82,15 +143,28 @@
 
 <script src="js/main.js"></script>
 <script type="module">
-  import { searchProducts, getTop10, getTop20MercadoLivre } from './js/api.js';
+  import { 
+      searchProducts, 
+      getTop10, 
+      getTop20MercadoLivre,
+      getTop20Amazon,
+      getTop20Shopee,
+      getTop20Magalu,
+      getRandomProducts
+  } from './js/api.js';
   import { renderProducts } from './js/render.js';
 
   const gridBusca = document.getElementById('grid-busca');
   const sectionBusca = document.getElementById('resultado-busca');
   const buscaInput = document.getElementById('busca');
   const btnBuscar = document.getElementById('btnBuscar');
+  
   const top10Grid = document.getElementById('top10-grid');
-  const top20MlGrid = document.getElementById('top20-mercadolivre');
+  const top20MlGrid = document.getElementById('top20-ml-grid');
+  const top20AmazonGrid = document.getElementById('top20-amazon-grid');
+  const top20ShopeeGrid = document.getElementById('top20-shopee-grid');
+  const top20MagaluGrid = document.getElementById('top20-magalu-grid');
+  const randomGrid = document.getElementById('random-grid');
 
   // Função de scroll do carrossel
   window.scrollCarousel = function(gridId, direction) {
@@ -100,7 +174,7 @@
       const card = grid.querySelector('.product-card');
       if (!card) return;
       
-      const cardWidth = card.offsetWidth + 20; // 20 é o gap
+      const cardWidth = card.offsetWidth + 20;
       const scrollAmount = cardWidth * direction;
       grid.parentElement.scrollBy({ left: scrollAmount, behavior: 'smooth' });
   };
@@ -161,22 +235,15 @@
     }
   }
 
-  // Carregar Top 10 (mais pesquisados)
+  // Carregar Top 10
   async function carregarTop10() {
       try {
-          const response = await fetch('https://yo0g0cg4c88w88osc4s04c0c.72.61.33.248.sslip.io/api/pesquisas/top10');
-          const data = await response.json();
-          
-          if (data.success && data.products) {
-              renderProducts(top10Grid, data.products, true);
-              // Ajusta o carrossel após carregar
-              setTimeout(() => {
-                  const container = top10Grid.parentElement;
-                  if (container) container.style.scrollBehavior = 'smooth';
-              }, 100);
-          } else {
-              top10Grid.innerHTML = '<p style="text-align: center; grid-column: 1/-1;">Nenhum produto no Top 10 ainda</p>';
-          }
+          const produtos = await getTop10();
+          renderProducts(top10Grid, produtos, true);
+          setTimeout(() => {
+              const container = top10Grid.parentElement;
+              if (container) container.style.scrollBehavior = 'smooth';
+          }, 100);
       } catch (error) {
           console.error('Erro ao carregar Top 10:', error);
           top10Grid.innerHTML = '<p style="text-align: center; grid-column: 1/-1;">⚠️ Não foi possível carregar o Top 10</p>';
@@ -188,7 +255,6 @@
       try {
           const produtos = await getTop20MercadoLivre();
           renderProducts(top20MlGrid, produtos, true);
-          // Ajusta o carrossel após carregar
           setTimeout(() => {
               const container = top20MlGrid.parentElement;
               if (container) container.style.scrollBehavior = 'smooth';
@@ -199,14 +265,90 @@
       }
   }
 
+  // Carregar Top 20 Amazon
+  async function carregarTop20Amazon() {
+      try {
+          const produtos = await getTop20Amazon();
+          if (produtos.length > 0) {
+              renderProducts(top20AmazonGrid, produtos, true);
+          } else {
+              top20AmazonGrid.innerHTML = '<p style="text-align: center; grid-column: 1/-1;">📭 Produtos da Amazon em breve</p>';
+          }
+          setTimeout(() => {
+              const container = top20AmazonGrid.parentElement;
+              if (container) container.style.scrollBehavior = 'smooth';
+          }, 100);
+      } catch (error) {
+          console.error('Erro ao carregar Top 20 Amazon:', error);
+          top20AmazonGrid.innerHTML = '<p style="text-align: center; grid-column: 1/-1;">⚠️ Amazon - Em breve</p>';
+      }
+  }
+
+  // Carregar Top 20 Shopee
+  async function carregarTop20Shopee() {
+      try {
+          const produtos = await getTop20Shopee();
+          if (produtos.length > 0) {
+              renderProducts(top20ShopeeGrid, produtos, true);
+          } else {
+              top20ShopeeGrid.innerHTML = '<p style="text-align: center; grid-column: 1/-1;">📭 Produtos da Shopee em breve</p>';
+          }
+          setTimeout(() => {
+              const container = top20ShopeeGrid.parentElement;
+              if (container) container.style.scrollBehavior = 'smooth';
+          }, 100);
+      } catch (error) {
+          console.error('Erro ao carregar Top 20 Shopee:', error);
+          top20ShopeeGrid.innerHTML = '<p style="text-align: center; grid-column: 1/-1;">⚠️ Shopee - Em breve</p>';
+      }
+  }
+
+  // Carregar Top 20 Magalu
+  async function carregarTop20Magalu() {
+      try {
+          const produtos = await getTop20Magalu();
+          if (produtos.length > 0) {
+              renderProducts(top20MagaluGrid, produtos, true);
+          } else {
+              top20MagaluGrid.innerHTML = '<p style="text-align: center; grid-column: 1/-1;">📭 Produtos da Magalu em breve</p>';
+          }
+          setTimeout(() => {
+              const container = top20MagaluGrid.parentElement;
+              if (container) container.style.scrollBehavior = 'smooth';
+          }, 100);
+      } catch (error) {
+          console.error('Erro ao carregar Top 20 Magalu:', error);
+          top20MagaluGrid.innerHTML = '<p style="text-align: center; grid-column: 1/-1;">⚠️ Magalu - Em breve</p>';
+      }
+  }
+
+  // Carregar Produtos Aleatórios
+  async function carregarRandom() {
+      try {
+          const produtos = await getRandomProducts(50);
+          renderProducts(randomGrid, produtos, false);
+          setTimeout(() => {
+              const container = randomGrid.parentElement;
+              if (container) container.style.scrollBehavior = 'smooth';
+          }, 100);
+      } catch (error) {
+          console.error('Erro ao carregar produtos aleatórios:', error);
+          randomGrid.innerHTML = '<p style="text-align: center; grid-column: 1/-1;">⚠️ Não foi possível carregar produtos aleatórios</p>';
+      }
+  }
+
   btnBuscar.addEventListener('click', realizarBusca);
   buscaInput.addEventListener('keypress', (e) => {
     if (e.key === 'Enter') realizarBusca();
   });
 
-  // Carregar dados na inicialização
+  // Carregar todos os dados na inicialização
   carregarTop10();
   carregarTop20MercadoLivre();
+  carregarTop20Amazon();
+  carregarTop20Shopee();
+  carregarTop20Magalu();
+  carregarRandom();
 </script>
 </body>
 </html>

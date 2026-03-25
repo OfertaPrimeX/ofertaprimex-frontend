@@ -57,10 +57,8 @@ export async function getProducts({ page = 1, limit = 20 } = {}) {
 }
 
 // ============================================
-// NOVAS FUNÇÕES PARA TOP 10 E TOP 20
+// TOP 10 (produtos mais pesquisados)
 // ============================================
-
-// Buscar Top 10 (produtos mais pesquisados)
 export async function getTop10() {
     try {
         console.log('📊 Buscando Top 10 produtos...');
@@ -80,7 +78,9 @@ export async function getTop10() {
     }
 }
 
-// Buscar Top 20 Mercado Livre (melhores produtos)
+// ============================================
+// TOP 20 MERCADO LIVRE
+// ============================================
 export async function getTop20MercadoLivre() {
     try {
         console.log('📊 Buscando Top 20 Mercado Livre...');
@@ -88,7 +88,7 @@ export async function getTop20MercadoLivre() {
         const data = await response.json();
         
         if (data.success) {
-            console.log(`✅ Top 20 Mercado Livre carregado: ${data.products?.length || 0} produtos`);
+            console.log(`✅ Top 20 Mercado Livre: ${data.products?.length || 0} produtos`);
             return data.products || [];
         } else {
             console.error('❌ Erro ao buscar Top 20 ML:', data.error);
@@ -96,6 +96,94 @@ export async function getTop20MercadoLivre() {
         }
     } catch (error) {
         console.error('❌ Erro no Top 20 ML:', error);
+        return [];
+    }
+}
+
+// ============================================
+// TOP 20 AMAZON
+// ============================================
+export async function getTop20Amazon() {
+    try {
+        console.log('📊 Buscando Top 20 Amazon...');
+        const response = await fetch(`${API_URL}/api/produtos/top20/amazon`);
+        const data = await response.json();
+        
+        if (data.success) {
+            console.log(`✅ Top 20 Amazon: ${data.products?.length || 0} produtos`);
+            return data.products || [];
+        } else {
+            console.log('📭 Nenhum produto da Amazon disponível ainda');
+            return [];
+        }
+    } catch (error) {
+        console.error('❌ Erro no Top 20 Amazon:', error);
+        return [];
+    }
+}
+
+// ============================================
+// TOP 20 SHOPEE
+// ============================================
+export async function getTop20Shopee() {
+    try {
+        console.log('📊 Buscando Top 20 Shopee...');
+        const response = await fetch(`${API_URL}/api/produtos/top20/shopee`);
+        const data = await response.json();
+        
+        if (data.success) {
+            console.log(`✅ Top 20 Shopee: ${data.products?.length || 0} produtos`);
+            return data.products || [];
+        } else {
+            console.log('📭 Nenhum produto da Shopee disponível ainda');
+            return [];
+        }
+    } catch (error) {
+        console.error('❌ Erro no Top 20 Shopee:', error);
+        return [];
+    }
+}
+
+// ============================================
+// TOP 20 MAGALU
+// ============================================
+export async function getTop20Magalu() {
+    try {
+        console.log('📊 Buscando Top 20 Magalu...');
+        const response = await fetch(`${API_URL}/api/produtos/top20/magalu`);
+        const data = await response.json();
+        
+        if (data.success) {
+            console.log(`✅ Top 20 Magalu: ${data.products?.length || 0} produtos`);
+            return data.products || [];
+        } else {
+            console.log('📭 Nenhum produto da Magalu disponível ainda');
+            return [];
+        }
+    } catch (error) {
+        console.error('❌ Erro no Top 20 Magalu:', error);
+        return [];
+    }
+}
+
+// ============================================
+// PRODUTOS ALEATÓRIOS
+// ============================================
+export async function getRandomProducts(limit = 50) {
+    try {
+        console.log(`🎲 Buscando ${limit} produtos aleatórios...`);
+        const response = await fetch(`${API_URL}/api/produtos/random?limit=${limit}`);
+        const data = await response.json();
+        
+        if (data.success) {
+            console.log(`✅ ${data.products?.length || 0} produtos aleatórios carregados`);
+            return data.products || [];
+        } else {
+            console.error('❌ Erro ao buscar produtos aleatórios:', data.error);
+            return [];
+        }
+    } catch (error) {
+        console.error('❌ Erro nos produtos aleatórios:', error);
         return [];
     }
 }
