@@ -187,3 +187,51 @@ export async function getRandomProducts(limit = 50) {
         return [];
     }
 }
+
+// ============================================
+// NOVA FUNÇÃO: BUSCA EM TODAS AS PLATAFORMAS (COM REGISTRO DETALHADO)
+// ============================================
+export async function searchAllPlatforms(termo) {
+    console.log('🔍 Buscando em todas as plataformas:', termo);
+    
+    // Gera ou recupera o ID da sessão
+    let sessaoId = localStorage.getItem('sessaoId');
+    if (!sessaoId) {
+        sessaoId = 'sess_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        localStorage.setItem('sessaoId', sessaoId);
+    }
+    
+    try {
+        const url = `${API_URL}/api/pesquisas/buscar/todas`;
+        console.log('📡 URL:', url);
+        
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Session-Id': sessaoId
+            },
+            body: JSON.stringify({ termo })
+        });
+        
+        const data = await response.json();
+        console.log('📦 Resposta:', data);
+        
+        if (data.success) {
+            console.log('📊 Resultados por plataforma:', data.resultados_plataformas);
+            return {
+                products: data.products || [],
+                resultados_plataformas: data.resultados_plataformas || [],
+                total: data.total || 0,
+                tempo_total: data.tempo_total || 0,
+                pesquisa_id: data.pesquisa_id
+            };
+        } else {
+            console.error('❌ Erro na busca:', data.error);
+            return { products: [], resultados_plataformas: [] };
+        }
+    } catch (error) {
+        console.error('❌ Erro na busca multiplataforma:', error);
+        return { products: [], resultados_plataformas: [] };
+    }
+}
