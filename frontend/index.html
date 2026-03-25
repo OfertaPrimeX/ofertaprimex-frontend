@@ -144,7 +144,7 @@
 <script src="js/main.js"></script>
 <script type="module">
   import { 
-      searchProducts, 
+      searchAllPlatforms,
       getTop10, 
       getTop20MercadoLivre,
       getTop20Amazon,
@@ -179,32 +179,6 @@
       grid.parentElement.scrollBy({ left: scrollAmount, behavior: 'smooth' });
   };
 
-  async function registrarPesquisa(termo, origem, quantidade, tempoMs) {
-      try {
-          let sessaoId = localStorage.getItem('sessaoId');
-          if (!sessaoId) {
-              sessaoId = 'sess_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-              localStorage.setItem('sessaoId', sessaoId);
-          }
-
-          await fetch('https://yo0g0cg4c88w88osc4s04c0c.72.61.33.248.sslip.io/api/pesquisas/registrar', {
-              method: 'POST',
-              headers: {
-                  'Content-Type': 'application/json',
-                  'X-Session-Id': sessaoId
-              },
-              body: JSON.stringify({
-                  termo: termo,
-                  origem: origem,
-                  quantidade_resultados: quantidade,
-                  tempo_resposta_ms: tempoMs
-              })
-          });
-      } catch (error) {
-          console.error('Erro ao registrar pesquisa:', error);
-      }
-  }
-
   async function realizarBusca() {
     const termo = buscaInput.value.trim();
     if (!termo) return;
@@ -215,23 +189,26 @@
     const inicio = performance.now();
 
     try {
-      const res = await searchProducts(termo);
+      // ===== USANDO A NOVA BUSCA MULTIPLATAFORMA =====
+      const res = await searchAllPlatforms(termo);
       const fim = performance.now();
       const tempoResposta = Math.round(fim - inicio);
 
-      await registrarPesquisa(
-          termo, 
-          res.origin || 'nao_localizado', 
-          res.products?.length || 0, 
-          tempoResposta
-      );
-      
+      // Renderiza os produtos
       renderProducts(gridBusca, res.products || []);
+
+      // Exibe resumo no console (debug)
+      if (res.resultados_plataformas && res.resultados_plataformas.length > 0) {
+          console.log('📊 Resumo por plataforma:');
+          res.resultados_plataformas.forEach(p => {
+              console.log(`   ${p.plataforma}: ${p.encontrou ? `✅ ${p.quantidade} produtos (${p.tempo}ms)` : '❌ Não encontrado'}`);
+          });
+          console.log(`📦 Total: ${res.total} produtos | ⏱️ ${res.tempo_total}ms`);
+      }
 
     } catch (error) {
       console.error('Erro na busca:', error);
       gridBusca.innerHTML = '<p style="text-align: center; color: red; grid-column: 1/-1;">❌ Erro ao buscar produtos</p>';
-      await registrarPesquisa(termo, 'erro', 0, null);
     }
   }
 
