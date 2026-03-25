@@ -124,23 +124,66 @@ async function carregarDadosReais() {
     }
 }
 
+// ============================================
+// FUNÇÃO CORRIGIDA: CARREGAR CONTADORES DE TODAS AS PLATAFORMAS
+// ============================================
 async function carregarContadores() {
-    try {
-        const mlResponse = await apiRequest('/api/produtos/contador?plataforma=mercadolivre');
-        const mlData = await mlResponse.json();
-        document.getElementById('ml-contador').textContent = mlData.total || 0;
-        
-        document.getElementById('amazon-contador').textContent = 0;
-        document.getElementById('shopee-contador').textContent = 0;
-        document.getElementById('magalu-contador').textContent = 0;
-        
-    } catch (error) {
-        console.error('Erro ao carregar contadores:', error);
-        document.getElementById('ml-contador').textContent = "1";
-        document.getElementById('amazon-contador').textContent = "1";
-        document.getElementById('shopee-contador').textContent = "1";
-        document.getElementById('magalu-contador').textContent = "1";
+    // Lista de plataformas com seus IDs de elemento
+    const plataformas = [
+        { nome: 'mercadolivre', elementId: 'ml-contador', nomeExibicao: 'Mercado Livre' },
+        { nome: 'amazon', elementId: 'amazon-contador', nomeExibicao: 'Amazon' },
+        { nome: 'shopee', elementId: 'shopee-contador', nomeExibicao: 'Shopee' },
+        { nome: 'magalu', elementId: 'magalu-contador', nomeExibicao: 'Magalu' }
+    ];
+    
+    let totalGeral = 0;
+    
+    // Buscar contadores de cada plataforma individualmente
+    for (const plataforma of plataformas) {
+        try {
+            const response = await apiRequest(`/api/produtos/contador?plataforma=${plataforma.nome}`);
+            const data = await response.json();
+            
+            const element = document.getElementById(plataforma.elementId);
+            if (element) {
+                const quantidade = data.total || 0;
+                element.textContent = quantidade;
+                totalGeral += quantidade;
+                console.log(`✅ ${plataforma.nomeExibicao}: ${quantidade} produtos`);
+            }
+        } catch (error) {
+            console.error(`❌ Erro ao buscar contador para ${plataforma.nome}:`, error);
+            // Em caso de erro, tenta buscar das estatísticas de pesquisas como fallback
+            try {
+                const statsResponse = await apiRequest('/api/admin/pesquisas/estatisticas');
+                const statsData = await statsResponse.json();
+                
+                const element = document.getElementById(plataforma.elementId);
+                if (element && statsData.success && statsData.data.por_plataforma) {
+                    const plataformaStats = statsData.data.por_plataforma.find(
+                        p => p.plataforma.toLowerCase() === plataforma.nome.toLowerCase()
+                    );
+                    const quantidade = plataformaStats ? plataformaStats.total : 0;
+                    element.textContent = quantidade;
+                    totalGeral += quantidade;
+                } else if (element) {
+                    element.textContent = '0';
+                }
+            } catch (fallbackError) {
+                console.error(`❌ Fallback também falhou para ${plataforma.nome}:`, fallbackError);
+                const element = document.getElementById(plataforma.elementId);
+                if (element) element.textContent = '0';
+            }
+        }
     }
+    
+    // Atualizar o total de produtos no dashboard
+    const totalProdutosElement = document.getElementById('total-produtos');
+    if (totalProdutosElement) {
+        totalProdutosElement.textContent = totalGeral;
+    }
+    
+    console.log(`📊 Total geral de produtos: ${totalGeral}`);
 }
 
 function carregarDadosSimulados() {
@@ -155,6 +198,7 @@ function carregarDadosSimulados() {
     document.getElementById('amazon-contador').textContent = "1";
     document.getElementById('shopee-contador').textContent = "1";
     document.getElementById('magalu-contador').textContent = "1";
+    document.getElementById('total-produtos').textContent = "4";
     
     atualizarDashboard();
     atualizarTabela();
@@ -174,7 +218,7 @@ async function carregarLogs() {
 
 function atualizarDashboard() {
     document.getElementById('total-produtos').textContent = produtos.length;
-    const totalCliques = produits.reduce((acc, p) => acc + (p.cliques || 0), 0);
+    const totalCliques = produtos.reduce((acc, p) => acc + (p.cliques || 0), 0);
     document.getElementById('total-cliques').textContent = totalCliques;
 }
 
@@ -183,7 +227,7 @@ function atualizarTabela() {
     if (!tbody) return;
     
     if (produtos.length === 0) {
-        tbody.innerHTML = '发展<td colspan="6" style="text-align: center;">Nenhum produto encontrado</td>发展';
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align: center;">Nenhum produto encontrado</td></tr>';
         return;
     }
     
@@ -192,10 +236,10 @@ function atualizarTabela() {
             <td>#${p.id}</td>
             <td>${p.plataforma || '-'}</td>
             <td>${p.titulo.substring(0, 50)}...</td>
-             <td>R$ ${p.preco}</td>
-             <td>${p.cliques || 0}</td>
-             <td>${p.ativo ? '✅' : '❌'}</td>
-         </tr>
+            <td>R$ ${p.preco}</td>
+            <td>${p.cliques || 0}</td>
+            <td>${p.ativo ? '✅' : '❌'}</td>
+        </tr>
     `).join('');
 }
 
@@ -280,7 +324,7 @@ async function exportarPesquisas() {
     try {
         console.log('📊 Exportando dados de pesquisas...');
         
-        const response = await apiRequest('/api/admin/pesquisas/exportar');
+        const response = await apiRequest('/api/admin/pesquisas/exportar?format=csv');
         
         if (!response.ok) {
             throw new Error(`HTTP ${response.status}`);
@@ -356,7 +400,7 @@ async function carregarEstatisticasPesquisas() {
             const tbody = document.getElementById('tabela-estatisticas-plataformas');
             if (tbody && data.data.por_plataforma) {
                 if (data.data.por_plataforma.length === 0) {
-                    tbody.innerHTML = '发展<td colspan="5" style="text-align: center;">Nenhum dado disponível</td>发展';
+                    tbody.innerHTML = '<tr><td colspan="5" style="text-align: center;">Nenhum dado disponível</td></tr>';
                 } else {
                     tbody.innerHTML = data.data.por_plataforma.map(p => `
                         <tr>
@@ -374,7 +418,7 @@ async function carregarEstatisticasPesquisas() {
             const termosTbody = document.getElementById('tabela-termos-nao-encontrados');
             if (termosTbody && data.data.top_nao_encontrados) {
                 if (data.data.top_nao_encontrados.length === 0) {
-                    termosTbody.innerHTML = '发展<td colspan="3" style="text-align: center;">Nenhum termo não encontrado</td>发展';
+                    termosTbody.innerHTML = '<tr><td colspan="3" style="text-align: center;">Nenhum termo não encontrado</td></tr>';
                 } else {
                     termosTbody.innerHTML = data.data.top_nao_encontrados.map(t => `
                         <tr>
