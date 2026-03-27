@@ -742,7 +742,8 @@
     }
 
     // ============================================
-    // NOVAS FUNÇÕES: LIMPAR BANCO POR PLATAFORMA
+    // FUNÇÕES CORRIGIDAS: LIMPAR BANCO POR PLATAFORMA
+    // ROTA CORRETA: /api/produtos/limpar (sem /admin/)
     // ============================================
     
     async function limparBancoPlataforma(plataforma) {
@@ -756,7 +757,8 @@
         }
         
         try {
-            const response = await apiRequest(`/api/admin/produtos/limpar?plataforma=${plataforma}`, {
+            // CORRIGIDO: rota /api/produtos/limpar (sem /admin/)
+            const response = await apiRequest(`/api/produtos/limpar?plataforma=${plataforma}`, {
                 method: 'DELETE'
             });
             
@@ -768,8 +770,8 @@
                 }
                 // Recarregar os contadores
                 setTimeout(() => {
-                    carregarContadores();
-                    carregarDadosReais();
+                    if (typeof carregarContadores === 'function') carregarContadores();
+                    if (typeof carregarDadosReais === 'function') carregarDadosReais();
                     if (statusDiv) {
                         setTimeout(() => { statusDiv.innerHTML = ''; }, 3000);
                     }
@@ -801,7 +803,8 @@
             }
             
             try {
-                const response = await apiRequest(`/api/admin/produtos/limpar?plataforma=${plataforma}`, {
+                // CORRIGIDO: rota /api/produtos/limpar (sem /admin/)
+                const response = await apiRequest(`/api/produtos/limpar?plataforma=${plataforma}`, {
                     method: 'DELETE'
                 });
                 
@@ -823,11 +826,11 @@
         
         // Recarregar os contadores
         setTimeout(() => {
-            carregarContadores();
-            carregarDadosReais();
+            if (typeof carregarContadores === 'function') carregarContadores();
+            if (typeof carregarDadosReais === 'function') carregarDadosReais();
             // Limpar mensagens após 3 segundos
-            const plataformas = ['ml', 'amazon', 'shopee', 'magalu'];
-            for (const p of plataformas) {
+            const plataformasIds = ['ml', 'amazon', 'shopee', 'magalu'];
+            for (const p of plataformasIds) {
                 const statusDiv = document.getElementById(`${p}-status`);
                 if (statusDiv) {
                     setTimeout(() => { statusDiv.innerHTML = ''; }, 3000);
