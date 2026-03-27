@@ -97,8 +97,9 @@
 
         .plataforma-acoes {
             display: flex;
-            gap: 10px;
+            gap: 8px;
             margin-top: 15px;
+            flex-wrap: wrap;
         }
 
         .plataforma-btn {
@@ -112,6 +113,7 @@
             font-size: 12px;
             font-weight: bold;
             transition: background-color 0.2s;
+            min-width: 60px;
         }
 
         .plataforma-btn:hover {
@@ -124,6 +126,14 @@
 
         .plataforma-btn.export:hover {
             background-color: #1f5a23;
+        }
+
+        .plataforma-btn.delete {
+            background-color: #c62828;
+        }
+
+        .plataforma-btn.delete:hover {
+            background-color: #b71c1c;
         }
 
         .plataforma-btn.settings {
@@ -443,6 +453,7 @@
                             <button class="plataforma-btn" onclick="importarPlataforma('mercadolivre')">📥 Importar</button>
                             <button class="plataforma-btn export" onclick="exportarPlataforma('mercadolivre', 'csv')">📄 CSV</button>
                             <button class="plataforma-btn export" onclick="exportarPlataforma('mercadolivre', 'excel')">📊 Excel</button>
+                            <button class="plataforma-btn delete" onclick="limparBancoPlataforma('mercadolivre')">🗑️ Limpar</button>
                         </div>
                         <div class="import-status" id="ml-status"></div>
                     </div>
@@ -458,6 +469,7 @@
                             <button class="plataforma-btn" onclick="importarPlataforma('amazon')">📥 Importar</button>
                             <button class="plataforma-btn export" onclick="exportarPlataforma('amazon', 'csv')">📄 CSV</button>
                             <button class="plataforma-btn export" onclick="exportarPlataforma('amazon', 'excel')">📊 Excel</button>
+                            <button class="plataforma-btn delete" onclick="limparBancoPlataforma('amazon')">🗑️ Limpar</button>
                         </div>
                         <div class="import-status" id="amazon-status"></div>
                     </div>
@@ -473,6 +485,7 @@
                             <button class="plataforma-btn" onclick="importarPlataforma('shopee')">📥 Importar</button>
                             <button class="plataforma-btn export" onclick="exportarPlataforma('shopee', 'csv')">📄 CSV</button>
                             <button class="plataforma-btn export" onclick="exportarPlataforma('shopee', 'excel')">📊 Excel</button>
+                            <button class="plataforma-btn delete" onclick="limparBancoPlataforma('shopee')">🗑️ Limpar</button>
                         </div>
                         <div class="import-status" id="shopee-status"></div>
                     </div>
@@ -488,6 +501,7 @@
                             <button class="plataforma-btn" onclick="importarPlataforma('magalu')">📥 Importar</button>
                             <button class="plataforma-btn export" onclick="exportarPlataforma('magalu', 'csv')">📄 CSV</button>
                             <button class="plataforma-btn export" onclick="exportarPlataforma('magalu', 'excel')">📊 Excel</button>
+                            <button class="plataforma-btn delete" onclick="limparBancoPlataforma('magalu')">🗑️ Limpar</button>
                         </div>
                         <div class="import-status" id="magalu-status"></div>
                     </div>
@@ -499,6 +513,7 @@
                 <button class="admin-btn" onclick="importarTodas()">📥 Importar Todas</button>
                 <button class="admin-btn secondary" onclick="exportarTodas('csv')">📄 Exportar Todas (CSV)</button>
                 <button class="admin-btn secondary" onclick="exportarTodas('excel')">📊 Exportar Todas (Excel)</button>
+                <button class="admin-btn delete" onclick="limparTodosBancos()" style="background-color:#c62828; color:white; padding:10px 20px; border:none; border-radius:6px; cursor:pointer; margin-left:10px;">🗑️ Limpar Todos os Bancos</button>
             </div>
 
             <div class="admin-card">
@@ -513,7 +528,7 @@
                                 <th>Preço</th>
                                 <th>Cliques</th>
                                 <th>Status</th>
-                              </tr>
+                               </tr>
                         </thead>
                         <tbody id="tabela-body">
                              <td colspan="6" style="text-align: center; padding: 30px;">Carregando...</td>
@@ -539,7 +554,7 @@
                 <div style="overflow-x: auto;">
                     <table class="admin-table">
                         <thead>
-                            <tr>
+                             <tr>
                                 <th>Plataforma</th>
                                 <th>Total</th>
                                 <th>Encontradas</th>
@@ -557,7 +572,7 @@
                 <div style="overflow-x: auto;">
                     <table class="admin-table">
                         <thead>
-                            <tr>
+                             <tr>
                                 <th>Termo</th>
                                 <th>Tentativas</th>
                                 <th>Plataformas</th>
@@ -595,7 +610,7 @@
                 <div style="overflow-x: auto;">
                     <table class="admin-table">
                         <thead>
-                            <tr>
+                             <tr>
                                 <th>Termo</th>
                                 <th>Buscas</th>
                                 <th>No Banco</th>
@@ -658,7 +673,6 @@
 
     async function carregarEstatisticas() {
         try {
-            // CORRIGIDO: rota correta com /admin/
             const response = await apiRequest('/api/admin/pesquisas/estatisticas');
             const data = await response.json();
             
@@ -666,7 +680,6 @@
                 const totalRegistros = data.data.total || 0;
                 document.getElementById('total-pesquisas-24h').textContent = totalRegistros;
                 
-                // Calcular taxa de sucesso baseado nos dados por plataforma
                 let totalEncontradas = 0;
                 let totalGeral = 0;
                 let somaTempos = 0;
@@ -692,13 +705,13 @@
                 const tbody = document.getElementById('tabela-termos');
                 if (data.data.top_nao_encontrados && data.data.top_nao_encontrados.length > 0) {
                     tbody.innerHTML = data.data.top_nao_encontrados.slice(0, 10).map(t => `
-                        <tr>
-                            <td>${t.termo}</td>
-                            <td>${t.tentativas}</td>
-                            <td>${t.tentativas}</td>
-                            <td>0</td>
-                            <td>${t.tentativas}</td>
-                        </tr>
+                         <tr>
+                             <td>${t.termo}</td>
+                             <td>${t.tentativas}</td>
+                             <td>${t.tentativas}</td>
+                             <td>0</td>
+                             <td>${t.tentativas}</td>
+                         </tr>
                     `).join('');
                 } else {
                     tbody.innerHTML = '<tr><td colspan="5" style="text-align: center;">Nenhum termo buscado</td></tr>';
@@ -726,6 +739,103 @@
         } catch (error) {
             document.getElementById('logs-container').innerHTML = '<div style="color: #ff5555;">❌ Erro ao carregar logs</div>';
         }
+    }
+
+    // ============================================
+    // NOVAS FUNÇÕES: LIMPAR BANCO POR PLATAFORMA
+    // ============================================
+    
+    async function limparBancoPlataforma(plataforma) {
+        const confirmar = confirm(`⚠️ ATENÇÃO: Isso irá remover TODOS OS PRODUTOS da plataforma ${plataforma.toUpperCase()}. Esta ação não pode ser desfeita. Deseja continuar?`);
+        
+        if (!confirmar) return;
+        
+        const statusDiv = document.getElementById(`${plataforma}-status`);
+        if (statusDiv) {
+            statusDiv.innerHTML = '<div class="import-status info">⏳ Limpando banco de dados...</div>';
+        }
+        
+        try {
+            const response = await apiRequest(`/api/admin/produtos/limpar?plataforma=${plataforma}`, {
+                method: 'DELETE'
+            });
+            
+            const data = await response.json();
+            
+            if (response.ok) {
+                if (statusDiv) {
+                    statusDiv.innerHTML = `<div class="import-status success">✅ ${data.message || 'Banco limpo com sucesso!'}</div>`;
+                }
+                // Recarregar os contadores
+                setTimeout(() => {
+                    carregarContadores();
+                    carregarDadosReais();
+                    if (statusDiv) {
+                        setTimeout(() => { statusDiv.innerHTML = ''; }, 3000);
+                    }
+                }, 1500);
+            } else {
+                if (statusDiv) {
+                    statusDiv.innerHTML = `<div class="import-status error">❌ Erro: ${data.error || 'Falha ao limpar banco'}</div>`;
+                }
+            }
+        } catch (error) {
+            console.error('❌ Erro ao limpar banco:', error);
+            if (statusDiv) {
+                statusDiv.innerHTML = `<div class="import-status error">❌ Erro de conexão: ${error.message}</div>`;
+            }
+        }
+    }
+
+    async function limparTodosBancos() {
+        const confirmar = confirm('⚠️ ATENÇÃO: Isso irá remover TODOS OS PRODUTOS de TODAS AS PLATAFORMAS. Esta ação não pode ser desfeita. Deseja continuar?');
+        
+        if (!confirmar) return;
+        
+        const plataformas = ['mercadolivre', 'amazon', 'shopee', 'magalu'];
+        
+        for (const plataforma of plataformas) {
+            const statusDiv = document.getElementById(`${plataforma}-status`);
+            if (statusDiv) {
+                statusDiv.innerHTML = '<div class="import-status info">⏳ Limpando...</div>';
+            }
+            
+            try {
+                const response = await apiRequest(`/api/admin/produtos/limpar?plataforma=${plataforma}`, {
+                    method: 'DELETE'
+                });
+                
+                if (response.ok) {
+                    if (statusDiv) {
+                        statusDiv.innerHTML = '<div class="import-status success">✅ Limpo!</div>';
+                    }
+                } else {
+                    if (statusDiv) {
+                        statusDiv.innerHTML = '<div class="import-status error">❌ Erro</div>';
+                    }
+                }
+            } catch (error) {
+                if (statusDiv) {
+                    statusDiv.innerHTML = '<div class="import-status error">❌ Erro</div>';
+                }
+            }
+        }
+        
+        // Recarregar os contadores
+        setTimeout(() => {
+            carregarContadores();
+            carregarDadosReais();
+            // Limpar mensagens após 3 segundos
+            const plataformas = ['ml', 'amazon', 'shopee', 'magalu'];
+            for (const p of plataformas) {
+                const statusDiv = document.getElementById(`${p}-status`);
+                if (statusDiv) {
+                    setTimeout(() => { statusDiv.innerHTML = ''; }, 3000);
+                }
+            }
+        }, 2000);
+        
+        alert('✅ Processo de limpeza iniciado para todas as plataformas!');
     }
 </script>
 </body>
