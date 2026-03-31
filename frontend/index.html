@@ -489,12 +489,12 @@
   }
 
   // ============================================
-  // CONFIGURAÇÃO DO CARROSSEL (RESPONSIVO)
+  // CONFIGURAÇÃO DO CARROSSEL - MOVER GRUPO COMPLETO
   // ============================================
-  let currentIndex = 0;
-  let itemsPerView = 6;
-  let totalItems = 0;
-  let cardWidth = 0;
+  let currentPage = 0;      // Página atual (0 = primeira página)
+  let itemsPerView = 6;      // Quantos cards visíveis por vez (desktop=6, tablet=3, mobile=2)
+  let totalPages = 0;        // Total de páginas
+  let cardWidth = 0;         // Largura de cada card + gap
   
   function updateItemsPerView() {
       const width = window.innerWidth;
@@ -512,42 +512,44 @@
       if (!track || track.children.length === 0) return;
       
       const firstCard = track.children[0];
-      const style = getComputedStyle(firstCard);
       const gap = 20; // gap definido no CSS
       cardWidth = firstCard.offsetWidth + gap;
   }
   
-  function updateCarousel() {
+  function updateTotalPages() {
       const track = document.getElementById('carousel-track');
       if (!track) return;
       
-      const cards = track.children;
-      totalItems = cards.length;
+      const totalCards = track.children.length;
+      totalPages = Math.ceil(totalCards / itemsPerView);
       
-      if (totalItems === 0) return;
+      // Ajusta página atual se necessário
+      if (currentPage >= totalPages) currentPage = Math.max(0, totalPages - 1);
+      if (currentPage < 0) currentPage = 0;
+  }
+  
+  function updateCarousel() {
+      const track = document.getElementById('carousel-track');
+      if (!track || track.children.length === 0) return;
       
       updateCardWidth();
+      updateTotalPages();
       
-      const maxIndex = Math.max(0, totalItems - itemsPerView);
-      
-      if (currentIndex > maxIndex) currentIndex = maxIndex;
-      if (currentIndex < 0) currentIndex = 0;
-      
-      const translateX = -(currentIndex * cardWidth);
+      // Calcula o deslocamento baseado na página atual
+      const translateX = -(currentPage * itemsPerView * cardWidth);
       track.style.transform = `translateX(${translateX}px)`;
   }
   
   function nextSlide() {
-      const maxIndex = Math.max(0, totalItems - itemsPerView);
-      if (currentIndex < maxIndex) {
-          currentIndex++;
+      if (currentPage < totalPages - 1) {
+          currentPage++;
           updateCarousel();
       }
   }
   
   function prevSlide() {
-      if (currentIndex > 0) {
-          currentIndex--;
+      if (currentPage > 0) {
+          currentPage--;
           updateCarousel();
       }
   }
@@ -736,6 +738,7 @@
   // Atualiza carrossel ao redimensionar a tela
   window.addEventListener('resize', () => {
       updateItemsPerView();
+      updateTotalPages();
       updateCarousel();
   });
 
@@ -747,6 +750,7 @@
       updateItemsPerView();
       setTimeout(() => {
           updateCardWidth();
+          updateTotalPages();
           updateCarousel();
       }, 150);
   });
