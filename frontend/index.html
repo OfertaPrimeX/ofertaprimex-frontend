@@ -130,7 +130,7 @@
         }
 
         .carousel-card {
-            flex: 0 0 calc(16.666% - 17px); /* 6 cards por vez (100%/6 ≈ 16.66%) */
+            flex: 0 0 calc(16.666% - 17px);
             min-width: calc(16.666% - 17px);
             background: #fff;
             border-radius: 12px;
@@ -211,7 +211,7 @@
 
         @media (max-width: 1024px) {
             .carousel-card {
-                flex: 0 0 calc(33.333% - 14px); /* 3 cards por vez no tablet */
+                flex: 0 0 calc(33.333% - 14px);
                 min-width: calc(33.333% - 14px);
             }
             .carousel-wrapper {
@@ -221,7 +221,7 @@
 
         @media (max-width: 768px) {
             .carousel-card {
-                flex: 0 0 calc(50% - 10px); /* 2 cards por vez no mobile */
+                flex: 0 0 calc(50% - 10px);
                 min-width: calc(50% - 10px);
             }
             .carousel-btn {
@@ -321,6 +321,38 @@
   import { renderProducts } from './js/render.js';
 
   // ============================================
+  // FUNÇÃO AUXILIAR PARA FORMATAR PREÇO CORRETAMENTE
+  // ============================================
+  function formatarPreco(preco) {
+      if (!preco) return '0,00';
+      
+      // Se for string, remove R$ e espaços
+      let valor = preco.toString().replace('R$', '').trim();
+      
+      // Se tiver ponto, trata como decimal
+      if (valor.includes('.')) {
+          // Separa parte inteira e decimal
+          const partes = valor.split('.');
+          const inteiro = partes[0].replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+          const decimal = partes[1].padEnd(2, '0').slice(0, 2);
+          return `${inteiro},${decimal}`;
+      }
+      
+      // Se tiver vírgula, já está no formato brasileiro
+      if (valor.includes(',')) {
+          return valor;
+      }
+      
+      // Se for número inteiro
+      const num = parseFloat(valor);
+      if (!isNaN(num)) {
+          return num.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      }
+      
+      return '0,00';
+  }
+
+  // ============================================
   // DEFINIÇÃO COMPLETA DAS CATEGORIAS (40 CATEGORIAS)
   // ============================================
   const categorias = [
@@ -345,7 +377,7 @@
     
     // Casa e Eletrodomésticos
     { nome: "Eletrodomésticos", icone: "🧺", termo: "eletrodomésticos" },
-    { nome: "Casa e Construção", icone: "🏠", termo: "casa e construção" },
+    { nome: "Casa e Construção", icone: "🏠", termo: "casa e construcción" },
     { nome: "Cozinha", icone: "🍳", termo: "cozinha" },
     
     // Beleza e Saúde
@@ -467,13 +499,14 @@
           const track = document.getElementById('carousel-track');
           if (!track) return;
           
+          // CORRIGIDO: usando a função formatarPreco
           track.innerHTML = produtos.map(p => `
               <div class="carousel-card" onclick="window.open('${p.link_afiliado || p.link_original}', '_blank')">
                   <img src="${p.imagem_principal || 'https://via.placeholder.com/150'}" 
                        alt="${p.titulo}"
                        onerror="this.src='https://via.placeholder.com/150'">
                   <div class="product-title">${(p.titulo || '').substring(0, 50)}...</div>
-                  <div class="product-price">R$ ${(p.preco || '0').toString().replace('.', ',')}</div>
+                  <div class="product-price">R$ ${formatarPreco(p.preco)}</div>
                   <div class="product-platform">${p.plataforma || 'Mercado Livre'}</div>
               </div>
           `).join('');
@@ -491,10 +524,10 @@
   // ============================================
   // CONFIGURAÇÃO DO CARROSSEL - MOVER GRUPO COMPLETO
   // ============================================
-  let currentPage = 0;      // Página atual (0 = primeira página)
-  let itemsPerView = 6;      // Quantos cards visíveis por vez (desktop=6, tablet=3, mobile=2)
-  let totalPages = 0;        // Total de páginas
-  let cardWidth = 0;         // Largura de cada card + gap
+  let currentPage = 0;
+  let itemsPerView = 6;
+  let totalPages = 0;
+  let cardWidth = 0;
   
   function updateItemsPerView() {
       const width = window.innerWidth;
@@ -512,7 +545,7 @@
       if (!track || track.children.length === 0) return;
       
       const firstCard = track.children[0];
-      const gap = 20; // gap definido no CSS
+      const gap = 20;
       cardWidth = firstCard.offsetWidth + gap;
   }
   
@@ -523,7 +556,6 @@
       const totalCards = track.children.length;
       totalPages = Math.ceil(totalCards / itemsPerView);
       
-      // Ajusta página atual se necessário
       if (currentPage >= totalPages) currentPage = Math.max(0, totalPages - 1);
       if (currentPage < 0) currentPage = 0;
   }
@@ -535,7 +567,6 @@
       updateCardWidth();
       updateTotalPages();
       
-      // Calcula o deslocamento baseado na página atual
       const translateX = -(currentPage * itemsPerView * cardWidth);
       track.style.transform = `translateX(${translateX}px)`;
   }
@@ -728,24 +759,20 @@
       if (e.key === 'Enter') realizarBusca();
   });
 
-  // Botões do carrossel
   const prevBtn = document.getElementById('carousel-prev');
   const nextBtn = document.getElementById('carousel-next');
   
   if (prevBtn) prevBtn.addEventListener('click', () => prevSlide());
   if (nextBtn) nextBtn.addEventListener('click', () => nextSlide());
   
-  // Atualiza carrossel ao redimensionar a tela
   window.addEventListener('resize', () => {
       updateItemsPerView();
       updateTotalPages();
       updateCarousel();
   });
 
-  // Renderiza as categorias
   renderizarCategorias();
   
-  // Carrega os produtos mais vendidos e configura o carrossel
   carregarMaisVendidos().then(() => {
       updateItemsPerView();
       setTimeout(() => {
