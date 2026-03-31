@@ -30,17 +30,23 @@ export function renderProducts(container, products, isCarousel = false) {
       window.open(link, '_blank');
     };
 
-    // ===== FORMATA PREÇO =====
+    // ===== FORMATA PREÇO (CORRIGIDO) =====
     let precoFormatado = 'R$ 0,00';
     if (p.preco) {
       let precoNum = 0;
       if (typeof p.preco === 'number') {
         precoNum = p.preco;
       } else {
-        // Remove R$ e converte
-        const precoLimpo = p.preco.replace('R$', '').replace(/\./g, '').replace(',', '.').trim();
+        // Remove R$, pontos e vírgulas, converte para número
+        const precoLimpo = p.preco.toString().replace('R$', '').replace(/\./g, '').replace(',', '.').trim();
         precoNum = parseFloat(precoLimpo);
       }
+      
+      // CORREÇÃO: se o valor for maior que 10000, provavelmente está em centavos
+      if (precoNum > 10000) {
+        precoNum = precoNum / 100;
+      }
+      
       if (!isNaN(precoNum)) {
         precoFormatado = precoNum.toLocaleString('pt-BR', {
           style: 'currency',
@@ -52,7 +58,6 @@ export function renderProducts(container, products, isCarousel = false) {
     // ===== DEFINE IMAGEM =====
     let imagem = p.imagem_principal || p.thumbnail;
     if (!imagem || imagem === '') {
-      // Tenta buscar imagem do link (fallback)
       imagem = 'https://via.placeholder.com/200x200?text=Sem+Imagem';
     }
 
@@ -178,16 +183,22 @@ export function renderProductsHTML(products) {
   if (!products || products.length === 0) return '';
   
   return products.map(p => {
-    // Formata preço
+    // Formata preço (CORRIGIDO)
     let precoFormatado = 'R$ 0,00';
     if (p.preco) {
       let precoNum = 0;
       if (typeof p.preco === 'number') {
         precoNum = p.preco;
       } else {
-        const precoLimpo = p.preco.replace('R$', '').replace(/\./g, '').replace(',', '.').trim();
+        const precoLimpo = p.preco.toString().replace('R$', '').replace(/\./g, '').replace(',', '.').trim();
         precoNum = parseFloat(precoLimpo);
       }
+      
+      // CORREÇÃO: se o valor for maior que 10000, provavelmente está em centavos
+      if (precoNum > 10000) {
+        precoNum = precoNum / 100;
+      }
+      
       if (!isNaN(precoNum)) {
         precoFormatado = precoNum.toLocaleString('pt-BR', {
           style: 'currency',
@@ -260,8 +271,13 @@ export function formatPrice(preco) {
   if (typeof preco === 'number') {
     precoNum = preco;
   } else {
-    const precoLimpo = preco.replace('R$', '').replace(/\./g, '').replace(',', '.').trim();
+    const precoLimpo = preco.toString().replace('R$', '').replace(/\./g, '').replace(',', '.').trim();
     precoNum = parseFloat(precoLimpo);
+  }
+  
+  // CORREÇÃO: se o valor for maior que 10000, provavelmente está em centavos
+  if (precoNum > 10000) {
+    precoNum = precoNum / 100;
   }
   
   if (isNaN(precoNum)) return 'R$ 0,00';
