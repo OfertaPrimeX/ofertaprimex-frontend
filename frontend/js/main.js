@@ -1,5 +1,5 @@
 // ============================================
-// MAIN.JS - Atualizado com controle de login
+// MAIN.JS - Controle de login e autenticação
 // ============================================
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -27,3 +27,48 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 });
+
+// ============================================
+// FUNÇÕES AUXILIARES GLOBAIS (para uso em outros scripts)
+// ============================================
+
+/**
+ * Gera estrelas baseado na nota (0 a 5)
+ * @param {number|string} rating - Nota de 0 a 5
+ * @returns {string} HTML com estrelas
+ */
+window.generateStars = function(rating) {
+    if (!rating || rating === 'N/A') return '☆☆☆☆☆';
+    const numRating = parseFloat(rating.replace(',', '.'));
+    if (isNaN(numRating)) return '☆☆☆☆☆';
+    
+    const fullStars = Math.floor(numRating);
+    const halfStar = numRating % 1 >= 0.5;
+    const emptyStars = 5 - fullStars - (halfStar ? 1 : 0);
+    
+    return '★'.repeat(fullStars) + (halfStar ? '½' : '') + '☆'.repeat(emptyStars);
+};
+
+/**
+ * Formata preço para exibição
+ * @param {number|string} preco - Preço a ser formatado
+ * @returns {string} Preço formatado (ex: R$ 1.234,56)
+ */
+window.formatPrice = function(preco) {
+    if (!preco) return 'R$ 0,00';
+    
+    let precoNum = 0;
+    if (typeof preco === 'number') {
+        precoNum = preco;
+    } else {
+        const precoLimpo = preco.replace('R$', '').replace(/\./g, '').replace(',', '.').trim();
+        precoNum = parseFloat(precoLimpo);
+    }
+    
+    if (isNaN(precoNum)) return 'R$ 0,00';
+    
+    return precoNum.toLocaleString('pt-BR', {
+        style: 'currency',
+        currency: 'BRL'
+    });
+};

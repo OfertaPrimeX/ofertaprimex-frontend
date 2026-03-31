@@ -5,6 +5,40 @@
     <title>OfertaPrimeX - Compare os Melhores Preços</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="css/style.css">
+    <style>
+        /* ===== ESTILOS PARA SCROLL INFINITO ===== */
+        .loading-spinner {
+            text-align: center;
+            padding: 30px;
+            color: #ff6a00;
+            font-size: 14px;
+            grid-column: 1/-1;
+            animation: pulse 1s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .end-of-results {
+            text-align: center;
+            padding: 30px;
+            color: #888;
+            font-size: 14px;
+            grid-column: 1/-1;
+        }
+        
+        .resultado-info {
+            margin-bottom: 20px;
+            padding: 10px 15px;
+            background: #f5f5f5;
+            border-radius: 8px;
+            color: #555;
+            font-size: 14px;
+            text-align: center;
+        }
+    </style>
 </head>
 <body>
 
@@ -32,18 +66,20 @@
     </div>
 </section>
 
+<!-- ================= RESULTADO DA BUSCA (SCROLL INFINITO) ================= -->
 <section class="section" id="resultado-busca" style="display:none;">
     <div class="container">
         <h2 class="section-title">🔎 Resultado da busca</h2>
+        <div id="resultado-info" class="resultado-info"></div>
         <div class="products-grid" id="grid-busca"></div>
     </div>
 </section>
 
-<!-- ================= TOP 10 CARROSSEL ================= -->
+<!-- ================= TOP 10 CARROSSEL (RANDOMIZADO POR PLATAFORMA) ================= -->
 <section class="section" id="top10">
     <div class="container">
         <h2 class="section-title">🏆 Top 10 Produtos Mais Pesquisados</h2>
-        <p class="section-subtitle">Os produtos mais procurados por você na última semana</p>
+        <p class="section-subtitle">Um produto de cada plataforma, atualizado a cada visita</p>
         <div class="carousel-container">
             <button class="carousel-btn prev" onclick="scrollCarousel('top10-grid', -1)">‹</button>
             <div class="carousel">
@@ -150,12 +186,23 @@
       getTop20Amazon,
       getTop20Shopee,
       getTop20Magalu,
-      getRandomProducts
+      getRandomProducts,
+      getTop20ByPlatform
   } from './js/api.js';
   import { renderProducts } from './js/render.js';
 
+  // ============================================
+  // VARIÁVEIS PARA SCROLL INFINITO
+  // ============================================
+  let allSearchResults = [];
+  let displayedCount = 0;
+  let isLoading = false;
+  let scrollObserver = null;
+  const BATCH_SIZE = 30;
+
   const gridBusca = document.getElementById('grid-busca');
   const sectionBusca = document.getElementById('resultado-busca');
+  const resultadoInfo = document.getElementById('resultado-info');
   const buscaInput = document.getElementById('busca');
   const btnBuscar = document.getElementById('btnBuscar');
   
@@ -179,55 +226,193 @@
       grid.parentElement.scrollBy({ left: scrollAmount, behavior: 'smooth' });
   };
 
-  async function realizarBusca() {
-    const termo = buscaInput.value.trim();
-    if (!termo) return;
-
-    sectionBusca.style.display = 'block';
-    gridBusca.innerHTML = '<p style="text-align: center; grid-column: 1/-1;">🔍 Buscando...</p>';
-
-    const inicio = performance.now();
-
-    try {
-      // ===== USANDO A NOVA BUSCA MULTIPLATAFORMA =====
-      const res = await searchAllPlatforms(termo);
-      const fim = performance.now();
-      const tempoResposta = Math.round(fim - inicio);
-
-      // Renderiza os produtos
-      renderProducts(gridBusca, res.products || []);
-
-      // Exibe resumo no console (debug)
-      if (res.resultados_plataformas && res.resultados_plataformas.length > 0) {
-          console.log('📊 Resumo por plataforma:');
-          res.resultados_plataformas.forEach(p => {
-              console.log(`   ${p.plataforma}: ${p.encontrou ? `✅ ${p.quantidade} produtos (${p.tempo}ms)` : '❌ Não encontrado'}`);
+  // ============================================
+  // FUNÇÕES DE SCROLL INFINITO
+  // ============================================
+  
+  function loadMoreProducts() {
+      if (isLoading) return;
+      if (displayedCount >= allSearchResults.length) return;
+      
+      isLoading = true;
+      
+      // Adiciona loading spinner
+      const loadingDiv = document.createElement('div');
+      loadingDiv.className = 'loading-spinner';
+      loadingDiv.id = 'loading-spinner';
+      gridBusca.appendChild(loadingDiv);
+      
+      setTimeout(() => {
+          const nextBatch = allSearchResults.slice(displayedCount, displayedCount + BATCH_SIZE);
+          
+          // Remove loading spinner
+          const spinner = document.getElementById('loading-spinner');
+          if (spinner) spinner.remove();
+          
+          // Renderiza próximos produtos
+          renderProducts(gridBusca, nextBatch, false);
+          
+          displayedCount += nextBatch.length;
+          isLoading = false;
+          
+          // Se acabaram os produtos
+          if (displayedCount >= allSearchResults.length) {
+              const endDiv = document.createElement('div');
+              endDiv.className = 'end-of-results';
+              endDiv.textContent = '📭 Você chegou ao fim dos resultados';
+              gridBusca.appendChild(endDiv);
+          } else {
+              setupInfiniteScroll();
+          }
+      }, 300);
+  }
+  
+  function setupInfiniteScroll() {
+      if (scrollObserver) scrollObserver.disconnect();
+      
+      scrollObserver = new IntersectionObserver((entries) => {
+          entries.forEach(entry => {
+              if (entry.isIntersecting && !isLoading && displayedCount < allSearchResults.length) {
+                  loadMoreProducts();
+              }
           });
-          console.log(`📦 Total: ${res.total} produtos | ⏱️ ${res.tempo_total}ms`);
+      }, { threshold: 0.1, rootMargin: '100px' });
+      
+      const lastChild = gridBusca.lastElementChild;
+      if (lastChild && !lastChild.classList.contains('end-of-results') && !lastChild.classList.contains('loading-spinner')) {
+          scrollObserver.observe(lastChild);
       }
-
-    } catch (error) {
-      console.error('Erro na busca:', error);
-      gridBusca.innerHTML = '<p style="text-align: center; color: red; grid-column: 1/-1;">❌ Erro ao buscar produtos</p>';
-    }
+  }
+  
+  function resetSearch() {
+      allSearchResults = [];
+      displayedCount = 0;
+      isLoading = false;
+      if (scrollObserver) {
+          scrollObserver.disconnect();
+          scrollObserver = null;
+      }
+      gridBusca.innerHTML = '';
   }
 
-  // Carregar Top 10
-  async function carregarTop10() {
+  // ============================================
+  // BUSCA COM SCROLL INFINITO
+  // ============================================
+  async function realizarBusca() {
+      const termo = buscaInput.value.trim();
+      if (!termo) return;
+      
+      resetSearch();
+      sectionBusca.style.display = 'block';
+      resultadoInfo.textContent = '🔍 Buscando produtos...';
+      gridBusca.innerHTML = '<p style="text-align: center; grid-column: 1/-1;">🔍 Buscando...</p>';
+      
+      const inicio = performance.now();
+      
       try {
-          const produtos = await getTop10();
-          renderProducts(top10Grid, produtos, true);
+          const res = await searchAllPlatforms(termo);
+          const fim = performance.now();
+          const tempoResposta = Math.round(fim - inicio);
+          
+          allSearchResults = res.products || [];
+          
+          if (allSearchResults.length === 0) {
+              gridBusca.innerHTML = '<p style="text-align: center; grid-column: 1/-1;">😔 Nenhum produto encontrado para "' + termo + '"</p>';
+              resultadoInfo.textContent = `Nenhum resultado encontrado para "${termo}"`;
+              return;
+          }
+          
+          resultadoInfo.textContent = `🔎 ${allSearchResults.length} produtos encontrados para "${termo}" | ⏱️ ${tempoResposta}ms | Carregando ${BATCH_SIZE} por vez`;
+          
+          // Limpa grid e carrega primeira leva
+          gridBusca.innerHTML = '';
+          const firstBatch = allSearchResults.slice(0, BATCH_SIZE);
+          renderProducts(gridBusca, firstBatch, false);
+          displayedCount = firstBatch.length;
+          
+          // Configura scroll infinito se houver mais produtos
+          if (displayedCount < allSearchResults.length) {
+              setupInfiniteScroll();
+          } else {
+              const endDiv = document.createElement('div');
+              endDiv.className = 'end-of-results';
+              endDiv.textContent = '📭 Fim dos resultados';
+              gridBusca.appendChild(endDiv);
+          }
+          
+          // Log no console
+          if (res.resultados_plataformas && res.resultados_plataformas.length > 0) {
+              console.log('📊 Resumo por plataforma:');
+              res.resultados_plataformas.forEach(p => {
+                  console.log(`   ${p.plataforma}: ${p.encontrou ? `✅ ${p.quantidade} produtos (${p.tempo}ms)` : '❌ Não encontrado'}`);
+              });
+              console.log(`📦 Total: ${res.total} produtos | ⏱️ ${res.tempo_total}ms`);
+          }
+          
+      } catch (error) {
+          console.error('Erro na busca:', error);
+          gridBusca.innerHTML = '<p style="text-align: center; color: red; grid-column: 1/-1;">❌ Erro ao buscar produtos</p>';
+          resultadoInfo.textContent = '❌ Erro na busca. Tente novamente.';
+      }
+  }
+
+  // ============================================
+  // TOP 10 RANDOMIZADO POR PLATAFORMA
+  // ============================================
+  async function carregarTop10Randomizado() {
+      try {
+          const plataformas = ['mercadolivre', 'amazon', 'shopee', 'magalu'];
+          const produtosSelecionados = [];
+          
+          // Busca 1 produto de cada plataforma
+          for (const plataforma of plataformas) {
+              try {
+                  const produtos = await getTop20ByPlatform(plataforma);
+                  if (produtos && produtos.length > 0) {
+                      const randomIndex = Math.floor(Math.random() * produtos.length);
+                      produtosSelecionados.push(produtos[randomIndex]);
+                  }
+              } catch (err) {
+                  console.warn(`⚠️ Erro ao buscar produtos da ${plataforma}:`, err);
+              }
+          }
+          
+          // Se não conseguiu pegar de todas, completa com produtos do ML
+          if (produtosSelecionados.length < 10) {
+              try {
+                  const mlProdutos = await getTop20MercadoLivre();
+                  const restantes = 10 - produtosSelecionados.length;
+                  for (let i = 0; i < restantes && i < mlProdutos.length; i++) {
+                      produtosSelecionados.push(mlProdutos[i]);
+                  }
+              } catch (err) {
+                  console.warn('⚠️ Erro ao completar com ML:', err);
+              }
+          }
+          
+          // Embaralha os produtos
+          for (let i = produtosSelecionados.length - 1; i > 0; i--) {
+              const j = Math.floor(Math.random() * (i + 1));
+              [produtosSelecionados[i], produtosSelecionados[j]] = [produtosSelecionados[j], produtosSelecionados[i]];
+          }
+          
+          renderProducts(top10Grid, produtosSelecionados.slice(0, 10), true);
+          
           setTimeout(() => {
               const container = top10Grid.parentElement;
               if (container) container.style.scrollBehavior = 'smooth';
           }, 100);
+          
       } catch (error) {
-          console.error('Erro ao carregar Top 10:', error);
+          console.error('Erro ao carregar Top 10 randomizado:', error);
           top10Grid.innerHTML = '<p style="text-align: center; grid-column: 1/-1;">⚠️ Não foi possível carregar o Top 10</p>';
       }
   }
 
-  // Carregar Top 20 Mercado Livre
+  // ============================================
+  // CARREGAR DEMAIS SEÇÕES
+  // ============================================
+  
   async function carregarTop20MercadoLivre() {
       try {
           const produtos = await getTop20MercadoLivre();
@@ -242,7 +427,6 @@
       }
   }
 
-  // Carregar Top 20 Amazon
   async function carregarTop20Amazon() {
       try {
           const produtos = await getTop20Amazon();
@@ -261,7 +445,6 @@
       }
   }
 
-  // Carregar Top 20 Shopee
   async function carregarTop20Shopee() {
       try {
           const produtos = await getTop20Shopee();
@@ -280,7 +463,6 @@
       }
   }
 
-  // Carregar Top 20 Magalu
   async function carregarTop20Magalu() {
       try {
           const produtos = await getTop20Magalu();
@@ -299,7 +481,6 @@
       }
   }
 
-  // Carregar Produtos Aleatórios
   async function carregarRandom() {
       try {
           const produtos = await getRandomProducts(50);
@@ -314,13 +495,16 @@
       }
   }
 
+  // ============================================
+  // EVENTOS E INICIALIZAÇÃO
+  // ============================================
   btnBuscar.addEventListener('click', realizarBusca);
   buscaInput.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') realizarBusca();
+      if (e.key === 'Enter') realizarBusca();
   });
 
   // Carregar todos os dados na inicialização
-  carregarTop10();
+  carregarTop10Randomizado();        // NOVO: Top 10 randomizado por plataforma
   carregarTop20MercadoLivre();
   carregarTop20Amazon();
   carregarTop20Shopee();

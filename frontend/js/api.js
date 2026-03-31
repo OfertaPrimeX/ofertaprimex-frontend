@@ -79,6 +79,43 @@ export async function getTop10() {
 }
 
 // ============================================
+// FUNÇÃO GENÉRICA: BUSCAR TOP 20 POR PLATAFORMA
+// ============================================
+export async function getTop20ByPlatform(plataforma) {
+    try {
+        console.log(`📊 Buscando Top 20 ${plataforma}...`);
+        
+        // Mapeamento das rotas por plataforma
+        const rotas = {
+            mercadolivre: '/api/produtos/top20/mercadolivre',
+            amazon: '/api/produtos/top20/amazon',
+            shopee: '/api/produtos/top20/shopee',
+            magalu: '/api/produtos/top20/magalu'
+        };
+        
+        const rota = rotas[plataforma];
+        if (!rota) {
+            console.error(`❌ Plataforma "${plataforma}" não suportada`);
+            return [];
+        }
+        
+        const response = await fetch(`${API_URL}${rota}`);
+        const data = await response.json();
+        
+        if (data.success && data.products && data.products.length > 0) {
+            console.log(`✅ Top 20 ${plataforma}: ${data.products.length} produtos`);
+            return data.products;
+        } else {
+            console.log(`📭 Nenhum produto da ${plataforma} disponível`);
+            return [];
+        }
+    } catch (error) {
+        console.error(`❌ Erro no Top 20 ${plataforma}:`, error);
+        return [];
+    }
+}
+
+// ============================================
 // TOP 20 MERCADO LIVRE
 // ============================================
 export async function getTop20MercadoLivre() {
@@ -189,7 +226,7 @@ export async function getRandomProducts(limit = 50) {
 }
 
 // ============================================
-// NOVA FUNÇÃO: BUSCA EM TODAS AS PLATAFORMAS (COM REGISTRO DETALHADO)
+// FUNÇÃO: BUSCA EM TODAS AS PLATAFORMAS (COM REGISTRO DETALHADO)
 // ============================================
 export async function searchAllPlatforms(termo) {
     console.log('🔍 Buscando em todas as plataformas:', termo);
@@ -233,5 +270,47 @@ export async function searchAllPlatforms(termo) {
     } catch (error) {
         console.error('❌ Erro na busca multiplataforma:', error);
         return { products: [], resultados_plataformas: [] };
+    }
+}
+
+// ============================================
+// FUNÇÃO: BUSCAR PRODUTOS COM PAGINAÇÃO (PARA SCROLL INFINITO)
+// ============================================
+export async function searchProductsPaginated(termo, page = 1, limit = 30) {
+    console.log(`🔍 Buscando produtos: "${termo}" | Página ${page} | Limite ${limit}`);
+    
+    let sessaoId = localStorage.getItem('sessaoId');
+    if (!sessaoId) {
+        sessaoId = 'sess_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        localStorage.setItem('sessaoId', sessaoId);
+    }
+    
+    try {
+        const url = `${API_URL}/api/pesquisas/buscar/paginada`;
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Session-Id': sessaoId
+            },
+            body: JSON.stringify({ termo, page, limit })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            return {
+                products: data.products || [],
+                total: data.total || 0,
+                page: data.page || page,
+                hasMore: data.hasMore || false
+            };
+        } else {
+            console.error('❌ Erro na busca paginada:', data.error);
+            return { products: [], total: 0, hasMore: false };
+        }
+    } catch (error) {
+        console.error('❌ Erro na busca paginada:', error);
+        return { products: [], total: 0, hasMore: false };
     }
 }
