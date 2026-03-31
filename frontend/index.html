@@ -114,6 +114,7 @@
         .carousel-wrapper {
             position: relative;
             margin: 20px 0;
+            padding: 0 30px;
         }
 
         .carousel-track-container {
@@ -125,6 +126,7 @@
             display: flex;
             transition: transform 0.5s ease-in-out;
             gap: 20px;
+            will-change: transform;
         }
 
         .carousel-card {
@@ -200,17 +202,20 @@
         }
 
         .carousel-btn.prev {
-            left: -20px;
+            left: -10px;
         }
 
         .carousel-btn.next {
-            right: -20px;
+            right: -10px;
         }
 
         @media (max-width: 1024px) {
             .carousel-card {
                 flex: 0 0 calc(33.333% - 14px); /* 3 cards por vez no tablet */
                 min-width: calc(33.333% - 14px);
+            }
+            .carousel-wrapper {
+                padding: 0 20px;
             }
         }
 
@@ -224,11 +229,8 @@
                 height: 32px;
                 font-size: 16px;
             }
-            .carousel-btn.prev {
-                left: -10px;
-            }
-            .carousel-btn.next {
-                right: -10px;
+            .carousel-wrapper {
+                padding: 0 15px;
             }
         }
     </style>
@@ -314,8 +316,7 @@
       getTop20MercadoLivre,
       getTop20Amazon,
       getTop20Shopee,
-      getTop20Magalu,
-      getRandomProducts
+      getTop20Magalu
   } from './js/api.js';
   import { renderProducts } from './js/render.js';
 
@@ -472,33 +473,48 @@
                        alt="${p.titulo}"
                        onerror="this.src='https://via.placeholder.com/150'">
                   <div class="product-title">${(p.titulo || '').substring(0, 50)}...</div>
-                  <div class="product-price">R$ ${(p.preco || '0').replace('.', ',')}</div>
+                  <div class="product-price">R$ ${(p.preco || '0').toString().replace('.', ',')}</div>
                   <div class="product-platform">${p.plataforma || 'Mercado Livre'}</div>
               </div>
           `).join('');
+          
+          return produtos.length;
           
       } catch (error) {
           console.error('Erro ao carregar mais vendidos:', error);
           const track = document.getElementById('carousel-track');
           if (track) track.innerHTML = '<p style="text-align: center; grid-column: 1/-1;">⚠️ Não foi possível carregar os produtos</p>';
+          return 0;
       }
   }
 
   // ============================================
-  // CONFIGURAÇÃO DO CARROSSEL (6 por vez)
+  // CONFIGURAÇÃO DO CARROSSEL (RESPONSIVO)
   // ============================================
   let currentIndex = 0;
   let itemsPerView = 6;
   let totalItems = 0;
+  let cardWidth = 0;
   
   function updateItemsPerView() {
-      if (window.innerWidth <= 768) {
+      const width = window.innerWidth;
+      if (width <= 768) {
           itemsPerView = 2;
-      } else if (window.innerWidth <= 1024) {
+      } else if (width <= 1024) {
           itemsPerView = 3;
       } else {
           itemsPerView = 6;
       }
+  }
+  
+  function updateCardWidth() {
+      const track = document.getElementById('carousel-track');
+      if (!track || track.children.length === 0) return;
+      
+      const firstCard = track.children[0];
+      const style = getComputedStyle(firstCard);
+      const gap = 20; // gap definido no CSS
+      cardWidth = firstCard.offsetWidth + gap;
   }
   
   function updateCarousel() {
@@ -510,7 +526,8 @@
       
       if (totalItems === 0) return;
       
-      const cardWidth = cards[0].offsetWidth + 20; // width + gap
+      updateCardWidth();
+      
       const maxIndex = Math.max(0, totalItems - itemsPerView);
       
       if (currentIndex > maxIndex) currentIndex = maxIndex;
@@ -710,14 +727,13 @@
   });
 
   // Botões do carrossel
-  document.getElementById('carousel-prev')?.addEventListener('click', () => {
-      prevSlide();
-  });
+  const prevBtn = document.getElementById('carousel-prev');
+  const nextBtn = document.getElementById('carousel-next');
   
-  document.getElementById('carousel-next')?.addEventListener('click', () => {
-      nextSlide();
-  });
+  if (prevBtn) prevBtn.addEventListener('click', () => prevSlide());
+  if (nextBtn) nextBtn.addEventListener('click', () => nextSlide());
   
+  // Atualiza carrossel ao redimensionar a tela
   window.addEventListener('resize', () => {
       updateItemsPerView();
       updateCarousel();
@@ -730,8 +746,9 @@
   carregarMaisVendidos().then(() => {
       updateItemsPerView();
       setTimeout(() => {
+          updateCardWidth();
           updateCarousel();
-      }, 100);
+      }, 150);
   });
 </script>
 </body>
