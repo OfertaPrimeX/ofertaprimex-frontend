@@ -99,6 +99,11 @@
                 font-size: 10px;
             }
         }
+
+        /* ===== CLASSE PARA OCULTAR SEÇÕES ===== */
+        .hidden-section {
+            display: none !important;
+        }
     </style>
 </head>
 <body>
@@ -107,11 +112,11 @@
     <div class="container header-content">
         <div class="logo">OfertaPrime<span>X</span></div>
         <nav class="menu">
-            <a href="#home">Home</a>
-            <a href="#categorias">Categorias</a>
-            <a href="#top10">Top 10</a>
-            <a href="#top20">Top 20</a>
-            <a href="#random">Aleatórios</a>
+            <a href="#" onclick="voltarParaHome(event)">Home</a>
+            <a href="#" onclick="mostrarCategorias(event)">Categorias</a>
+            <a href="#" onclick="mostrarTop10(event)">Top 10</a>
+            <a href="#" onclick="mostrarTop20(event)">Top 20</a>
+            <a href="#" onclick="mostrarRandom(event)">Aleatórios</a>
             <a href="#sobre">Quem Somos</a>
             <a href="admin.html" id="admin-link" style="display: none;">Admin</a>
             <a href="#" id="auth-link">Login</a>
@@ -325,6 +330,93 @@
   ];
 
   // ============================================
+  // FUNÇÕES PARA CONTROLAR A EXIBIÇÃO DAS SEÇÕES
+  // ============================================
+  
+  // Oculta todas as seções de conteúdo (categorias, top10, top20, random)
+  function ocultarTodasSecoes() {
+      const secoes = ['categorias', 'top10', 'top20-mercadolivre', 'top20-amazon', 'top20-shopee', 'top20-magalu', 'random'];
+      secoes.forEach(id => {
+          const elemento = document.getElementById(id);
+          if (elemento) elemento.classList.add('hidden-section');
+      });
+  }
+  
+  // Mostra apenas a seção de categorias
+  function mostrarCategorias(event) {
+      if (event) event.preventDefault();
+      ocultarTodasSecoes();
+      const categoriasSecao = document.getElementById('categorias');
+      if (categoriasSecao) categoriasSecao.classList.remove('hidden-section');
+      // Esconde também o resultado da busca
+      const resultadoBusca = document.getElementById('resultado-busca');
+      if (resultadoBusca) resultadoBusca.style.display = 'none';
+      // Rola suavemente para o topo
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+  
+  // Mostra apenas a seção Top 10
+  function mostrarTop10(event) {
+      if (event) event.preventDefault();
+      ocultarTodasSecoes();
+      const top10Secao = document.getElementById('top10');
+      if (top10Secao) top10Secao.classList.remove('hidden-section');
+      const resultadoBusca = document.getElementById('resultado-busca');
+      if (resultadoBusca) resultadoBusca.style.display = 'none';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+  
+  // Mostra apenas a seção Top 20 (todas as plataformas)
+  function mostrarTop20(event) {
+      if (event) event.preventDefault();
+      ocultarTodasSecoes();
+      const plataformas = ['top20-mercadolivre', 'top20-amazon', 'top20-shopee', 'top20-magalu'];
+      plataformas.forEach(id => {
+          const elemento = document.getElementById(id);
+          if (elemento) elemento.classList.remove('hidden-section');
+      });
+      const resultadoBusca = document.getElementById('resultado-busca');
+      if (resultadoBusca) resultadoBusca.style.display = 'none';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+  
+  // Mostra apenas a seção de produtos aleatórios
+  function mostrarRandom(event) {
+      if (event) event.preventDefault();
+      ocultarTodasSecoes();
+      const randomSecao = document.getElementById('random');
+      if (randomSecao) randomSecao.classList.remove('hidden-section');
+      const resultadoBusca = document.getElementById('resultado-busca');
+      if (resultadoBusca) resultadoBusca.style.display = 'none';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+  
+  // Volta para a home (mostra todas as seções)
+  function voltarParaHome(event) {
+      if (event) event.preventDefault();
+      // Remove a classe hidden de todas as seções
+      const secoes = ['categorias', 'top10', 'top20-mercadolivre', 'top20-amazon', 'top20-shopee', 'top20-magalu', 'random'];
+      secoes.forEach(id => {
+          const elemento = document.getElementById(id);
+          if (elemento) elemento.classList.remove('hidden-section');
+      });
+      // Esconde o resultado da busca
+      const resultadoBusca = document.getElementById('resultado-busca');
+      if (resultadoBusca) resultadoBusca.style.display = 'none';
+      // Limpa o campo de busca
+      const buscaInput = document.getElementById('busca');
+      if (buscaInput) buscaInput.value = '';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+  
+  // Exporta funções para uso global
+  window.mostrarCategorias = mostrarCategorias;
+  window.mostrarTop10 = mostrarTop10;
+  window.mostrarTop20 = mostrarTop20;
+  window.mostrarRandom = mostrarRandom;
+  window.voltarParaHome = voltarParaHome;
+
+  // ============================================
   // RENDERIZA AS CATEGORIAS NA PÁGINA
   // ============================================
   function renderizarCategorias() {
@@ -347,10 +439,6 @@
       if (buscaInput) {
           buscaInput.value = termo;
           realizarBusca();
-      }
-      const resultadoSection = document.getElementById('resultado-busca');
-      if (resultadoSection) {
-          resultadoSection.scrollIntoView({ behavior: 'smooth' });
       }
   };
 
@@ -455,11 +543,14 @@
   }
 
   // ============================================
-  // BUSCA COM SCROLL INFINITO
+  // BUSCA COM SCROLL INFINITO (OCULTA SEÇÕES)
   // ============================================
   async function realizarBusca() {
       const termo = buscaInput.value.trim();
       if (!termo) return;
+      
+      // OCULTA TODAS AS SEÇÕES DE CONTEÚDO
+      ocultarTodasSecoes();
       
       resetSearch();
       sectionBusca.style.display = 'block';
@@ -659,7 +750,7 @@
   // Renderiza as categorias
   renderizarCategorias();
 
-  // Carregar todos os dados na inicialização
+  // Carregar todos os dados na inicialização (mostra tudo)
   carregarTop10Randomizado();
   carregarTop20MercadoLivre();
   carregarTop20Amazon();
