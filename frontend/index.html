@@ -265,29 +265,63 @@
   import { renderProducts } from './js/render.js';
 
   // ============================================
-  // DEFINIÇÃO DAS CATEGORIAS (BASEADO NO SEU PRINT)
+  // DEFINIÇÃO COMPLETA DAS CATEGORIAS (40 CATEGORIAS)
   // ============================================
   const categorias = [
+    // Moda e Acessórios
     { nome: "Roupas Femininas", icone: "👗", termo: "roupas femininas" },
-    { nome: "Roupas Plus Size", icone: "👚", termo: "plus size" },
     { nome: "Roupas Masculinas", icone: "👕", termo: "roupas masculinas" },
-    { nome: "Sapatos Masculinos", icone: "👞", termo: "sapatos masculinos" },
-    { nome: "Acessórios de Moda", icone: "🧢", termo: "acessórios de moda" },
-    { nome: "Celulares e Dispositivos", icone: "📱", termo: "celulares" },
-    { nome: "Eletrodomésticos", icone: "🧺", termo: "eletrodomésticos" },
-    { nome: "Automóveis", icone: "🚗", termo: "automóveis" },
-    { nome: "Saúde", icone: "💊", termo: "saúde" },
-    { nome: "Áudio", icone: "🎧", termo: "áudio" },
-    { nome: "Casa e Construção", icone: "🏠", termo: "casa e construção" },
-    { nome: "Beleza", icone: "💄", termo: "beleza" },
-    { nome: "Sapatos Femininos", icone: "👠", termo: "sapatos femininos" },
+    { nome: "Roupas Plus Size", icone: "👚", termo: "plus size" },
     { nome: "Moda Infantil", icone: "👶", termo: "moda infantil" },
+    { nome: "Sapatos Femininos", icone: "👠", termo: "sapatos femininos" },
+    { nome: "Sapatos Masculinos", icone: "👞", termo: "sapatos masculinos" },
+    { nome: "Bolsas Femininas", icone: "👜", termo: "bolsas femininas" },
+    { nome: "Bolsas Masculinas", icone: "🎒", termo: "bolsas masculinas" },
+    { nome: "Acessórios de Moda", icone: "🧢", termo: "acessórios de moda" },
     { nome: "Relógios", icone: "⌚", termo: "relógios" },
+    
+    // Eletrônicos e Tecnologia
+    { nome: "Celulares e Dispositivos", icone: "📱", termo: "celulares" },
+    { nome: "Computadores e Acessórios", icone: "💻", termo: "computadores" },
+    { nome: "Jogos e Consoles", icone: "🎮", termo: "jogos e consoles" },
+    { nome: "Áudio", icone: "🎧", termo: "áudio" },
+    { nome: "Câmeras e Drones", icone: "📸", termo: "câmeras e drones" },
+    
+    // Casa e Eletrodomésticos
+    { nome: "Eletrodomésticos", icone: "🧺", termo: "eletrodomésticos" },
+    { nome: "Casa e Construção", icone: "🏠", termo: "casa e construção" },
+    { nome: "Cozinha", icone: "🍳", termo: "cozinha" },
+    
+    // Beleza e Saúde
+    { nome: "Beleza", icone: "💄", termo: "beleza" },
+    { nome: "Saúde", icone: "💊", termo: "saúde" },
+    
+    // Esportes e Lazer
     { nome: "Esportes e Lazer", icone: "⚽", termo: "esportes" },
     { nome: "Brinquedos e Hobbies", icone: "🧸", termo: "brinquedos" },
-    { nome: "Acessórios para Veículos", icone: "🔧", termo: "acessórios automotivos" },
+    { nome: "Livros e Revistas", icone: "📚", termo: "livros" },
+    { nome: "Papelaria", icone: "✏️", termo: "papelaria" },
+    { nome: "Viagens e Bagagens", icone: "🧳", termo: "viagens" },
+    
+    // Veículos e Acessórios
+    { nome: "Automóveis", icone: "🚗", termo: "automóveis" },
     { nome: "Motocicletas", icone: "🏍️", termo: "motocicletas" },
-    { nome: "Mãe e Bebê", icone: "🍼", termo: "mãe e bebê" }
+    { nome: "Acessórios para Veículos", icone: "🔧", termo: "acessórios automotivos" },
+    
+    // Animais e Alimentos
+    { nome: "Animais Domésticos", icone: "🐶", termo: "animais domésticos" },
+    { nome: "Alimentos e Bebidas", icone: "🍕", termo: "alimentos e bebidas" },
+    
+    // Outros
+    { nome: "Mãe e Bebê", icone: "🍼", termo: "mãe e bebê" },
+    { nome: "Ferramentas", icone: "🔨", termo: "ferramentas" },
+    { nome: "Jardim", icone: "🌻", termo: "jardim" },
+    { nome: "Instrumentos Musicais", icone: "🎸", termo: "instrumentos musicais" },
+    { nome: "Móveis", icone: "🛋️", termo: "móveis" },
+    { nome: "Escritório", icone: "📎", termo: "escritório" },
+    { nome: "Malas e Mochilas", icone: "🎒", termo: "malas e mochilas" },
+    { nome: "Religião", icone: "⛪", termo: "religião" },
+    { nome: "Festas", icone: "🎉", termo: "festas" }
   ];
 
   // ============================================
@@ -298,7 +332,7 @@
       if (!container) return;
       
       container.innerHTML = categorias.map(cat => `
-          <div class="category-card" onclick="buscarPorCategoria('${cat.termo}')">
+          <div class="category-card" onclick="buscarPorCategoria('${cat.termo.replace(/'/g, "\\'")}')">
               <div class="category-icon">${cat.icone}</div>
               <div class="category-name">${cat.nome}</div>
           </div>
@@ -314,7 +348,6 @@
           buscaInput.value = termo;
           realizarBusca();
       }
-      // Rola suavemente para a seção de resultados
       const resultadoSection = document.getElementById('resultado-busca');
       if (resultadoSection) {
           resultadoSection.scrollIntoView({ behavior: 'smooth' });
