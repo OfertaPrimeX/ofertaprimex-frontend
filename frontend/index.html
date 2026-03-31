@@ -104,6 +104,133 @@
         .hidden-section {
             display: none !important;
         }
+
+        /* ===== ESTILOS DO NOVO CARROSSEL ===== */
+        .mais-vendidos-section {
+            padding: 40px 0;
+            background: #ffffff;
+        }
+
+        .carousel-wrapper {
+            position: relative;
+            margin: 20px 0;
+        }
+
+        .carousel-track-container {
+            overflow: hidden;
+            border-radius: 12px;
+        }
+
+        .carousel-track {
+            display: flex;
+            transition: transform 0.5s ease-in-out;
+            gap: 20px;
+        }
+
+        .carousel-card {
+            flex: 0 0 calc(16.666% - 17px); /* 6 cards por vez (100%/6 ≈ 16.66%) */
+            min-width: calc(16.666% - 17px);
+            background: #fff;
+            border-radius: 12px;
+            padding: 12px;
+            text-align: center;
+            border: 1px solid #e0e0e0;
+            transition: transform 0.3s, box-shadow 0.3s;
+            cursor: pointer;
+        }
+
+        .carousel-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .carousel-card img {
+            width: 100%;
+            max-height: 150px;
+            object-fit: contain;
+            margin-bottom: 10px;
+        }
+
+        .carousel-card .product-title {
+            font-size: 13px;
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #333;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+        }
+
+        .carousel-card .product-price {
+            font-size: 14px;
+            font-weight: bold;
+            color: #ff6a00;
+            margin: 8px 0;
+        }
+
+        .carousel-card .product-platform {
+            font-size: 11px;
+            color: #777;
+        }
+
+        .carousel-btn {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255, 106, 0, 0.9);
+            color: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+            z-index: 10;
+        }
+
+        .carousel-btn:hover {
+            background: #e85f00;
+            transform: translateY(-50%) scale(1.1);
+        }
+
+        .carousel-btn.prev {
+            left: -20px;
+        }
+
+        .carousel-btn.next {
+            right: -20px;
+        }
+
+        @media (max-width: 1024px) {
+            .carousel-card {
+                flex: 0 0 calc(33.333% - 14px); /* 3 cards por vez no tablet */
+                min-width: calc(33.333% - 14px);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .carousel-card {
+                flex: 0 0 calc(50% - 10px); /* 2 cards por vez no mobile */
+                min-width: calc(50% - 10px);
+            }
+            .carousel-btn {
+                width: 32px;
+                height: 32px;
+                font-size: 16px;
+            }
+            .carousel-btn.prev {
+                left: -10px;
+            }
+            .carousel-btn.next {
+                right: -10px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -114,9 +241,7 @@
         <nav class="menu">
             <a href="#" onclick="voltarParaHome(event)">Home</a>
             <a href="#" onclick="mostrarCategorias(event)">Categorias</a>
-            <a href="#" onclick="mostrarTop10(event)">Top 10</a>
-            <a href="#" onclick="mostrarTop20(event)">Top 20</a>
-            <a href="#" onclick="mostrarRandom(event)">Aleatórios</a>
+            <a href="#" onclick="mostrarMaisVendidos(event)">Mais Vendidos</a>
             <a href="#sobre">Quem Somos</a>
             <a href="admin.html" id="admin-link" style="display: none;">Admin</a>
             <a href="#" id="auth-link">Login</a>
@@ -144,102 +269,29 @@
     </div>
 </section>
 
+<!-- ================= NOVO CARROSSEL: 24 PRODUTOS MAIS VENDIDOS ================= -->
+<section class="mais-vendidos-section" id="mais-vendidos">
+    <div class="container">
+        <h2 class="section-title">🏆 Mais Vendidos</h2>
+        <p class="section-subtitle">Os 24 produtos mais vendidos do momento</p>
+        <div class="carousel-wrapper">
+            <button class="carousel-btn prev" id="carousel-prev">‹</button>
+            <div class="carousel-track-container">
+                <div class="carousel-track" id="carousel-track">
+                    <!-- Produtos serão inseridos via JavaScript -->
+                </div>
+            </div>
+            <button class="carousel-btn next" id="carousel-next">›</button>
+        </div>
+    </div>
+</section>
+
 <!-- ================= RESULTADO DA BUSCA (SCROLL INFINITO) ================= -->
 <section class="section" id="resultado-busca" style="display:none;">
     <div class="container">
         <h2 class="section-title">🔎 Resultado da busca</h2>
         <div id="resultado-info" class="resultado-info"></div>
         <div class="products-grid" id="grid-busca"></div>
-    </div>
-</section>
-
-<!-- ================= TOP 10 CARROSSEL (RANDOMIZADO POR PLATAFORMA) ================= -->
-<section class="section" id="top10">
-    <div class="container">
-        <h2 class="section-title">🏆 Top 10 Produtos Mais Pesquisados</h2>
-        <p class="section-subtitle">Um produto de cada plataforma, atualizado a cada visita</p>
-        <div class="carousel-container">
-            <button class="carousel-btn prev" onclick="scrollCarousel('top10-grid', -1)">‹</button>
-            <div class="carousel">
-                <div class="products-grid" id="top10-grid"></div>
-            </div>
-            <button class="carousel-btn next" onclick="scrollCarousel('top10-grid', 1)">›</button>
-        </div>
-    </div>
-</section>
-
-<!-- ================= TOP 20 MERCADO LIVRE CARROSSEL ================= -->
-<section class="section section-gray" id="top20-mercadolivre">
-    <div class="container">
-        <h2 class="section-title">🏅 Top 20 - Mercado Livre</h2>
-        <p class="section-subtitle">Os 20 produtos mais bem avaliados e com melhor preço</p>
-        <div class="carousel-container">
-            <button class="carousel-btn prev" onclick="scrollCarousel('top20-ml-grid', -1)">‹</button>
-            <div class="carousel">
-                <div class="products-grid small-grid" id="top20-ml-grid"></div>
-            </div>
-            <button class="carousel-btn next" onclick="scrollCarousel('top20-ml-grid', 1)">›</button>
-        </div>
-    </div>
-</section>
-
-<!-- ================= TOP 20 AMAZON CARROSSEL ================= -->
-<section class="section" id="top20-amazon">
-    <div class="container">
-        <h2 class="section-title">📚 Top 20 - Amazon</h2>
-        <p class="section-subtitle">Os produtos mais bem avaliados na Amazon</p>
-        <div class="carousel-container">
-            <button class="carousel-btn prev" onclick="scrollCarousel('top20-amazon-grid', -1)">‹</button>
-            <div class="carousel">
-                <div class="products-grid small-grid" id="top20-amazon-grid"></div>
-            </div>
-            <button class="carousel-btn next" onclick="scrollCarousel('top20-amazon-grid', 1)">›</button>
-        </div>
-    </div>
-</section>
-
-<!-- ================= TOP 20 SHOPEE CARROSSEL ================= -->
-<section class="section section-gray" id="top20-shopee">
-    <div class="container">
-        <h2 class="section-title">🛍️ Top 20 - Shopee</h2>
-        <p class="section-subtitle">Os produtos mais bem avaliados na Shopee</p>
-        <div class="carousel-container">
-            <button class="carousel-btn prev" onclick="scrollCarousel('top20-shopee-grid', -1)">‹</button>
-            <div class="carousel">
-                <div class="products-grid small-grid" id="top20-shopee-grid"></div>
-            </div>
-            <button class="carousel-btn next" onclick="scrollCarousel('top20-shopee-grid', 1)">›</button>
-        </div>
-    </div>
-</section>
-
-<!-- ================= TOP 20 MAGALU CARROSSEL ================= -->
-<section class="section" id="top20-magalu">
-    <div class="container">
-        <h2 class="section-title">🪄 Top 20 - Magalu</h2>
-        <p class="section-subtitle">Os produtos mais bem avaliados no Magalu</p>
-        <div class="carousel-container">
-            <button class="carousel-btn prev" onclick="scrollCarousel('top20-magalu-grid', -1)">‹</button>
-            <div class="carousel">
-                <div class="products-grid small-grid" id="top20-magalu-grid"></div>
-            </div>
-            <button class="carousel-btn next" onclick="scrollCarousel('top20-magalu-grid', 1)">›</button>
-        </div>
-    </div>
-</section>
-
-<!-- ================= 50 PRODUTOS ALEATÓRIOS CARROSSEL ================= -->
-<section class="section section-gray" id="random">
-    <div class="container">
-        <h2 class="section-title">🎲 Produtos Aleatórios</h2>
-        <p class="section-subtitle">Descubra ofertas variadas de todas as plataformas (atualiza a cada visita)</p>
-        <div class="carousel-container">
-            <button class="carousel-btn prev" onclick="scrollCarousel('random-grid', -1)">‹</button>
-            <div class="carousel">
-                <div class="products-grid" id="random-grid"></div>
-            </div>
-            <button class="carousel-btn next" onclick="scrollCarousel('random-grid', 1)">›</button>
-        </div>
     </div>
 </section>
 
@@ -259,13 +311,11 @@
 <script type="module">
   import { 
       searchAllPlatforms,
-      getTop10, 
       getTop20MercadoLivre,
       getTop20Amazon,
       getTop20Shopee,
       getTop20Magalu,
-      getRandomProducts,
-      getTop20ByPlatform
+      getRandomProducts
   } from './js/api.js';
   import { renderProducts } from './js/render.js';
 
@@ -333,89 +383,158 @@
   // FUNÇÕES PARA CONTROLAR A EXIBIÇÃO DAS SEÇÕES
   // ============================================
   
-  // Oculta todas as seções de conteúdo (categorias, top10, top20, random)
   function ocultarTodasSecoes() {
-      const secoes = ['categorias', 'top10', 'top20-mercadolivre', 'top20-amazon', 'top20-shopee', 'top20-magalu', 'random'];
+      const secoes = ['categorias', 'mais-vendidos'];
       secoes.forEach(id => {
           const elemento = document.getElementById(id);
           if (elemento) elemento.classList.add('hidden-section');
       });
   }
   
-  // Mostra apenas a seção de categorias
   function mostrarCategorias(event) {
       if (event) event.preventDefault();
       ocultarTodasSecoes();
       const categoriasSecao = document.getElementById('categorias');
       if (categoriasSecao) categoriasSecao.classList.remove('hidden-section');
-      // Esconde também o resultado da busca
       const resultadoBusca = document.getElementById('resultado-busca');
       if (resultadoBusca) resultadoBusca.style.display = 'none';
-      // Rola suavemente para o topo
       window.scrollTo({ top: 0, behavior: 'smooth' });
   }
   
-  // Mostra apenas a seção Top 10
-  function mostrarTop10(event) {
+  function mostrarMaisVendidos(event) {
       if (event) event.preventDefault();
       ocultarTodasSecoes();
-      const top10Secao = document.getElementById('top10');
-      if (top10Secao) top10Secao.classList.remove('hidden-section');
+      const maisVendidosSecao = document.getElementById('mais-vendidos');
+      if (maisVendidosSecao) maisVendidosSecao.classList.remove('hidden-section');
       const resultadoBusca = document.getElementById('resultado-busca');
       if (resultadoBusca) resultadoBusca.style.display = 'none';
       window.scrollTo({ top: 0, behavior: 'smooth' });
   }
   
-  // Mostra apenas a seção Top 20 (todas as plataformas)
-  function mostrarTop20(event) {
-      if (event) event.preventDefault();
-      ocultarTodasSecoes();
-      const plataformas = ['top20-mercadolivre', 'top20-amazon', 'top20-shopee', 'top20-magalu'];
-      plataformas.forEach(id => {
-          const elemento = document.getElementById(id);
-          if (elemento) elemento.classList.remove('hidden-section');
-      });
-      const resultadoBusca = document.getElementById('resultado-busca');
-      if (resultadoBusca) resultadoBusca.style.display = 'none';
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-  }
-  
-  // Mostra apenas a seção de produtos aleatórios
-  function mostrarRandom(event) {
-      if (event) event.preventDefault();
-      ocultarTodasSecoes();
-      const randomSecao = document.getElementById('random');
-      if (randomSecao) randomSecao.classList.remove('hidden-section');
-      const resultadoBusca = document.getElementById('resultado-busca');
-      if (resultadoBusca) resultadoBusca.style.display = 'none';
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-  }
-  
-  // Volta para a home (mostra todas as seções)
   function voltarParaHome(event) {
       if (event) event.preventDefault();
-      // Remove a classe hidden de todas as seções
-      const secoes = ['categorias', 'top10', 'top20-mercadolivre', 'top20-amazon', 'top20-shopee', 'top20-magalu', 'random'];
+      const secoes = ['categorias', 'mais-vendidos'];
       secoes.forEach(id => {
           const elemento = document.getElementById(id);
           if (elemento) elemento.classList.remove('hidden-section');
       });
-      // Esconde o resultado da busca
       const resultadoBusca = document.getElementById('resultado-busca');
       if (resultadoBusca) resultadoBusca.style.display = 'none';
-      // Limpa o campo de busca
       const buscaInput = document.getElementById('busca');
       if (buscaInput) buscaInput.value = '';
       window.scrollTo({ top: 0, behavior: 'smooth' });
   }
   
-  // Exporta funções para uso global
   window.mostrarCategorias = mostrarCategorias;
-  window.mostrarTop10 = mostrarTop10;
-  window.mostrarTop20 = mostrarTop20;
-  window.mostrarRandom = mostrarRandom;
+  window.mostrarMaisVendidos = mostrarMaisVendidos;
   window.voltarParaHome = voltarParaHome;
 
+  // ============================================
+  // CARREGAR 24 PRODUTOS MAIS VENDIDOS (RANDOMIZADO)
+  // ============================================
+  async function carregarMaisVendidos() {
+      try {
+          // Busca produtos de todas as plataformas
+          const [ml, amazon, shopee, magalu] = await Promise.all([
+              getTop20MercadoLivre(),
+              getTop20Amazon(),
+              getTop20Shopee(),
+              getTop20Magalu()
+          ]);
+          
+          // Combina todos os produtos
+          let todosProdutos = [...ml, ...amazon, ...shopee, ...magalu];
+          
+          // Remove duplicados por link
+          const linksVistos = new Set();
+          todosProdutos = todosProdutos.filter(p => {
+              if (linksVistos.has(p.link_original)) return false;
+              linksVistos.add(p.link_original);
+              return true;
+          });
+          
+          // Embaralha os produtos
+          for (let i = todosProdutos.length - 1; i > 0; i--) {
+              const j = Math.floor(Math.random() * (i + 1));
+              [todosProdutos[i], todosProdutos[j]] = [todosProdutos[j], todosProdutos[i]];
+          }
+          
+          // Pega os 24 primeiros
+          const produtos = todosProdutos.slice(0, 24);
+          
+          // Renderiza no carrossel
+          const track = document.getElementById('carousel-track');
+          if (!track) return;
+          
+          track.innerHTML = produtos.map(p => `
+              <div class="carousel-card" onclick="window.open('${p.link_afiliado || p.link_original}', '_blank')">
+                  <img src="${p.imagem_principal || 'https://via.placeholder.com/150'}" 
+                       alt="${p.titulo}"
+                       onerror="this.src='https://via.placeholder.com/150'">
+                  <div class="product-title">${(p.titulo || '').substring(0, 50)}...</div>
+                  <div class="product-price">R$ ${(p.preco || '0').replace('.', ',')}</div>
+                  <div class="product-platform">${p.plataforma || 'Mercado Livre'}</div>
+              </div>
+          `).join('');
+          
+      } catch (error) {
+          console.error('Erro ao carregar mais vendidos:', error);
+          const track = document.getElementById('carousel-track');
+          if (track) track.innerHTML = '<p style="text-align: center; grid-column: 1/-1;">⚠️ Não foi possível carregar os produtos</p>';
+      }
+  }
+
+  // ============================================
+  // CONFIGURAÇÃO DO CARROSSEL (6 por vez)
+  // ============================================
+  let currentIndex = 0;
+  let itemsPerView = 6;
+  let totalItems = 0;
+  
+  function updateItemsPerView() {
+      if (window.innerWidth <= 768) {
+          itemsPerView = 2;
+      } else if (window.innerWidth <= 1024) {
+          itemsPerView = 3;
+      } else {
+          itemsPerView = 6;
+      }
+  }
+  
+  function updateCarousel() {
+      const track = document.getElementById('carousel-track');
+      if (!track) return;
+      
+      const cards = track.children;
+      totalItems = cards.length;
+      
+      if (totalItems === 0) return;
+      
+      const cardWidth = cards[0].offsetWidth + 20; // width + gap
+      const maxIndex = Math.max(0, totalItems - itemsPerView);
+      
+      if (currentIndex > maxIndex) currentIndex = maxIndex;
+      if (currentIndex < 0) currentIndex = 0;
+      
+      const translateX = -(currentIndex * cardWidth);
+      track.style.transform = `translateX(${translateX}px)`;
+  }
+  
+  function nextSlide() {
+      const maxIndex = Math.max(0, totalItems - itemsPerView);
+      if (currentIndex < maxIndex) {
+          currentIndex++;
+          updateCarousel();
+      }
+  }
+  
+  function prevSlide() {
+      if (currentIndex > 0) {
+          currentIndex--;
+          updateCarousel();
+      }
+  }
+  
   // ============================================
   // RENDERIZA AS CATEGORIAS NA PÁGINA
   // ============================================
@@ -456,26 +575,6 @@
   const resultadoInfo = document.getElementById('resultado-info');
   const buscaInput = document.getElementById('busca');
   const btnBuscar = document.getElementById('btnBuscar');
-  
-  const top10Grid = document.getElementById('top10-grid');
-  const top20MlGrid = document.getElementById('top20-ml-grid');
-  const top20AmazonGrid = document.getElementById('top20-amazon-grid');
-  const top20ShopeeGrid = document.getElementById('top20-shopee-grid');
-  const top20MagaluGrid = document.getElementById('top20-magalu-grid');
-  const randomGrid = document.getElementById('random-grid');
-
-  // Função de scroll do carrossel
-  window.scrollCarousel = function(gridId, direction) {
-      const grid = document.getElementById(gridId);
-      if (!grid) return;
-      
-      const card = grid.querySelector('.product-card');
-      if (!card) return;
-      
-      const cardWidth = card.offsetWidth + 20;
-      const scrollAmount = cardWidth * direction;
-      grid.parentElement.scrollBy({ left: scrollAmount, behavior: 'smooth' });
-  };
 
   // ============================================
   // FUNÇÕES DE SCROLL INFINITO
@@ -543,13 +642,12 @@
   }
 
   // ============================================
-  // BUSCA COM SCROLL INFINITO (OCULTA SEÇÕES)
+  // BUSCA COM SCROLL INFINITO
   // ============================================
   async function realizarBusca() {
       const termo = buscaInput.value.trim();
       if (!termo) return;
       
-      // OCULTA TODAS AS SEÇÕES DE CONTEÚDO
       ocultarTodasSecoes();
       
       resetSearch();
@@ -604,142 +702,6 @@
   }
 
   // ============================================
-  // TOP 10 RANDOMIZADO POR PLATAFORMA
-  // ============================================
-  async function carregarTop10Randomizado() {
-      try {
-          const plataformas = ['mercadolivre', 'amazon', 'shopee', 'magalu'];
-          const produtosSelecionados = [];
-          
-          for (const plataforma of plataformas) {
-              try {
-                  const produtos = await getTop20ByPlatform(plataforma);
-                  if (produtos && produtos.length > 0) {
-                      const randomIndex = Math.floor(Math.random() * produtos.length);
-                      produtosSelecionados.push(produtos[randomIndex]);
-                  }
-              } catch (err) {
-                  console.warn(`⚠️ Erro ao buscar produtos da ${plataforma}:`, err);
-              }
-          }
-          
-          if (produtosSelecionados.length < 10) {
-              try {
-                  const mlProdutos = await getTop20MercadoLivre();
-                  const restantes = 10 - produtosSelecionados.length;
-                  for (let i = 0; i < restantes && i < mlProdutos.length; i++) {
-                      produtosSelecionados.push(mlProdutos[i]);
-                  }
-              } catch (err) {
-                  console.warn('⚠️ Erro ao completar com ML:', err);
-              }
-          }
-          
-          for (let i = produtosSelecionados.length - 1; i > 0; i--) {
-              const j = Math.floor(Math.random() * (i + 1));
-              [produtosSelecionados[i], produtosSelecionados[j]] = [produtosSelecionados[j], produtosSelecionados[i]];
-          }
-          
-          renderProducts(top10Grid, produtosSelecionados.slice(0, 10), true);
-          
-          setTimeout(() => {
-              const container = top10Grid.parentElement;
-              if (container) container.style.scrollBehavior = 'smooth';
-          }, 100);
-          
-      } catch (error) {
-          console.error('Erro ao carregar Top 10 randomizado:', error);
-          top10Grid.innerHTML = '<p style="text-align: center; grid-column: 1/-1;">⚠️ Não foi possível carregar o Top 10</p>';
-      }
-  }
-
-  // ============================================
-  // CARREGAR DEMAIS SEÇÕES
-  // ============================================
-  
-  async function carregarTop20MercadoLivre() {
-      try {
-          const produtos = await getTop20MercadoLivre();
-          renderProducts(top20MlGrid, produtos, true);
-          setTimeout(() => {
-              const container = top20MlGrid.parentElement;
-              if (container) container.style.scrollBehavior = 'smooth';
-          }, 100);
-      } catch (error) {
-          console.error('Erro ao carregar Top 20 ML:', error);
-          top20MlGrid.innerHTML = '<p style="text-align: center; grid-column: 1/-1;">⚠️ Não foi possível carregar o Top 20</p>';
-      }
-  }
-
-  async function carregarTop20Amazon() {
-      try {
-          const produtos = await getTop20Amazon();
-          if (produtos.length > 0) {
-              renderProducts(top20AmazonGrid, produtos, true);
-          } else {
-              top20AmazonGrid.innerHTML = '<p style="text-align: center; grid-column: 1/-1;">📭 Produtos da Amazon em breve</p>';
-          }
-          setTimeout(() => {
-              const container = top20AmazonGrid.parentElement;
-              if (container) container.style.scrollBehavior = 'smooth';
-          }, 100);
-      } catch (error) {
-          console.error('Erro ao carregar Top 20 Amazon:', error);
-          top20AmazonGrid.innerHTML = '<p style="text-align: center; grid-column: 1/-1;">⚠️ Amazon - Em breve</p>';
-      }
-  }
-
-  async function carregarTop20Shopee() {
-      try {
-          const produtos = await getTop20Shopee();
-          if (produtos.length > 0) {
-              renderProducts(top20ShopeeGrid, produtos, true);
-          } else {
-              top20ShopeeGrid.innerHTML = '<p style="text-align: center; grid-column: 1/-1;">📭 Produtos da Shopee em breve</p>';
-          }
-          setTimeout(() => {
-              const container = top20ShopeeGrid.parentElement;
-              if (container) container.style.scrollBehavior = 'smooth';
-          }, 100);
-      } catch (error) {
-          console.error('Erro ao carregar Top 20 Shopee:', error);
-          top20ShopeeGrid.innerHTML = '<p style="text-align: center; grid-column: 1/-1;">⚠️ Shopee - Em breve</p>';
-      }
-  }
-
-  async function carregarTop20Magalu() {
-      try {
-          const produtos = await getTop20Magalu();
-          if (produtos.length > 0) {
-              renderProducts(top20MagaluGrid, produtos, true);
-          } else {
-              top20MagaluGrid.innerHTML = '<p style="text-align: center; grid-column: 1/-1;">📭 Produtos da Magalu em breve</p>';
-          }
-          setTimeout(() => {
-              const container = top20MagaluGrid.parentElement;
-              if (container) container.style.scrollBehavior = 'smooth';
-          }, 100);
-      } catch (error) {
-          console.error('Erro ao carregar Top 20 Magalu:', error);
-          top20MagaluGrid.innerHTML = '<p style="text-align: center; grid-column: 1/-1;">⚠️ Magalu - Em breve</p>';
-      }
-  }
-
-  async function carregarRandom() {
-      try {
-          const produtos = await getRandomProducts(50);
-          renderProducts(randomGrid, produtos, false);
-          setTimeout(() => {
-              const container = randomGrid.parentElement;
-              if (container) container.style.scrollBehavior = 'smooth';
-          }, 100);
-      } catch (error) {
-          console.error('Erro ao carregar produtos aleatórios:', error);
-          randomGrid.innerHTML = '<p style="text-align: center; grid-column: 1/-1;">⚠️ Não foi possível carregar produtos aleatórios</p>';
-      }
-  }
-
-  // ============================================
   // EVENTOS E INICIALIZAÇÃO
   // ============================================
   btnBuscar.addEventListener('click', realizarBusca);
@@ -747,16 +709,30 @@
       if (e.key === 'Enter') realizarBusca();
   });
 
+  // Botões do carrossel
+  document.getElementById('carousel-prev')?.addEventListener('click', () => {
+      prevSlide();
+  });
+  
+  document.getElementById('carousel-next')?.addEventListener('click', () => {
+      nextSlide();
+  });
+  
+  window.addEventListener('resize', () => {
+      updateItemsPerView();
+      updateCarousel();
+  });
+
   // Renderiza as categorias
   renderizarCategorias();
-
-  // Carregar todos os dados na inicialização (mostra tudo)
-  carregarTop10Randomizado();
-  carregarTop20MercadoLivre();
-  carregarTop20Amazon();
-  carregarTop20Shopee();
-  carregarTop20Magalu();
-  carregarRandom();
+  
+  // Carrega os produtos mais vendidos e configura o carrossel
+  carregarMaisVendidos().then(() => {
+      updateItemsPerView();
+      setTimeout(() => {
+          updateCarousel();
+      }, 100);
+  });
 </script>
 </body>
 </html>
