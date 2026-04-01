@@ -30,7 +30,7 @@ export function renderProducts(container, products, isCarousel = false) {
       window.open(link, '_blank');
     };
 
-    // ===== FORMATA PREÇO =====
+    // ===== FORMATA PREÇO (CORRIGIDO) =====
     let precoFormatado = 'R$ 0,00';
     if (p.preco) {
       let precoNum = 0;
@@ -42,8 +42,10 @@ export function renderProducts(container, products, isCarousel = false) {
         precoNum = parseFloat(precoLimpo);
       }
       
-      // Se o valor for maior que 10000, provavelmente está em centavos
-      if (precoNum > 10000) {
+      // CORREÇÃO: se o valor for maior que 1000, provavelmente está em centavos
+      // Produtos baratos (R$ 10,00) vêm como 1000 centavos
+      // Produtos caros (R$ 1000,00) vêm como 100000 centavos
+      if (precoNum > 1000) {
         precoNum = precoNum / 100;
       }
       
@@ -96,7 +98,7 @@ export function renderProductsHTML(products) {
   if (!products || products.length === 0) return '';
   
   return products.map(p => {
-    // Formata preço
+    // Formata preço (CORRIGIDO)
     let precoFormatado = 'R$ 0,00';
     if (p.preco) {
       let precoNum = 0;
@@ -107,7 +109,8 @@ export function renderProductsHTML(products) {
         precoNum = parseFloat(precoLimpo);
       }
       
-      if (precoNum > 10000) {
+      // CORREÇÃO: se o valor for maior que 1000, provavelmente está em centavos
+      if (precoNum > 1000) {
         precoNum = precoNum / 100;
       }
       
@@ -157,7 +160,8 @@ export function formatPrice(preco) {
     precoNum = parseFloat(precoLimpo);
   }
   
-  if (precoNum > 10000) {
+  // CORREÇÃO: se o valor for maior que 1000, provavelmente está em centavos
+  if (precoNum > 1000) {
     precoNum = precoNum / 100;
   }
   
