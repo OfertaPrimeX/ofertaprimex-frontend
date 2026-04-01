@@ -33,6 +33,7 @@ body {
     align-items: center;
     justify-content: space-between;
     height: 64px;
+    flex-wrap: wrap;
 }
 
 .logo {
@@ -45,11 +46,20 @@ body {
     color: #222;
 }
 
+/* ===== MENU RESPONSIVO - SEMPRE VISÍVEL ===== */
+.menu {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: center;
+}
+
 .menu a {
-    margin-left: 16px;
     text-decoration: none;
     color: #555;
     font-size: 14px;
+    padding: 8px 0;
+    white-space: nowrap;
 }
 
 .menu a:hover {
@@ -298,8 +308,23 @@ body {
 
 /* ================= RESPONSIVO ================= */
 @media (max-width: 768px) {
+    /* Menu agora aparece em telas pequenas, mas empilhado */
+    .header-content {
+        flex-direction: column;
+        height: auto;
+        padding: 12px 0;
+        gap: 12px;
+    }
+    
     .menu {
-        display: none;
+        justify-content: center;
+        gap: 16px;
+        flex-wrap: wrap;
+    }
+    
+    .menu a {
+        font-size: 13px;
+        padding: 4px 8px;
     }
 
     .hero-title {
@@ -331,5 +356,29 @@ body {
     .carousel .product-card {
         flex: 0 0 180px;
         min-width: 180px;
+    }
+}
+
+/* Ajuste extra para telas muito pequenas (até 480px) */
+@media (max-width: 480px) {
+    .menu {
+        gap: 12px;
+    }
+    
+    .menu a {
+        font-size: 12px;
+        padding: 4px 6px;
+    }
+    
+    .logo {
+        font-size: 18px;
+    }
+    
+    .hero-title {
+        font-size: 20px;
+    }
+    
+    .hero-subtitle {
+        font-size: 14px;
     }
 }
