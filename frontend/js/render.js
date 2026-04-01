@@ -30,7 +30,7 @@ export function renderProducts(container, products, isCarousel = false) {
       window.open(link, '_blank');
     };
 
-    // ===== FORMATA PREÇO (CORRIGIDO) =====
+    // ===== FORMATA PREÇO =====
     let precoFormatado = 'R$ 0,00';
     if (p.preco) {
       let precoNum = 0;
@@ -42,7 +42,7 @@ export function renderProducts(container, products, isCarousel = false) {
         precoNum = parseFloat(precoLimpo);
       }
       
-      // CORREÇÃO: se o valor for maior que 10000, provavelmente está em centavos
+      // Se o valor for maior que 10000, provavelmente está em centavos
       if (precoNum > 10000) {
         precoNum = precoNum / 100;
       }
@@ -66,112 +66,25 @@ export function renderProducts(container, products, isCarousel = false) {
 
     // ===== PLATAFORMA =====
     const plataforma = p.plataforma || 'Mercado Livre';
-    
-    // ===== ICONE DA PLATAFORMA =====
-    let plataformaIcone = '';
-    switch(plataforma.toLowerCase()) {
-      case 'mercado livre':
-      case 'mercadolivre':
-        plataformaIcone = '🛒';
-        break;
-      case 'amazon':
-        plataformaIcone = '📚';
-        break;
-      case 'shopee':
-        plataformaIcone = '🛍️';
-        break;
-      case 'magalu':
-      case 'magazine luiza':
-        plataformaIcone = '🪄';
-        break;
-      default:
-        plataformaIcone = '🏷️';
-    }
 
-    // ===== AVALIAÇÃO =====
-    let avaliacaoHtml = '';
-    if (p.avaliacao && p.avaliacao !== 'N/A') {
-      const nota = parseFloat(p.avaliacao.replace(',', '.'));
-      if (!isNaN(nota)) {
-        const estrelas = gerarEstrelas(nota);
-        avaliacaoHtml = `<div class="product-rating">${estrelas} ${p.avaliacao}</div>`;
-      }
-    }
+    // ===== TÍTULO (limitado a 60 caracteres) =====
+    const titulo = (p.titulo || p.title || 'Produto sem título').substring(0, 60);
+    const tituloEllipsis = (p.titulo || p.title || 'Produto sem título').length > 60 ? '...' : '';
 
-    // ===== REVIEWS =====
-    let reviewsHtml = '';
-    if (p.reviews && p.reviews !== '0' && p.reviews !== 'N/A') {
-      reviewsHtml = `<div class="product-reviews">📊 ${p.reviews} avaliações</div>`;
-    }
-
-    // ===== FRETE GRÁTIS =====
-    let freteHtml = '';
-    if (p.frete_gratis === true || p.frete_gratis === 'Sim' || p.frete_gratis === 'sim') {
-      freteHtml = '<span class="free-shipping">🚚 Frete Grátis</span>';
-    }
-
-    // ===== LOJA OFICIAL =====
-    let lojaOficialHtml = '';
-    if (p.loja_oficial === true || p.loja_oficial === 'Sim' || p.loja_oficial === 'sim') {
-      lojaOficialHtml = '<span class="official-store">✅ Loja Oficial</span>';
-    }
-
-    // ===== TÍTULO (limitado a 70 caracteres) =====
-    const titulo = (p.titulo || p.title || 'Produto sem título').substring(0, 70);
-    const tituloEllipsis = (p.titulo || p.title || 'Produto sem título').length > 70 ? '...' : '';
-
-    // ===== SCORE (se existir) =====
-    let scoreHtml = '';
-    if (p.score) {
-      scoreHtml = `<div class="product-score">🏆 Score: ${p.score}</div>`;
-    }
-
-    // ===== CONSTRÓI O CARD =====
+    // ===== CONSTRÓI O CARD (SIMPLIFICADO) =====
     card.innerHTML = `
       <img src="${imagem}" alt="${titulo}" 
            class="product-image"
-           onerror="this.src='https://via.placeholder.com/200x200?text=Imagem+Indisponível'">
+           onerror="this.src='https://via.placeholder.com/200x200?text=Sem+Imagem'">
       <div class="product-info">
         <h3 class="product-title">${titulo}${tituloEllipsis}</h3>
-        <div class="product-meta">
-          <span class="product-platform">${plataformaIcone} ${plataforma}</span>
-        </div>
         <div class="product-price">${precoFormatado}</div>
-        <div class="product-details">
-          ${avaliacaoHtml}
-          ${reviewsHtml}
-        </div>
-        <div class="product-badges">
-          ${freteHtml}
-          ${lojaOficialHtml}
-          ${scoreHtml}
-        </div>
+        <div class="product-platform">${plataforma}</div>
       </div>
-      <button class="buy-button" onclick="event.stopPropagation(); window.open('${link}', '_blank')">
-        Ver Oferta
-      </button>
     `;
 
     container.appendChild(card);
   });
-}
-
-/**
- * Gera estrelas baseado na nota (0 a 5)
- * @param {number} rating - Nota de 0 a 5
- * @returns {string} HTML com estrelas
- */
-function gerarEstrelas(rating) {
-  const fullStars = Math.floor(rating);
-  const halfStar = rating % 1 >= 0.5;
-  const emptyStars = 5 - fullStars - (halfStar ? 1 : 0);
-  
-  let estrelasHtml = '';
-  for (let i = 0; i < fullStars; i++) estrelasHtml += '★';
-  if (halfStar) estrelasHtml += '½';
-  for (let i = 0; i < emptyStars; i++) estrelasHtml += '☆';
-  
-  return `<span class="stars">${estrelasHtml}</span>`;
 }
 
 /**
@@ -183,7 +96,7 @@ export function renderProductsHTML(products) {
   if (!products || products.length === 0) return '';
   
   return products.map(p => {
-    // Formata preço (CORRIGIDO)
+    // Formata preço
     let precoFormatado = 'R$ 0,00';
     if (p.preco) {
       let precoNum = 0;
@@ -194,7 +107,6 @@ export function renderProductsHTML(products) {
         precoNum = parseFloat(precoLimpo);
       }
       
-      // CORREÇÃO: se o valor for maior que 10000, provavelmente está em centavos
       if (precoNum > 10000) {
         precoNum = precoNum / 100;
       }
@@ -208,48 +120,18 @@ export function renderProductsHTML(products) {
     }
     
     const imagem = p.imagem_principal || p.thumbnail || 'https://via.placeholder.com/200x200?text=Sem+Imagem';
-    const link = p.link_afiliado || p.link_original || '#';
     const plataforma = p.plataforma || 'Mercado Livre';
-    const titulo = (p.titulo || p.title || 'Produto sem título').substring(0, 70);
-    const tituloEllipsis = (p.titulo || p.title || 'Produto sem título').length > 70 ? '...' : '';
-    
-    let avaliacaoHtml = '';
-    if (p.avaliacao && p.avaliacao !== 'N/A') {
-      const nota = parseFloat(p.avaliacao.replace(',', '.'));
-      if (!isNaN(nota)) {
-        const estrelas = gerarEstrelas(nota);
-        avaliacaoHtml = `<div class="product-rating">${estrelas} ${p.avaliacao}</div>`;
-      }
-    }
-    
-    let freteHtml = '';
-    if (p.frete_gratis === true || p.frete_gratis === 'Sim') {
-      freteHtml = '<span class="free-shipping">🚚 Frete Grátis</span>';
-    }
-    
-    let lojaOficialHtml = '';
-    if (p.loja_oficial === true || p.loja_oficial === 'Sim') {
-      lojaOficialHtml = '<span class="official-store">✅ Loja Oficial</span>';
-    }
+    const titulo = (p.titulo || p.title || 'Produto sem título').substring(0, 60);
+    const tituloEllipsis = (p.titulo || p.title || 'Produto sem título').length > 60 ? '...' : '';
     
     return `
-      <div class="product-card" onclick="window.open('${link}', '_blank')">
-        <img src="${imagem}" alt="${titulo}" class="product-image" onerror="this.src='https://via.placeholder.com/200x200?text=Imagem+Indisponível'">
+      <div class="product-card" onclick="window.open('${p.link_afiliado || p.link_original || '#'}', '_blank')">
+        <img src="${imagem}" alt="${titulo}" class="product-image" onerror="this.src='https://via.placeholder.com/200x200?text=Sem+Imagem'">
         <div class="product-info">
           <h3 class="product-title">${titulo}${tituloEllipsis}</h3>
-          <div class="product-meta">
-            <span class="product-platform">${plataforma}</span>
-          </div>
           <div class="product-price">${precoFormatado}</div>
-          ${avaliacaoHtml}
-          <div class="product-badges">
-            ${freteHtml}
-            ${lojaOficialHtml}
-          </div>
+          <div class="product-platform">${plataforma}</div>
         </div>
-        <button class="buy-button" onclick="event.stopPropagation(); window.open('${link}', '_blank')">
-          Ver Oferta
-        </button>
       </div>
     `;
   }).join('');
@@ -275,7 +157,6 @@ export function formatPrice(preco) {
     precoNum = parseFloat(precoLimpo);
   }
   
-  // CORREÇÃO: se o valor for maior que 10000, provavelmente está em centavos
   if (precoNum > 10000) {
     precoNum = precoNum / 100;
   }
