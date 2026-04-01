@@ -144,6 +144,145 @@
             background-color: #333;
         }
 
+        /* ===== ESTILOS DO CONTROLE DE PLATAFORMAS ===== */
+        .controle-plataformas {
+            background: #f9f9f9;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 24px;
+            border: 1px solid #e0e0e0;
+        }
+
+        .controle-grid {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin-top: 15px;
+        }
+
+        .controle-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 20px;
+            background: white;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+
+        .controle-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .controle-item.active {
+            border-color: #2e7d32;
+            background: #e8f5e9;
+        }
+
+        .controle-item.inactive {
+            border-color: #c62828;
+            background: #ffebee;
+        }
+
+        .controle-icon {
+            font-size: 24px;
+        }
+
+        .controle-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .controle-nome {
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .controle-status {
+            font-size: 11px;
+            color: #666;
+        }
+
+        .controle-item.active .controle-status { color: #2e7d32; }
+        .controle-item.inactive .controle-status { color: #c62828; }
+
+        .controle-switch {
+            width: 44px;
+            height: 24px;
+            background: #ccc;
+            border-radius: 12px;
+            position: relative;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .controle-switch.active {
+            background: #2e7d32;
+        }
+
+        .controle-switch::after {
+            content: '';
+            width: 20px;
+            height: 20px;
+            background: white;
+            border-radius: 50%;
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            transition: all 0.3s;
+        }
+
+        .controle-switch.active::after {
+            left: 22px;
+        }
+
+        .btn-aplicar {
+            background: #2e7d32;
+            color: white;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-top: 15px;
+            transition: background 0.2s;
+        }
+
+        .btn-aplicar:hover {
+            background: #1f5a23;
+        }
+
+        .btn-reset {
+            background: #555;
+            color: white;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-top: 15px;
+            margin-left: 10px;
+            transition: background 0.2s;
+        }
+
+        .btn-reset:hover {
+            background: #333;
+        }
+
+        .status-message {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 4px;
+            font-size: 13px;
+        }
+
+        .status-message.success { background: #c8e6c9; color: #2e7d32; }
+        .status-message.error { background: #ffcdd2; color: #c62828; }
+        .status-message.info { background: #fff3e0; color: #ff6a00; }
+
         .admin-stats {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -437,6 +576,13 @@
                     <div class="number" id="total-plataformas">4</div>
                     <div class="label">Plataformas Ativas</div>
                 </div>
+            </div>
+
+            <!-- ================= NOVA SEÇÃO: CONTROLE DE PLATAFORMAS ================= -->
+            <div class="admin-card">
+                <h3 class="admin-title">⚙️ Controle de Plataformas</h3>
+                <p class="admin-subtitle">Ative ou desative plataformas no site. Produtos de plataformas desativadas não aparecerão na busca e nas seções.</p>
+                <div id="controle-plataformas"></div>
             </div>
 
             <div class="admin-card">
@@ -757,7 +903,6 @@
         }
         
         try {
-            // CORRIGIDO: rota /api/produtos/limpar (sem /admin/)
             const response = await apiRequest(`/api/produtos/limpar?plataforma=${plataforma}`, {
                 method: 'DELETE'
             });
@@ -768,7 +913,6 @@
                 if (statusDiv) {
                     statusDiv.innerHTML = `<div class="import-status success">✅ ${data.message || 'Banco limpo com sucesso!'}</div>`;
                 }
-                // Recarregar os contadores
                 setTimeout(() => {
                     if (typeof carregarContadores === 'function') carregarContadores();
                     if (typeof carregarDadosReais === 'function') carregarDadosReais();
@@ -803,7 +947,6 @@
             }
             
             try {
-                // CORRIGIDO: rota /api/produtos/limpar (sem /admin/)
                 const response = await apiRequest(`/api/produtos/limpar?plataforma=${plataforma}`, {
                     method: 'DELETE'
                 });
@@ -824,11 +967,9 @@
             }
         }
         
-        // Recarregar os contadores
         setTimeout(() => {
             if (typeof carregarContadores === 'function') carregarContadores();
             if (typeof carregarDadosReais === 'function') carregarDadosReais();
-            // Limpar mensagens após 3 segundos
             const plataformasIds = ['ml', 'amazon', 'shopee', 'magalu'];
             for (const p of plataformasIds) {
                 const statusDiv = document.getElementById(`${p}-status`);
