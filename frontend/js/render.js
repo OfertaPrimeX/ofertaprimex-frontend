@@ -71,7 +71,7 @@ export function renderProducts(container, products, isCarousel = false) {
     const titulo = (p.titulo || p.title || 'Produto sem título').substring(0, 60);
     const tituloEllipsis = (p.titulo || p.title || 'Produto sem título').length > 60 ? '...' : '';
 
-    // ===== CONSTRÓI O CARD (SIMPLIFICADO) =====
+    // ===== CONSTRÓI O CARD (PADRÃO) =====
     card.innerHTML = `
       <img src="${imagem}" alt="${titulo}" 
            class="product-image"
