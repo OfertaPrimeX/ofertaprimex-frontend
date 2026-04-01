@@ -5,6 +5,137 @@
 const API_URL = 'https://yo0g0cg4c88w88osc4s04c0c.72.61.33.248.sslip.io';
 let produtos = [];
 
+// ============================================
+// CONFIGURAÇÃO DE PLATAFORMAS ATIVAS
+// ============================================
+const PLATAFORMAS = [
+    { id: 'mercadolivre', nome: 'Mercado Livre', icone: '🛒', cor: '#ffe600' },
+    { id: 'amazon', nome: 'Amazon', icone: '📚', cor: '#ff9900' },
+    { id: 'shopee', nome: 'Shopee', icone: '🛍️', cor: '#ee4d2d' },
+    { id: 'magalu', nome: 'Magalu', icone: '🪄', cor: '#005c9e' }
+];
+
+// Carregar configurações salvas
+function carregarConfiguracoesPlataformas() {
+    const saved = localStorage.getItem('plataformas_ativas');
+    if (saved) {
+        try {
+            const config = JSON.parse(saved);
+            PLATAFORMAS.forEach(p => {
+                p.ativa = config[p.id] !== undefined ? config[p.id] : true;
+            });
+        } catch(e) {
+            PLATAFORMAS.forEach(p => p.ativa = true);
+        }
+    } else {
+        PLATAFORMAS.forEach(p => p.ativa = true);
+    }
+    return PLATAFORMAS;
+}
+
+// Salvar configurações
+function salvarConfiguracoesPlataformas() {
+    const config = {};
+    PLATAFORMAS.forEach(p => {
+        config[p.id] = p.ativa;
+    });
+    localStorage.setItem('plataformas_ativas', JSON.stringify(config));
+    
+    // Atualizar o frontend com as novas configurações
+    if (typeof atualizarFrontendPlataformas === 'function') {
+        atualizarFrontendPlataformas();
+    }
+    
+    console.log('✅ Configurações de plataformas salvas:', config);
+}
+
+// Renderizar checkboxes de plataformas
+function renderizarControlesPlataformas() {
+    const container = document.getElementById('controle-plataformas');
+    if (!container) return;
+    
+    container.innerHTML = `
+        <div style="display: flex; gap: 20px; flex-wrap: wrap; margin-top: 15px;">
+            ${PLATAFORMAS.map(p => `
+                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 8px 12px; background: ${p.ativa ? '#e8f5e9' : '#ffebee'}; border-radius: 8px; transition: all 0.2s;">
+                    <input type="checkbox" 
+                           id="plataforma-${p.id}" 
+                           ${p.ativa ? 'checked' : ''}
+                           onchange="togglePlataforma('${p.id}', this.checked)"
+                           style="width: 18px; height: 18px; cursor: pointer;">
+                    <span style="font-size: 18px;">${p.icone}</span>
+                    <span style="font-weight: 500;">${p.nome}</span>
+                    <span style="font-size: 12px; color: ${p.ativa ? '#2e7d32' : '#c62828'};">
+                        ${p.ativa ? '✅ Ativa' : '❌ Inativa'}
+                    </span>
+                </label>
+            `).join('')}
+        </div>
+        <div style="margin-top: 15px;">
+            <button class="plataforma-btn" onclick="aplicarConfiguracoesPlataformas()" style="background-color: #2e7d32; margin-right: 10px;">💾 Aplicar Configurações</button>
+            <button class="plataforma-btn" onclick="resetarConfiguracoesPlataformas()" style="background-color: #555;">🔄 Resetar (Todas Ativas)</button>
+        </div>
+        <div id="status-plataformas" style="margin-top: 10px; font-size: 12px; color: #666;"></div>
+    `;
+}
+
+// Alternar plataforma
+window.togglePlataforma = function(plataformaId, ativa) {
+    const plataforma = PLATAFORMAS.find(p => p.id === plataformaId);
+    if (plataforma) {
+        plataforma.ativa = ativa;
+        // Atualizar visual do label
+        const label = document.querySelector(`label:has(#plataforma-${plataformaId})`);
+        if (label) {
+            label.style.background = ativa ? '#e8f5e9' : '#ffebee';
+            const statusSpan = label.querySelector('span:last-child');
+            if (statusSpan) {
+                statusSpan.textContent = ativa ? '✅ Ativa' : '❌ Inativa';
+                statusSpan.style.color = ativa ? '#2e7d32' : '#c62828';
+            }
+        }
+    }
+};
+
+// Aplicar configurações
+window.aplicarConfiguracoesPlataformas = function() {
+    salvarConfiguracoesPlataformas();
+    const statusDiv = document.getElementById('status-plataformas');
+    if (statusDiv) {
+        const ativas = PLATAFORMAS.filter(p => p.ativa).map(p => p.nome).join(', ');
+        statusDiv.innerHTML = `<span style="color: #2e7d32;">✅ Configurações aplicadas! Plataformas ativas: ${ativas || 'Nenhuma'}</span>`;
+        setTimeout(() => { statusDiv.innerHTML = ''; }, 3000);
+    }
+};
+
+// Resetar para todas ativas
+window.resetarConfiguracoesPlataformas = function() {
+    PLATAFORMAS.forEach(p => p.ativa = true);
+    salvarConfiguracoesPlataformas();
+    renderizarControlesPlataformas();
+    const statusDiv = document.getElementById('status-plataformas');
+    if (statusDiv) {
+        statusDiv.innerHTML = '<span style="color: #2e7d32;">🔄 Todas as plataformas foram reativadas!</span>';
+        setTimeout(() => { statusDiv.innerHTML = ''; }, 3000);
+    }
+};
+
+// Obter plataformas ativas (para enviar ao backend)
+function getPlataformasAtivas() {
+    return PLATAFORMAS.filter(p => p.ativa).map(p => p.id);
+}
+
+// Atualizar frontend com as configurações (será chamada pelo index.html)
+window.atualizarFrontendPlataformas = function() {
+    const ativas = getPlataformasAtivas();
+    localStorage.setItem('plataformas_ativas_frontend', JSON.stringify(ativas));
+    console.log('🔄 Frontend atualizado com plataformas ativas:', ativas);
+};
+
+// ============================================
+// FUNÇÕES EXISTENTES (MANTIDAS)
+// ============================================
+
 async function apiRequest(url, options = {}) {
     const user = localStorage.getItem('adminUser');
     const pass = localStorage.getItem('adminPass');
@@ -124,11 +255,7 @@ async function carregarDadosReais() {
     }
 }
 
-// ============================================
-// FUNÇÃO CORRIGIDA: CARREGAR CONTADORES DE TODAS AS PLATAFORMAS
-// ============================================
 async function carregarContadores() {
-    // Lista de plataformas com seus IDs de elemento
     const plataformas = [
         { nome: 'mercadolivre', elementId: 'ml-contador', nomeExibicao: 'Mercado Livre' },
         { nome: 'amazon', elementId: 'amazon-contador', nomeExibicao: 'Amazon' },
@@ -138,7 +265,6 @@ async function carregarContadores() {
     
     let totalGeral = 0;
     
-    // Buscar contadores de cada plataforma individualmente
     for (const plataforma of plataformas) {
         try {
             const response = await apiRequest(`/api/produtos/contador?plataforma=${plataforma.nome}`);
@@ -153,31 +279,11 @@ async function carregarContadores() {
             }
         } catch (error) {
             console.error(`❌ Erro ao buscar contador para ${plataforma.nome}:`, error);
-            // Em caso de erro, tenta buscar das estatísticas de pesquisas como fallback
-            try {
-                const statsResponse = await apiRequest('/api/admin/pesquisas/estatisticas');
-                const statsData = await statsResponse.json();
-                
-                const element = document.getElementById(plataforma.elementId);
-                if (element && statsData.success && statsData.data.por_plataforma) {
-                    const plataformaStats = statsData.data.por_plataforma.find(
-                        p => p.plataforma.toLowerCase() === plataforma.nome.toLowerCase()
-                    );
-                    const quantidade = plataformaStats ? plataformaStats.total : 0;
-                    element.textContent = quantidade;
-                    totalGeral += quantidade;
-                } else if (element) {
-                    element.textContent = '0';
-                }
-            } catch (fallbackError) {
-                console.error(`❌ Fallback também falhou para ${plataforma.nome}:`, fallbackError);
-                const element = document.getElementById(plataforma.elementId);
-                if (element) element.textContent = '0';
-            }
+            const element = document.getElementById(plataforma.elementId);
+            if (element) element.textContent = '0';
         }
     }
     
-    // Atualizar o total de produtos no dashboard
     const totalProdutosElement = document.getElementById('total-produtos');
     if (totalProdutosElement) {
         totalProdutosElement.textContent = totalGeral;
@@ -227,7 +333,7 @@ function atualizarTabela() {
     if (!tbody) return;
     
     if (produtos.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="6" style="text-align: center;">Nenhum produto encontrado</td></tr>';
+        tbody.innerHTML = '发展<td colspan="6" style="text-align: center;">Nenhum produto encontrado</td>发展';
         return;
     }
     
@@ -243,9 +349,6 @@ function atualizarTabela() {
     `).join('');
 }
 
-// ============================================
-// FUNÇÃO DE IMPORTAÇÃO COM SELEÇÃO DE ARQUIVO
-// ============================================
 async function importarPlataforma(plataforma) {
     console.log(`🔄 Importando para: ${plataforma}`);
     
@@ -315,11 +418,6 @@ async function importarPlataforma(plataforma) {
     fileInput.click();
 }
 
-// ============================================
-// FUNÇÕES PARA EXPORTAR E LIMPAR PESQUISAS
-// ============================================
-
-// Exportar dados da tabela pesquisas_detalhadas
 async function exportarPesquisas() {
     try {
         console.log('📊 Exportando dados de pesquisas...');
@@ -330,7 +428,6 @@ async function exportarPesquisas() {
             throw new Error(`HTTP ${response.status}`);
         }
         
-        // Pegar o blob e fazer download
         const blob = await response.blob();
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
@@ -350,7 +447,6 @@ async function exportarPesquisas() {
     }
 }
 
-// Limpar tabela pesquisas_detalhadas
 async function limparPesquisas() {
     const confirmar = confirm('⚠️ ATENÇÃO: Esta ação irá LIMPAR TODOS OS DADOS da tabela de pesquisas detalhadas. Esta operação é irreversível. Deseja continuar?');
     
@@ -369,7 +465,6 @@ async function limparPesquisas() {
             console.log(`✅ ${data.message}`);
             alert(`✅ ${data.message}`);
             
-            // Atualizar estatísticas se a aba estiver visível
             if (typeof carregarEstatisticasPesquisas === 'function') {
                 carregarEstatisticasPesquisas();
             }
@@ -383,24 +478,21 @@ async function limparPesquisas() {
     }
 }
 
-// Carregar estatísticas das pesquisas
 async function carregarEstatisticasPesquisas() {
     try {
         const response = await apiRequest('/api/admin/pesquisas/estatisticas');
         const data = await response.json();
         
         if (data.success && data.data) {
-            // Atualizar card de total
             const totalElement = document.getElementById('total-pesquisas');
             if (totalElement) {
                 totalElement.textContent = data.data.total;
             }
             
-            // Atualizar tabela de plataformas
             const tbody = document.getElementById('tabela-estatisticas-plataformas');
             if (tbody && data.data.por_plataforma) {
                 if (data.data.por_plataforma.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="5" style="text-align: center;">Nenhum dado disponível</td></tr>';
+                    tbody.innerHTML = '发展<td colspan="5" style="text-align: center;">Nenhum dado disponível</td>发展';
                 } else {
                     tbody.innerHTML = data.data.por_plataforma.map(p => `
                         <tr>
@@ -414,11 +506,10 @@ async function carregarEstatisticasPesquisas() {
                 }
             }
             
-            // Atualizar tabela de termos não encontrados
             const termosTbody = document.getElementById('tabela-termos-nao-encontrados');
             if (termosTbody && data.data.top_nao_encontrados) {
                 if (data.data.top_nao_encontrados.length === 0) {
-                    termosTbody.innerHTML = '<tr><td colspan="3" style="text-align: center;">Nenhum termo não encontrado</td></tr>';
+                    termosTbody.innerHTML = '发展<td colspan="3" style="text-align: center;">Nenhum termo não encontrado</td>发展';
                 } else {
                     termosTbody.innerHTML = data.data.top_nao_encontrados.map(t => `
                         <tr>
@@ -435,9 +526,6 @@ async function carregarEstatisticasPesquisas() {
     }
 }
 
-// ============================================
-// FUNÇÕES DOS BOTÕES
-// ============================================
 function exportarPlataforma(plataforma, formato) {
     alert(`Exportar ${plataforma} em formato ${formato} - Em breve disponível!`);
 }
@@ -459,6 +547,9 @@ function exportarTodas(formato) {
 if (window.location.pathname.includes('admin.html')) {
     document.getElementById('admin-main').style.display = 'none';
     
+    // Carregar configurações de plataformas
+    carregarConfiguracoesPlataformas();
+    
     const user = localStorage.getItem('adminUser');
     const pass = localStorage.getItem('adminPass');
     
@@ -472,6 +563,7 @@ if (window.location.pathname.includes('admin.html')) {
                 carregarLogs();
                 carregarContadores();
                 carregarEstatisticasPesquisas();
+                renderizarControlesPlataformas();
             } else {
                 mostrarLogin();
             }
