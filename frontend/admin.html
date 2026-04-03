@@ -711,10 +711,10 @@
                                 <th>Preço</th>
                                 <th>Cliques</th>
                                 <th>Status</th>
-                               </tr>
+                              </tr>
                         </thead>
                         <tbody id="tabela-body">
-                             <td colspan="6" style="text-align: center; padding: 30px;">Carregando...</td>
+                            <tr><td colspan="6" style="text-align: center; padding: 30px;">Carregando...</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -737,16 +737,16 @@
                 <div style="overflow-x: auto;">
                     <table class="admin-table">
                         <thead>
-                             <tr>
+                            <tr>
                                 <th>Plataforma</th>
                                 <th>Total</th>
                                 <th>Encontradas</th>
                                 <th>Não Encontradas</th>
                                 <th>Tempo Médio</th>
-                              </tr>
+                            </tr>
                         </thead>
                         <tbody id="tabela-estatisticas-plataformas">
-                             <td colspan="5" style="text-align: center;">Carregando...</td>
+                            <tr><td colspan="5" style="text-align: center;">Carregando...</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -755,14 +755,14 @@
                 <div style="overflow-x: auto;">
                     <table class="admin-table">
                         <thead>
-                             <tr>
+                            <tr>
                                 <th>Termo</th>
                                 <th>Tentativas</th>
                                 <th>Plataformas</th>
-                              </tr>
+                            </tr>
                         </thead>
                         <tbody id="tabela-termos-nao-encontrados">
-                             <td colspan="3" style="text-align: center;">Carregando...</td>
+                            <tr><td colspan="3" style="text-align: center;">Carregando...</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -793,18 +793,18 @@
                 <div style="overflow-x: auto;">
                     <table class="admin-table">
                         <thead>
-                             <tr>
+                            <tr>
                                 <th>Termo</th>
                                 <th>Buscas</th>
                                 <th>No Banco</th>
                                 <th>Na Plataforma</th>
                                 <th>Não Encontrado</th>
-                              </tr>
+                            </tr>
                         </thead>
                         <tbody id="tabela-termos">
-                             <td colspan="5" style="text-align: center;">Carregando...<\/td>
+                            <tr><td colspan="5" style="text-align: center;">Carregando...</td></tr>
                         </tbody>
-                    <\/table>
+                    </table>
                 </div>
             </div>
         </div>
@@ -816,29 +816,29 @@
                 <button class="admin-btn secondary" onclick="window.open('/logs/importacao/', '_blank')">📂 Abrir Visualizador de Logs</button>
                 <div style="margin-top: 20px; background: #1e1e1e; color: #00ff00; padding: 15px; border-radius: 5px; max-height: 400px; overflow-y: auto; font-family: monospace;" id="logs-container">
                     Carregando logs...
-                <\/div>
-            <\/div>
-        <\/div>
-    <\/div>
-<\/section>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
 
 <div class="modal" id="login-modal">
     <div class="modal-content">
-        <span class="close" id="close-modal">&times;<\/span>
-        <h3 class="admin-title" style="text-align: center;">🔐 Login Administrativo<\/h3>
+        <span class="close" id="close-modal">&times;</span>
+        <h3 class="admin-title" style="text-align: center;">🔐 Login Administrativo</h3>
         <input type="text" id="login-user" class="login-input" placeholder="Usuário">
         <input type="password" id="login-pass" class="login-input" placeholder="Senha">
-        <div id="login-error" class="login-error"><\/div>
-        <button class="login-btn" id="btn-login">Entrar<\/button>
-    <\/div>
-<\/div>
+        <div id="login-error" class="login-error"></div>
+        <button class="login-btn" id="btn-login">Entrar</button>
+    </div>
+</div>
 
 <footer class="footer">
-    <p>© 2026 OfertaPrimeX - Painel Administrativo<\/p>
-<\/footer>
+    <p>© 2026 OfertaPrimeX - Painel Administrativo</p>
+</footer>
 
-<script src="js/main.js"><\/script>
-<script src="js/admin.js"><\/script>
+<script src="js/main.js"></script>
+<script src="js/admin.js"></script>
 <script>
     document.getElementById('admin-main').style.display = 'none';
 
@@ -846,9 +846,19 @@
     // FUNÇÃO PARA ATUALIZAR CONTADOR DE PLATAFORMAS ATIVAS
     // ============================================
     function atualizarContadorPlataformasAtivas() {
-        let plataformasAtivas = [];
+        // Usar a função global do admin.js se disponível
+        if (typeof getPlataformasAtivas === 'function') {
+            const ativas = getPlataformasAtivas();
+            const totalPlataformasElement = document.getElementById('total-plataformas');
+            if (totalPlataformasElement) {
+                totalPlataformasElement.textContent = ativas.length;
+            }
+            console.log('📊 Plataformas ativas:', ativas.length);
+            return;
+        }
         
-        // Tentar carregar do localStorage
+        // Fallback: tentar carregar do localStorage
+        let plataformasAtivas = [];
         const savedFrontend = localStorage.getItem('plataformas_ativas_frontend');
         if (savedFrontend) {
             try {
@@ -884,20 +894,25 @@
     window.atualizarStatusPlataformasPainel = function() {
         let plataformasAtivas = [];
         
-        const savedFrontend = localStorage.getItem('plataformas_ativas_frontend');
-        if (savedFrontend) {
-            try {
-                plataformasAtivas = JSON.parse(savedFrontend);
-            } catch(e) {}
-        }
-        
-        if (plataformasAtivas.length === 0) {
-            const savedAdmin = localStorage.getItem('plataformas_ativas');
-            if (savedAdmin) {
+        // Usar a função global do admin.js se disponível
+        if (typeof getPlataformasAtivas === 'function') {
+            plataformasAtivas = getPlataformasAtivas();
+        } else {
+            const savedFrontend = localStorage.getItem('plataformas_ativas_frontend');
+            if (savedFrontend) {
                 try {
-                    const config = JSON.parse(savedAdmin);
-                    plataformasAtivas = Object.keys(config).filter(key => config[key] === true);
+                    plataformasAtivas = JSON.parse(savedFrontend);
                 } catch(e) {}
+            }
+            
+            if (plataformasAtivas.length === 0) {
+                const savedAdmin = localStorage.getItem('plataformas_ativas');
+                if (savedAdmin) {
+                    try {
+                        const config = JSON.parse(savedAdmin);
+                        plataformasAtivas = Object.keys(config).filter(key => config[key] === true);
+                    } catch(e) {}
+                }
             }
         }
         
@@ -981,15 +996,15 @@
                 if (data.data.top_nao_encontrados && data.data.top_nao_encontrados.length > 0) {
                     tbody.innerHTML = data.data.top_nao_encontrados.slice(0, 10).map(t => `
                          <tr>
-                             <td>${t.termo}<\/td
-                             <td>${t.tentativas}<\/td
-                             <td>${t.tentativas}<\/td
-                             <td>0<\/td
-                             <td>${t.tentativas}<\/td
+                             <td>${t.termo}</td>
+                             <td>${t.tentativas}</td>
+                             <td>${t.tentativas}</td>
+                             <td>0</td
+                             <td>${t.tentativas}</td>
                          </tr>
                     `).join('');
                 } else {
-                    tbody.innerHTML = '发展<td colspan="5" style="text-align: center;">Nenhum termo buscado<\/td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="5" style="text-align: center;">Nenhum termo buscado</td</tr>';
                 }
             }
         } catch (error) {
@@ -1006,13 +1021,13 @@
             
             if (data.logs && data.logs.length > 0) {
                 container.innerHTML = data.logs.slice(-50).map(log => 
-                    `<div style="margin: 2px 0;">${log}<\/div>`
+                    `<div style="margin: 2px 0;">${log}</div>`
                 ).join('');
             } else {
-                container.innerHTML = '<div>📭 Nenhum log encontrado<\/div>';
+                container.innerHTML = '<div>📭 Nenhum log encontrado</div>';
             }
         } catch (error) {
-            document.getElementById('logs-container').innerHTML = '<div style="color: #ff5555;">❌ Erro ao carregar logs<\/div>';
+            document.getElementById('logs-container').innerHTML = '<div style="color: #ff5555;">❌ Erro ao carregar logs</div>';
         }
     }
 
@@ -1023,7 +1038,7 @@
         
         const statusDiv = document.getElementById(`${plataforma}-status`);
         if (statusDiv) {
-            statusDiv.innerHTML = '<div class="import-status info">⏳ Limpando banco de dados...<\/div>';
+            statusDiv.innerHTML = '<div class="import-status info">⏳ Limpando banco de dados...</div>';
         }
         
         try {
@@ -1035,7 +1050,7 @@
             
             if (response.ok) {
                 if (statusDiv) {
-                    statusDiv.innerHTML = `<div class="import-status success">✅ ${data.message || 'Banco limpo com sucesso!'}<\/div>`;
+                    statusDiv.innerHTML = `<div class="import-status success">✅ ${data.message || 'Banco limpo com sucesso!'}</div>`;
                 }
                 setTimeout(() => {
                     if (typeof carregarContadores === 'function') carregarContadores();
@@ -1046,13 +1061,13 @@
                 }, 1500);
             } else {
                 if (statusDiv) {
-                    statusDiv.innerHTML = `<div class="import-status error">❌ Erro: ${data.error || 'Falha ao limpar banco'}<\/div>`;
+                    statusDiv.innerHTML = `<div class="import-status error">❌ Erro: ${data.error || 'Falha ao limpar banco'}</div>`;
                 }
             }
         } catch (error) {
             console.error('❌ Erro ao limpar banco:', error);
             if (statusDiv) {
-                statusDiv.innerHTML = `<div class="import-status error">❌ Erro de conexão: ${error.message}<\/div>`;
+                statusDiv.innerHTML = `<div class="import-status error">❌ Erro de conexão: ${error.message}</div>`;
             }
         }
     }
@@ -1067,7 +1082,7 @@
         for (const plataforma of plataformas) {
             const statusDiv = document.getElementById(`${plataforma}-status`);
             if (statusDiv) {
-                statusDiv.innerHTML = '<div class="import-status info">⏳ Limpando...<\/div>';
+                statusDiv.innerHTML = '<div class="import-status info">⏳ Limpando...</div>';
             }
             
             try {
@@ -1077,16 +1092,16 @@
                 
                 if (response.ok) {
                     if (statusDiv) {
-                        statusDiv.innerHTML = '<div class="import-status success">✅ Limpo!<\/div>';
+                        statusDiv.innerHTML = '<div class="import-status success">✅ Limpo!</div>';
                     }
                 } else {
                     if (statusDiv) {
-                        statusDiv.innerHTML = '<div class="import-status error">❌ Erro<\/div>';
+                        statusDiv.innerHTML = '<div class="import-status error">❌ Erro</div>';
                     }
                 }
             } catch (error) {
                 if (statusDiv) {
-                    statusDiv.innerHTML = '<div class="import-status error">❌ Erro<\/div>';
+                    statusDiv.innerHTML = '<div class="import-status error">❌ Erro</div>';
                 }
             }
         }
@@ -1105,6 +1120,6 @@
         
         alert('✅ Processo de limpeza iniciado para todas as plataformas!');
     }
-<\/script>
+</script>
 </body>
 </html>
