@@ -764,7 +764,7 @@
                         <tbody id="tabela-termos-nao-encontrados">
                              <td colspan="3" style="text-align: center;">Carregando...</td>
                         </tbody>
-                    </table>
+                    <tr>
                 </div>
             </div>
         </div>
@@ -843,13 +843,39 @@
     document.getElementById('admin-main').style.display = 'none';
 
     // ============================================
-    // FUNÇÃO PARA ATUALIZAR STATUS DAS PLATAFORMAS NO PAINEL
+    // FUNÇÃO PARA ATUALIZAR STATUS DAS PLATAFORMAS NO PAINEL (VERSÃO CORRIGIDA)
     // ============================================
-    function atualizarStatusPlataformasPainel() {
-        const plataformasAtivas = JSON.parse(localStorage.getItem('plataformas_ativas_frontend') || '["mercadolivre","amazon","shopee","magalu"]');
+    window.atualizarStatusPlataformasPainel = function() {
+        // Tenta carregar de múltiplas fontes
+        let plataformasAtivas = [];
+        
+        // 1. Tentar do frontend
+        const savedFrontend = localStorage.getItem('plataformas_ativas_frontend');
+        if (savedFrontend) {
+            try {
+                plataformasAtivas = JSON.parse(savedFrontend);
+                console.log('📌 Plataformas ativas (frontend):', plataformasAtivas);
+            } catch(e) {}
+        }
+        
+        // 2. Se não tem, tentar do admin
+        if (plataformasAtivas.length === 0) {
+            const savedAdmin = localStorage.getItem('plataformas_ativas');
+            if (savedAdmin) {
+                try {
+                    const config = JSON.parse(savedAdmin);
+                    plataformasAtivas = Object.keys(config).filter(key => config[key] === true);
+                    console.log('📌 Plataformas ativas (admin):', plataformasAtivas);
+                } catch(e) {}
+            }
+        }
+        
+        // 3. Padrão: todas ativas
+        if (plataformasAtivas.length === 0) {
+            plataformasAtivas = ['mercadolivre', 'amazon', 'shopee', 'magalu'];
+        }
         
         const plataformas = ['mercadolivre', 'amazon', 'shopee', 'magalu'];
-        const nomes = { mercadolivre: 'MERCADO LIVRE', amazon: 'AMAZON', shopee: 'SHOPEE', magalu: 'MAGALU' };
         
         for (const plataforma of plataformas) {
             const card = document.getElementById(`card-${plataforma}`);
@@ -872,7 +898,9 @@
                 }
             }
         }
-    }
+        
+        console.log('🔄 Status das plataformas atualizado');
+    };
 
     function mostrarTab(tab) {
         document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
@@ -884,7 +912,7 @@
         if (tab === 'estatisticas') carregarEstatisticas();
         if (tab === 'pesquisas') carregarEstatisticasPesquisas();
         if (tab === 'logs') carregarLogsDisplay();
-        if (tab === 'produtos') atualizarStatusPlataformasPainel();
+        if (tab === 'produtos') window.atualizarStatusPlataformasPainel();
     }
 
     async function carregarEstatisticas() {
@@ -925,12 +953,12 @@
                              <td>${t.termo}</td>
                              <td>${t.tentativas}</td>
                              <td>${t.tentativas}</td>
-                             <td>0</td>
+                             <td>0</td
                              <td>${t.tentativas}</td>
                          </tr>
                     `).join('');
                 } else {
-                    tbody.innerHTML = '<td><td colspan="5" style="text-align: center;">Nenhum termo buscado</td></tr>';
+                    tbody.innerHTML = '<td><td colspan="5" style="text-align: center;">Nenhum termo buscado</td</tr>';
                 }
             }
         } catch (error) {

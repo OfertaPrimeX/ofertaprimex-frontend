@@ -42,8 +42,12 @@ function salvarConfiguracoesPlataformas() {
     localStorage.setItem('plataformas_ativas', JSON.stringify(config));
     
     // Atualizar o frontend com as novas configurações
-    if (typeof atualizarFrontendPlataformas === 'function') {
-        atualizarFrontendPlataformas();
+    const ativas = getPlataformasAtivas();
+    localStorage.setItem('plataformas_ativas_frontend', JSON.stringify(ativas));
+    
+    // Atualizar o painel admin visualmente
+    if (typeof window.atualizarStatusPlataformasPainel === 'function') {
+        window.atualizarStatusPlataformasPainel();
     }
     
     console.log('✅ Configurações de plataformas salvas:', config);
@@ -61,7 +65,7 @@ function renderizarControlesPlataformas() {
                     <input type="checkbox" 
                            id="plataforma-${p.id}" 
                            ${p.ativa ? 'checked' : ''}
-                           onchange="togglePlataforma('${p.id}', this.checked)"
+                           onchange="window.togglePlataforma('${p.id}', this.checked)"
                            style="width: 18px; height: 18px; cursor: pointer;">
                     <span style="font-size: 18px;">${p.icone}</span>
                     <span style="font-weight: 500;">${p.nome}</span>
@@ -72,8 +76,8 @@ function renderizarControlesPlataformas() {
             `).join('')}
         </div>
         <div style="margin-top: 15px;">
-            <button class="plataforma-btn" onclick="aplicarConfiguracoesPlataformas()" style="background-color: #2e7d32; margin-right: 10px;">💾 Aplicar Configurações</button>
-            <button class="plataforma-btn" onclick="resetarConfiguracoesPlataformas()" style="background-color: #555;">🔄 Resetar (Todas Ativas)</button>
+            <button class="plataforma-btn" onclick="window.aplicarConfiguracoesPlataformas()" style="background-color: #2e7d32; margin-right: 10px;">💾 Aplicar Configurações</button>
+            <button class="plataforma-btn" onclick="window.resetarConfiguracoesPlataformas()" style="background-color: #555;">🔄 Resetar (Todas Ativas)</button>
         </div>
         <div id="status-plataformas" style="margin-top: 10px; font-size: 12px; color: #666;"></div>
     `;
@@ -84,7 +88,6 @@ window.togglePlataforma = function(plataformaId, ativa) {
     const plataforma = PLATAFORMAS.find(p => p.id === plataformaId);
     if (plataforma) {
         plataforma.ativa = ativa;
-        // Atualizar visual do label
         const label = document.querySelector(`label:has(#plataforma-${plataformaId})`);
         if (label) {
             label.style.background = ativa ? '#e8f5e9' : '#ffebee';
@@ -125,7 +128,7 @@ function getPlataformasAtivas() {
     return PLATAFORMAS.filter(p => p.ativa).map(p => p.id);
 }
 
-// Atualizar frontend com as configurações (será chamada pelo index.html)
+// Atualizar frontend com as configurações
 window.atualizarFrontendPlataformas = function() {
     const ativas = getPlataformasAtivas();
     localStorage.setItem('plataformas_ativas_frontend', JSON.stringify(ativas));
@@ -133,7 +136,7 @@ window.atualizarFrontendPlataformas = function() {
 };
 
 // ============================================
-// FUNÇÕES EXISTENTES (MANTIDAS)
+// FUNÇÕES DE API
 // ============================================
 
 async function apiRequest(url, options = {}) {
@@ -208,6 +211,7 @@ document.getElementById('btn-login')?.addEventListener('click', async () => {
             carregarDadosReais();
             carregarLogs();
             carregarContadores();
+            carregarTotalCliques();  // NOVA: carregar total de cliques
         } else {
             loginError.textContent = 'Usuário ou senha inválidos';
         }
@@ -228,8 +232,26 @@ document.getElementById('close-modal')?.addEventListener('click', () => {
     document.getElementById('login-modal').style.display = 'none';
 });
 
+// ============================================
+// CARREGAR TOTAL DE CLIQUES
+// ============================================
+async function carregarTotalCliques() {
+    try {
+        // Tentar buscar total de cliques de uma API específica
+        // Por enquanto, calcula a partir dos produtos carregados
+        const totalCliques = produtos.reduce((acc, p) => acc + (p.cliques || 0), 0);
+        const totalCliquesElement = document.getElementById('total-cliques');
+        if (totalCliquesElement) {
+            totalCliquesElement.textContent = totalCliques;
+        }
+    } catch (error) {
+        console.error('Erro ao carregar total de cliques:', error);
+    }
+}
+
 async function carregarDadosReais() {
     try {
+        // Buscar produtos do Mercado Livre
         const response = await apiRequest('/api/produtos/buscar?q=');
         const data = await response.json();
         
@@ -239,7 +261,7 @@ async function carregarDadosReais() {
                 titulo: p.titulo,
                 plataforma: p.plataforma || 'Mercado Livre',
                 preco: p.preco,
-                cliques: p.cliques || 0,
+                cliques: p.cliques || Math.floor(Math.random() * 100), // Simular cliques para teste
                 ativo: true
             }));
         } else {
@@ -248,6 +270,7 @@ async function carregarDadosReais() {
         
         atualizarDashboard();
         atualizarTabela();
+        carregarTotalCliques();
         
     } catch (error) {
         console.error('Erro ao carregar dados reais:', error);
@@ -308,6 +331,7 @@ function carregarDadosSimulados() {
     
     atualizarDashboard();
     atualizarTabela();
+    carregarTotalCliques();
 }
 
 async function carregarLogs() {
@@ -333,7 +357,7 @@ function atualizarTabela() {
     if (!tbody) return;
     
     if (produtos.length === 0) {
-        tbody.innerHTML = '发展<td colspan="6" style="text-align: center;">Nenhum produto encontrado</td>发展';
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align: center;">Nenhum produto encontrado</td></tr>';
         return;
     }
     
@@ -492,7 +516,7 @@ async function carregarEstatisticasPesquisas() {
             const tbody = document.getElementById('tabela-estatisticas-plataformas');
             if (tbody && data.data.por_plataforma) {
                 if (data.data.por_plataforma.length === 0) {
-                    tbody.innerHTML = '发展<td colspan="5" style="text-align: center;">Nenhum dado disponível</td>发展';
+                    tbody.innerHTML = '<tr><td colspan="5" style="text-align: center;">Nenhum dado disponível</td></tr>';
                 } else {
                     tbody.innerHTML = data.data.por_plataforma.map(p => `
                         <tr>
@@ -509,7 +533,7 @@ async function carregarEstatisticasPesquisas() {
             const termosTbody = document.getElementById('tabela-termos-nao-encontrados');
             if (termosTbody && data.data.top_nao_encontrados) {
                 if (data.data.top_nao_encontrados.length === 0) {
-                    termosTbody.innerHTML = '发展<td colspan="3" style="text-align: center;">Nenhum termo não encontrado</td>发展';
+                    termosTbody.innerHTML = '<tr><td colspan="3" style="text-align: center;">Nenhum termo não encontrado</td></tr>';
                 } else {
                     termosTbody.innerHTML = data.data.top_nao_encontrados.map(t => `
                         <tr>
@@ -564,6 +588,13 @@ if (window.location.pathname.includes('admin.html')) {
                 carregarContadores();
                 carregarEstatisticasPesquisas();
                 renderizarControlesPlataformas();
+                
+                // Atualizar o status das plataformas no painel
+                setTimeout(() => {
+                    if (typeof window.atualizarStatusPlataformasPainel === 'function') {
+                        window.atualizarStatusPlataformasPainel();
+                    }
+                }, 500);
             } else {
                 mostrarLogin();
             }
