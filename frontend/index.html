@@ -683,7 +683,7 @@
   window.voltarParaHome = voltarParaHome;
 
   // ============================================
-  // CARREGAR 24 PRODUTOS MAIS VENDIDOS (RANDOMIZADO COM FILTRO E REGISTRO DE CLIQUE)
+  // CARREGAR 24 PRODUTOS MAIS VENDIDOS (USANDO renderProducts)
   // ============================================
   async function carregarMaisVendidos() {
       try {
@@ -711,33 +711,24 @@
           const track = document.getElementById('carousel-track');
           if (!track) return;
           
-          // CORRIGIDO: carrossel com registro de clique
-          track.innerHTML = produtos.map(p => {
-              const produtoId = p.id;
-              const plataforma = p.plataforma || 'Mercado Livre';
-              const link = p.link_afiliado || p.link_original || '#';
-              const plataformaKey = plataforma === 'Mercado Livre' ? 'mercadolivre' : 
-                                   plataforma === 'Amazon' ? 'amazon' :
-                                   plataforma === 'Shopee' ? 'shopee' : 'magalu';
-              
-              const onClickHandler = `fetch('/api/admin/cliques/incrementar', {
-                  method:'POST',
-                  headers:{'Content-Type':'application/json'},
-                  body:JSON.stringify({produto_id:${produtoId}, plataforma:'${plataformaKey}'})
-              }).catch(e=>console.error(e)); 
-              window.open('${link}','_blank');`;
-              
-              return `
-                  <div class="carousel-card" onclick="${onClickHandler.replace(/[\n\r]/g, ' ').replace(/"/g, '&quot;')}">
-                      <img src="${p.imagem_principal || 'https://via.placeholder.com/150'}" 
-                           alt="${p.titulo}"
-                           onerror="this.src='https://via.placeholder.com/150'">
-                      <div class="product-title">${(p.titulo || '').substring(0, 50)}...</div>
-                      <div class="product-price">R$ ${formatarPreco(p.preco)}</div>
-                      <div class="product-platform">${p.plataforma || 'Mercado Livre'}</div>
-                  </div>
-              `;
-          }).join('');
+          // CORRIGIDO: usar renderProducts para criar os cards (já com registro de clique)
+          // Cria um container temporário
+          const tempContainer = document.createElement('div');
+          tempContainer.className = 'carousel-track';
+          
+          // Usa o renderProducts para renderizar os cards
+          renderProducts(tempContainer, produtos, false);
+          
+          // Transfere os cards para o track
+          track.innerHTML = tempContainer.innerHTML;
+          
+          // Adiciona a classe carousel-card e ajusta estilos
+          const cards = track.querySelectorAll('.product-card');
+          cards.forEach(card => {
+              card.classList.add('carousel-card');
+              card.style.flex = '0 0 calc(16.666% - 17px)';
+              card.style.minWidth = 'calc(16.666% - 17px)';
+          });
           
           return produtos.length;
       } catch (error) {
