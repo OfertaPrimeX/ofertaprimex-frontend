@@ -452,7 +452,6 @@
           return [];
       }
       
-      // Chama a API com header de plataformas ativas
       const headers = getHeaders();
       try {
           const response = await fetch(`https://yo0g0cg4c88w88osc4s04c0c.72.61.33.248.sslip.io/api/produtos/random?limit=${limit}`, {
@@ -684,7 +683,7 @@
   window.voltarParaHome = voltarParaHome;
 
   // ============================================
-  // CARREGAR 24 PRODUTOS MAIS VENDIDOS (RANDOMIZADO COM FILTRO)
+  // CARREGAR 24 PRODUTOS MAIS VENDIDOS (RANDOMIZADO COM FILTRO E REGISTRO DE CLIQUE)
   // ============================================
   async function carregarMaisVendidos() {
       try {
@@ -712,16 +711,33 @@
           const track = document.getElementById('carousel-track');
           if (!track) return;
           
-          track.innerHTML = produtos.map(p => `
-              <div class="carousel-card" onclick="window.open('${p.link_afiliado || p.link_original}', '_blank')">
-                  <img src="${p.imagem_principal || 'https://via.placeholder.com/150'}" 
-                       alt="${p.titulo}"
-                       onerror="this.src='https://via.placeholder.com/150'">
-                  <div class="product-title">${(p.titulo || '').substring(0, 50)}...</div>
-                  <div class="product-price">R$ ${formatarPreco(p.preco)}</div>
-                  <div class="product-platform">${p.plataforma || 'Mercado Livre'}</div>
-              </div>
-          `).join('');
+          // CORRIGIDO: carrossel com registro de clique
+          track.innerHTML = produtos.map(p => {
+              const produtoId = p.id;
+              const plataforma = p.plataforma || 'Mercado Livre';
+              const link = p.link_afiliado || p.link_original || '#';
+              const plataformaKey = plataforma === 'Mercado Livre' ? 'mercadolivre' : 
+                                   plataforma === 'Amazon' ? 'amazon' :
+                                   plataforma === 'Shopee' ? 'shopee' : 'magalu';
+              
+              const onClickHandler = `fetch('/api/admin/cliques/incrementar', {
+                  method:'POST',
+                  headers:{'Content-Type':'application/json'},
+                  body:JSON.stringify({produto_id:${produtoId}, plataforma:'${plataformaKey}'})
+              }).catch(e=>console.error(e)); 
+              window.open('${link}','_blank');`;
+              
+              return `
+                  <div class="carousel-card" onclick="${onClickHandler.replace(/[\n\r]/g, ' ').replace(/"/g, '&quot;')}">
+                      <img src="${p.imagem_principal || 'https://via.placeholder.com/150'}" 
+                           alt="${p.titulo}"
+                           onerror="this.src='https://via.placeholder.com/150'">
+                      <div class="product-title">${(p.titulo || '').substring(0, 50)}...</div>
+                      <div class="product-price">R$ ${formatarPreco(p.preco)}</div>
+                      <div class="product-platform">${p.plataforma || 'Mercado Livre'}</div>
+                  </div>
+              `;
+          }).join('');
           
           return produtos.length;
       } catch (error) {
