@@ -336,6 +336,50 @@
 </footer>
 
 <script src="js/main.js"></script>
+
+<script>
+// ============================================
+// FUNÇÃO GLOBAL PARA REDIRECIONAR PARA PRODUTO.HTML (CORREÇÃO DO CARROSSEL)
+// ============================================
+window.irParaProduto = function(produtoId, linkOriginal) {
+    if (!produtoId && !linkOriginal) {
+        console.error('Produto inválido');
+        return;
+    }
+    // Se tiver link original, salva no sessionStorage para usar na página do produto
+    if (linkOriginal) {
+        sessionStorage.setItem('produtoLinkOriginal', linkOriginal);
+    }
+    if (produtoId) {
+        window.location.href = `produto.html?id=${produtoId}`;
+    } else {
+        window.location.href = `produto.html?link=${encodeURIComponent(linkOriginal)}`;
+    }
+};
+
+// ============================================
+// FUNÇÃO PARA REGISTRAR CLIQUE EM PRODUTO (RASTREAMENTO)
+// ============================================
+window.registrarCliqueProduto = async function(produtoId, plataforma, linkOriginal) {
+    try {
+        const sessaoId = localStorage.getItem('sessaoId') || 'anon_' + Date.now();
+        await fetch('https://yo0g0cg4c88w88osc4s04c0c.72.61.33.248.sslip.io/api/cliques/registrar', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                produto_id: produtoId,
+                plataforma: plataforma,
+                link_original: linkOriginal,
+                sessao_id: sessaoId,
+                pagina: 'home'
+            })
+        });
+    } catch (error) {
+        console.error('Erro ao registrar clique:', error);
+    }
+};
+</script>
+
 <script type="module">
   import { 
       searchAllPlatforms,
