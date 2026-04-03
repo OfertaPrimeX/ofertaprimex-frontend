@@ -1,5 +1,42 @@
 // /app/public/js/render.js
 
+// ============================================
+// FUNÇÃO PARA REGISTRAR CLIQUE NO BACKEND
+// ============================================
+async function registrarClique(produtoId, plataforma) {
+    try {
+        // Mapeamento de nomes de plataforma para os IDs usados no backend
+        const plataformaMap = {
+            'Mercado Livre': 'mercadolivre',
+            'Amazon': 'amazon',
+            'Shopee': 'shopee',
+            'Magalu': 'magalu'
+        };
+        
+        const plataformaKey = plataformaMap[plataforma] || 'mercadolivre';
+        
+        const response = await fetch('/api/admin/cliques/incrementar', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                produto_id: produtoId,
+                plataforma: plataformaKey
+            })
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            console.log(`✅ Clique registrado: ${plataforma} ID:${produtoId} - Total: ${data.cliques}`);
+        } else {
+            console.warn(`⚠️ Falha ao registrar clique: ${response.status}`);
+        }
+    } catch (error) {
+        console.error('❌ Erro ao registrar clique:', error);
+    }
+}
+
 /**
  * Renderiza produtos no container especificado
  * @param {HTMLElement} container - Elemento onde os produtos serão inseridos
@@ -25,12 +62,23 @@ export function renderProducts(container, products, isCarousel = false) {
   products.forEach(p => {
     const card = document.createElement('div');
     card.className = 'product-card';
-    card.onclick = () => {
-      const link = p.link_afiliado || p.link_original || '#';
+    
+    // Captura os dados do produto para o clique
+    const produtoId = p.id;
+    const plataforma = p.plataforma || 'Mercado Livre';
+    const link = p.link_afiliado || p.link_original || '#';
+    
+    // Adiciona evento de clique que registra antes de abrir o link
+    card.onclick = async () => {
+      // Registra o clique no backend (sem esperar para não travar a navegação)
+      if (produtoId) {
+        registrarClique(produtoId, plataforma);
+      }
+      // Abre o link em nova aba
       window.open(link, '_blank');
     };
 
-    // ===== FORMATA PREÇO (CORRIGIDO) =====
+    // ===== FORMATA PREÇO =====
     let precoFormatado = 'R$ 0,00';
     if (p.preco) {
       let precoNum = 0;
@@ -43,8 +91,6 @@ export function renderProducts(container, products, isCarousel = false) {
       }
       
       // CORREÇÃO: se o valor for maior que 1000, provavelmente está em centavos
-      // Produtos baratos (R$ 10,00) vêm como 1000 centavos
-      // Produtos caros (R$ 1000,00) vêm como 100000 centavos
       if (precoNum > 1000) {
         precoNum = precoNum / 100;
       }
@@ -63,17 +109,11 @@ export function renderProducts(container, products, isCarousel = false) {
       imagem = 'https://via.placeholder.com/200x200?text=Sem+Imagem';
     }
 
-    // ===== DEFINE LINK =====
-    const link = p.link_afiliado || p.link_original || '#';
-
-    // ===== PLATAFORMA =====
-    const plataforma = p.plataforma || 'Mercado Livre';
-
     // ===== TÍTULO (limitado a 60 caracteres) =====
     const titulo = (p.titulo || p.title || 'Produto sem título').substring(0, 60);
     const tituloEllipsis = (p.titulo || p.title || 'Produto sem título').length > 60 ? '...' : '';
 
-    // ===== CONSTRÓI O CARD (PADRÃO) =====
+    // ===== CONSTRÓI O CARD =====
     card.innerHTML = `
       <img src="${imagem}" alt="${titulo}" 
            class="product-image"
@@ -98,7 +138,7 @@ export function renderProductsHTML(products) {
   if (!products || products.length === 0) return '';
   
   return products.map(p => {
-    // Formata preço (CORRIGIDO)
+    // Formata preço
     let precoFormatado = 'R$ 0,00';
     if (p.preco) {
       let precoNum = 0;
@@ -109,7 +149,6 @@ export function renderProductsHTML(products) {
         precoNum = parseFloat(precoLimpo);
       }
       
-      // CORREÇÃO: se o valor for maior que 1000, provavelmente está em centavos
       if (precoNum > 1000) {
         precoNum = precoNum / 100;
       }
@@ -122,13 +161,18 @@ export function renderProductsHTML(products) {
       }
     }
     
-    const imagem = p.imagem_principal || p.thumbnail || 'https://via.placeholder.com/200x200?text=Sem+Imagem';
+    const produtoId = p.id;
     const plataforma = p.plataforma || 'Mercado Livre';
+    const link = p.link_afiliado || p.link_original || '#';
+    const imagem = p.imagem_principal || p.thumbnail || 'https://via.placeholder.com/200x200?text=Sem+Imagem';
     const titulo = (p.titulo || p.title || 'Produto sem título').substring(0, 60);
     const tituloEllipsis = (p.titulo || p.title || 'Produto sem título').length > 60 ? '...' : '';
     
+    // Função inline para registrar clique
+    const onclickHandler = `fetch('/api/admin/cliques/incrementar', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({produto_id:${produtoId},plataforma:'${plataforma === 'Mercado Livre' ? 'mercadolivre' : plataforma.toLowerCase()}'})}).catch(e=>console.error(e)); window.open('${link}','_blank');`;
+    
     return `
-      <div class="product-card" onclick="window.open('${p.link_afiliado || p.link_original || '#'}', '_blank')">
+      <div class="product-card" onclick="${onclickHandler.replace(/"/g, '&quot;')}">
         <img src="${imagem}" alt="${titulo}" class="product-image" onerror="this.src='https://via.placeholder.com/200x200?text=Sem+Imagem'">
         <div class="product-info">
           <h3 class="product-title">${titulo}${tituloEllipsis}</h3>
