@@ -50,7 +50,23 @@ function salvarConfiguracoesPlataformas() {
         window.atualizarStatusPlataformasPainel();
     }
     
+    // Atualizar contador de plataformas ativas
+    atualizarContadorPlataformasAtivas();
+    
     console.log('✅ Configurações de plataformas salvas:', config);
+}
+
+// ============================================
+// FUNÇÃO PARA ATUALIZAR CONTADOR DE PLATAFORMAS ATIVAS
+// ============================================
+function atualizarContadorPlataformasAtivas() {
+    const ativas = getPlataformasAtivas();
+    const totalAtivas = ativas.length;
+    const totalPlataformasElement = document.getElementById('total-plataformas');
+    if (totalPlataformasElement) {
+        totalPlataformasElement.textContent = totalAtivas;
+    }
+    console.log(`📊 Plataformas ativas: ${totalAtivas} (${ativas.join(', ')})`);
 }
 
 // Renderizar checkboxes de plataformas
@@ -211,7 +227,8 @@ document.getElementById('btn-login')?.addEventListener('click', async () => {
             carregarDadosReais();
             carregarLogs();
             carregarContadores();
-            carregarTotalCliques();  // NOVA: carregar total de cliques
+            carregarTotalCliques();
+            atualizarContadorPlataformasAtivas();
         } else {
             loginError.textContent = 'Usuário ou senha inválidos';
         }
@@ -237,15 +254,25 @@ document.getElementById('close-modal')?.addEventListener('click', () => {
 // ============================================
 async function carregarTotalCliques() {
     try {
-        // Tentar buscar total de cliques de uma API específica
-        // Por enquanto, calcula a partir dos produtos carregados
-        const totalCliques = produtos.reduce((acc, p) => acc + (p.cliques || 0), 0);
-        const totalCliquesElement = document.getElementById('total-cliques');
-        if (totalCliquesElement) {
-            totalCliquesElement.textContent = totalCliques;
+        // Tentar buscar total de cliques da API
+        const response = await apiRequest('/api/admin/cliques/total');
+        if (response.ok) {
+            const data = await response.json();
+            const totalCliquesElement = document.getElementById('total-cliques');
+            if (totalCliquesElement && data.total !== undefined) {
+                totalCliquesElement.textContent = data.total;
+                return;
+            }
         }
     } catch (error) {
-        console.error('Erro ao carregar total de cliques:', error);
+        console.log('API de cliques não disponível, usando fallback');
+    }
+    
+    // Fallback: calcular a partir dos produtos carregados
+    const totalCliques = produtos.reduce((acc, p) => acc + (p.cliques || 0), 0);
+    const totalCliquesElement = document.getElementById('total-cliques');
+    if (totalCliquesElement) {
+        totalCliquesElement.textContent = totalCliques;
     }
 }
 
@@ -261,7 +288,7 @@ async function carregarDadosReais() {
                 titulo: p.titulo,
                 plataforma: p.plataforma || 'Mercado Livre',
                 preco: p.preco,
-                cliques: p.cliques || Math.floor(Math.random() * 100), // Simular cliques para teste
+                cliques: p.cliques || 0,
                 ativo: true
             }));
         } else {
@@ -357,7 +384,7 @@ function atualizarTabela() {
     if (!tbody) return;
     
     if (produtos.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="6" style="text-align: center;">Nenhum produto encontrado</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align: center;">Nenhum produto encontrado</td</tr>';
         return;
     }
     
@@ -365,10 +392,10 @@ function atualizarTabela() {
         <tr>
             <td>#${p.id}</td>
             <td>${p.plataforma || '-'}</td>
-            <td>${p.titulo.substring(0, 50)}...</td>
-            <td>R$ ${p.preco}</td>
-            <td>${p.cliques || 0}</td>
-            <td>${p.ativo ? '✅' : '❌'}</td>
+            <td>${p.titulo.substring(0, 50)}...</td
+            <td>R$ ${p.preco}</td
+            <td>${p.cliques || 0}</td
+            <td>${p.ativo ? '✅' : '❌'}</td
         </tr>
     `).join('');
 }
@@ -516,15 +543,15 @@ async function carregarEstatisticasPesquisas() {
             const tbody = document.getElementById('tabela-estatisticas-plataformas');
             if (tbody && data.data.por_plataforma) {
                 if (data.data.por_plataforma.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="5" style="text-align: center;">Nenhum dado disponível</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="5" style="text-align: center;">Nenhum dado disponível</td</tr>';
                 } else {
                     tbody.innerHTML = data.data.por_plataforma.map(p => `
                         <tr>
-                            <td>${p.plataforma}</td>
-                            <td>${p.total}</td>
-                            <td>${p.encontradas}</td>
-                            <td>${p.nao_encontradas}</td>
-                            <td>${p.tempo_medio_ms}ms</td>
+                            <td>${p.plataforma}</td
+                            <td>${p.total}</td
+                            <td>${p.encontradas}</td
+                            <td>${p.nao_encontradas}</td
+                            <td>${p.tempo_medio_ms}ms</td
                         </tr>
                     `).join('');
                 }
@@ -533,13 +560,13 @@ async function carregarEstatisticasPesquisas() {
             const termosTbody = document.getElementById('tabela-termos-nao-encontrados');
             if (termosTbody && data.data.top_nao_encontrados) {
                 if (data.data.top_nao_encontrados.length === 0) {
-                    termosTbody.innerHTML = '<tr><td colspan="3" style="text-align: center;">Nenhum termo não encontrado</td></tr>';
+                    termosTbody.innerHTML = '<td><td colspan="3" style="text-align: center;">Nenhum termo não encontrado</td</tr>';
                 } else {
                     termosTbody.innerHTML = data.data.top_nao_encontrados.map(t => `
                         <tr>
-                            <td>${t.termo}</td>
-                            <td>${t.tentativas}</td>
-                            <td>${t.plataformas}</td>
+                            <td>${t.termo}</td
+                            <td>${t.tentativas}</td
+                            <td>${t.plataformas}</td
                         </tr>
                     `).join('');
                 }
@@ -588,6 +615,7 @@ if (window.location.pathname.includes('admin.html')) {
                 carregarContadores();
                 carregarEstatisticasPesquisas();
                 renderizarControlesPlataformas();
+                atualizarContadorPlataformasAtivas();
                 
                 // Atualizar o status das plataformas no painel
                 setTimeout(() => {
