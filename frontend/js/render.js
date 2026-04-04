@@ -56,6 +56,12 @@ export function filtrarProdutosPorPlataforma(produtos) {
 // ============================================
 async function registrarClique(produtoId, plataforma, linkOriginal, pagina) {
     try {
+        // Se não tiver ID, não registra
+        if (!produtoId) {
+            console.warn('⚠️ Produto sem ID, clique NÃO registrado');
+            return;
+        }
+        
         const sessaoId = localStorage.getItem('sessaoId');
         if (!sessaoId) {
             const novaSessao = 'sess_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
@@ -74,11 +80,13 @@ async function registrarClique(produtoId, plataforma, linkOriginal, pagina) {
         
         const plataformaKey = plataformaMap[plataforma] || plataforma.toLowerCase();
         
+        console.log(`📤 Enviando clique: Produto ID=${produtoId}, Plataforma=${plataformaKey}`);
+        
         const response = await fetch('https://yo0g0cg4c88w88osc4s04c0c.72.61.33.248.sslip.io/api/cliques/registrar', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                produto_id: produtoId,
+                produto_id: parseInt(produtoId) || produtoId,
                 plataforma: plataformaKey,
                 link_original: linkOriginal,
                 sessao_id: sessaoIdAtual,
@@ -86,10 +94,12 @@ async function registrarClique(produtoId, plataforma, linkOriginal, pagina) {
             })
         });
         
+        const data = await response.json();
+        
         if (response.ok) {
-            console.log(`✅ Clique registrado: ${plataforma} - Produto: ${produtoId}`);
+            console.log(`✅ Clique registrado: ${plataforma} - Produto: ${produtoId}`, data);
         } else {
-            console.warn(`⚠️ Falha ao registrar clique: ${response.status}`);
+            console.warn(`⚠️ Falha ao registrar clique: ${response.status}`, data);
         }
     } catch (error) {
         console.error('❌ Erro ao registrar clique:', error);
@@ -141,6 +151,8 @@ export function renderProducts(container, products, isCarousel = false) {
       // Registra o clique no backend
       if (produtoId) {
         await registrarClique(produtoId, plataforma, link, window.location.pathname);
+      } else {
+        console.warn('⚠️ Produto sem ID, clique NÃO será registrado no backend');
       }
       
       // Abre o link em nova aba
