@@ -335,65 +335,6 @@
     <p>© 2026 OfertaPrimeX - Todos os direitos reservados</p>
 </footer>
 
-<!-- BOTÃO DE TESTE PARA DEBUG -->
-<div style="position: fixed; bottom: 10px; right: 10px; z-index: 9999;">
-    <button id="testeCliqueBtn" style="background: #ff6a00; color: white; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 12px; font-weight: bold;">
-        🐛 Testar Clique
-    </button>
-</div>
-
-<script>
-    // Botão de teste para debug
-    document.getElementById('testeCliqueBtn')?.addEventListener('click', function() {
-        console.log('=== TESTE DE CLIQUE MANUAL ===');
-        
-        // Verificar produtos na página
-        const cards = document.querySelectorAll('.product-card');
-        console.log('Produtos encontrados (product-card):', cards.length);
-        
-        const carouselCards = document.querySelectorAll('.carousel-card');
-        console.log('Produtos no carrossel (carousel-card):', carouselCards.length);
-        
-        if (carouselCards.length > 0) {
-            const primeiroCard = carouselCards[0];
-            console.log('Primeiro card do carrossel:', primeiroCard);
-            console.log('Disparando clique...');
-            primeiroCard.click();
-            console.log('Clique disparado!');
-        } else if (cards.length > 0) {
-            const primeiroCard = cards[0];
-            console.log('Primeiro card:', primeiroCard);
-            console.log('Disparando clique...');
-            primeiroCard.click();
-            console.log('Clique disparado!');
-        } else {
-            console.log('Nenhum produto encontrado na página');
-        }
-        
-        // Verificar localStorage
-        console.log('Plataformas ativas:', localStorage.getItem('plataformas_ativas_frontend'));
-        console.log('Sessão ID:', localStorage.getItem('sessaoId'));
-        
-        // Testar API de clique diretamente
-        console.log('Testando API de clique diretamente...');
-        fetch('https://yo0g0cg4c88w88osc4s04c0c.72.61.33.248.sslip.io/api/cliques/registrar', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                produto_id: 999,
-                plataforma: 'teste',
-                link_original: 'https://teste.com',
-                sessao_id: 'teste_botao',
-                pagina: '/index.html'
-            })
-        }).then(r => r.json()).then(data => {
-            console.log('Resposta da API de clique:', data);
-        }).catch(err => {
-            console.error('Erro na API:', err);
-        });
-    });
-</script>
-
 <script src="js/main.js"></script>
 <script type="module">
   import { 
