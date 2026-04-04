@@ -388,3 +388,59 @@ body {
         font-size: 14px;
     }
 }
+
+/* ================= SEÇÃO PLATAFORMAS PARCEIRAS ================= */
+.plataformas-parceiras-section {
+    padding: 20px 0;
+    background: #ffffff;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.plataformas-parceiras-section .container {
+    display: flex;
+    align-items: center;
+    gap: 30px;
+    flex-wrap: wrap;
+}
+
+.plataformas-parceiras-section .section-title {
+    margin-bottom: 0;
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.plataforma-logos-container {
+    display: flex;
+    align-items: center;
+    gap: 30px;
+    flex-wrap: wrap;
+    margin-top: 0;
+}
+
+.plataforma-logo-img {
+    height: 35px;
+    width: auto;
+    object-fit: contain;
+    transition: transform 0.3s;
+}
+
+.plataforma-logo-img:hover {
+    transform: scale(1.05);
+}
+
+@media (max-width: 768px) {
+    .plataformas-parceiras-section {
+        padding: 15px 0;
+    }
+    .plataformas-parceiras-section .container {
+        gap: 15px;
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    .plataforma-logos-container {
+        gap: 20px;
+    }
+    .plataforma-logo-img {
+        height: 25px;
+    }
+}

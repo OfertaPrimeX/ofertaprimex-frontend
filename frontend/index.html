@@ -5,308 +5,6 @@
     <title>OfertaPrimeX - Compare os Melhores Preços</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="css/style.css">
-    <style>
-        /* ===== ESTILOS PARA SCROLL INFINITO ===== */
-        .loading-spinner {
-            text-align: center;
-            padding: 30px;
-            color: #ff6a00;
-            font-size: 14px;
-            grid-column: 1/-1;
-            animation: pulse 1s infinite;
-        }
-        
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
-        
-        .end-of-results {
-            text-align: center;
-            padding: 30px;
-            color: #888;
-            font-size: 14px;
-            grid-column: 1/-1;
-        }
-        
-        .resultado-info {
-            margin-bottom: 20px;
-            padding: 10px 15px;
-            background: #f5f5f5;
-            border-radius: 8px;
-            color: #555;
-            font-size: 14px;
-            text-align: center;
-        }
-
-        /* ===== ESTILOS DAS CATEGORIAS (ESTILO SHOPEE) ===== */
-        .categories-section {
-            padding: 40px 0;
-            background: #ffffff;
-        }
-
-        .categories-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-            gap: 20px;
-            margin-top: 20px;
-        }
-
-        .category-card {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            text-align: center;
-            padding: 15px 10px;
-            background: #f8f9fa;
-            border-radius: 12px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-decoration: none;
-            color: #333;
-        }
-
-        .category-card:hover {
-            transform: translateY(-5px);
-            background: #ff6a00;
-            color: white;
-            box-shadow: 0 8px 20px rgba(255, 106, 0, 0.2);
-        }
-
-        .category-icon {
-            font-size: 32px;
-            margin-bottom: 10px;
-        }
-
-        .category-name {
-            font-size: 12px;
-            font-weight: 500;
-        }
-
-        .category-card:hover .category-name {
-            color: white;
-        }
-
-        @media (max-width: 768px) {
-            .categories-grid {
-                grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
-                gap: 12px;
-            }
-            .category-icon {
-                font-size: 24px;
-            }
-            .category-name {
-                font-size: 10px;
-            }
-        }
-
-        /* ===== CLASSE PARA OCULTAR SEÇÕES ===== */
-        .hidden-section {
-            display: none !important;
-        }
-
-        /* ===== ESTILOS DO CARROSSEL ===== */
-        .mais-vendidos-section {
-            padding: 40px 0;
-            background: #ffffff;
-        }
-
-        .carousel-wrapper {
-            position: relative;
-            margin: 20px 0;
-            padding: 0 30px;
-        }
-
-        .carousel-track-container {
-            overflow: hidden;
-            border-radius: 12px;
-        }
-
-        .carousel-track {
-            display: flex;
-            transition: transform 0.5s ease-in-out;
-            gap: 20px;
-            will-change: transform;
-        }
-
-        .carousel-card {
-            flex: 0 0 calc(16.666% - 17px);
-            min-width: calc(16.666% - 17px);
-            background: #fff;
-            border-radius: 12px;
-            padding: 12px;
-            text-align: center;
-            border: 1px solid #e0e0e0;
-            transition: transform 0.3s, box-shadow 0.3s;
-            cursor: pointer;
-        }
-
-        .carousel-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
-        }
-
-        .carousel-card img {
-            width: 100%;
-            max-height: 150px;
-            object-fit: contain;
-            margin-bottom: 10px;
-        }
-
-        .carousel-card .product-title {
-            font-size: 13px;
-            font-weight: bold;
-            margin-bottom: 5px;
-            color: #333;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-        }
-
-        .carousel-card .product-price {
-            font-size: 14px;
-            font-weight: bold;
-            color: #ff6a00;
-            margin: 8px 0;
-        }
-
-        .carousel-card .product-platform {
-            font-size: 11px;
-            color: #777;
-        }
-
-        .carousel-btn {
-            position: absolute;
-            top: 50%;
-            transform: translateY(-50%);
-            background: rgba(255, 106, 0, 0.9);
-            color: white;
-            border: none;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            cursor: pointer;
-            font-size: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.3s;
-            z-index: 10;
-        }
-
-        .carousel-btn:hover {
-            background: #e85f00;
-            transform: translateY(-50%) scale(1.1);
-        }
-
-        .carousel-btn.prev {
-            left: -10px;
-        }
-
-        .carousel-btn.next {
-            right: -10px;
-        }
-
-        @media (max-width: 1024px) {
-            .carousel-card {
-                flex: 0 0 calc(33.333% - 14px);
-                min-width: calc(33.333% - 14px);
-            }
-            .carousel-wrapper {
-                padding: 0 20px;
-            }
-        }
-
-        @media (max-width: 768px) {
-            .carousel-card {
-                flex: 0 0 calc(50% - 10px);
-                min-width: calc(50% - 10px);
-            }
-            .carousel-btn {
-                width: 32px;
-                height: 32px;
-                font-size: 16px;
-            }
-            .carousel-wrapper {
-                padding: 0 15px;
-            }
-        }
-
-        /* ===== ESTILOS DA SEÇÃO DE PRODUTOS SELECIONADOS ===== */
-        .selecionados-section {
-            padding: 40px 0;
-            background: #f9f9f9;
-        }
-
-        .selecionados-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-            gap: 20px;
-            margin-top: 20px;
-        }
-
-         /* ===== ESTILOS DA SEÇÃO PLATAFORMAS PARCEIRAS ===== */
-        .plataformas-parceiras-section {
-            padding: 20px 0;
-            background: #ffffff;
-            border-bottom: 1px solid #e0e0e0;
-        }
-
-        .plataformas-parceiras-section .section-title {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-
-        .plataformas-parceiras-section .section-subtitle {
-            text-align: center;
-            margin-bottom: 25px;
-        }
-
-        .plataforma-logos-container {
-            display: flex;
-            align-items: center;
-            gap: 30px;
-            flex-wrap: wrap;
-        }
-
-        .plataforma-logo-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .plataforma-logo-img {
-            height: 35px;
-            width: auto;
-            object-fit: contain;
-            transition: transform 0.3s;
-        }
-
-        .plataforma-logo-img:hover {
-            transform: scale(1.05);
-        }
-
-        .plataforma-logo-nome {
-            font-size: 12px;
-            color: #666;
-            font-weight: 500;
-        }
-
-         @media (max-width: 768px) {
-            .plataformas-parceiras-section {
-                padding: 15px 0;
-            }
-            .plataforma-logos-container {
-                gap: 20px;
-            }
-            .plataforma-logo-img {
-                height: 25px;
-            }
-        }
-    </style>
 </head>
 <body>
 
@@ -339,7 +37,6 @@
         <div style="display: flex; align-items: center; gap: 30px; flex-wrap: wrap;">
             <h2 class="section-title" style="margin-bottom: 0; border-bottom: none; padding-bottom: 0;">🤝 Plataformas Parceiras</h2>
             <div id="plataformas-logos-container" class="plataforma-logos-container" style="margin-top: 0;">
-                <!-- Logos serão inseridos via JavaScript -->
                 <div>Carregando...</div>
             </div>
         </div>
@@ -380,7 +77,6 @@
         <h2 class="section-title">🔥 Selecionados do Dia</h2>
         <p class="section-subtitle">Produtos selecionados especialmente para você</p>
         <div class="selecionados-grid" id="selecionados-grid">
-            <!-- Produtos serão inseridos via JavaScript -->
             <div style="text-align: center; grid-column: 1/-1; padding: 40px;">Carregando produtos selecionados...</div>
         </div>
     </div>
@@ -554,7 +250,6 @@
     window.addEventListener('load', function() {
         atualizarLogosPlataformas();
         
-        // Escutar mudanças no localStorage (quando o admin alterar as plataformas)
         window.addEventListener('storage', function(e) {
             if (e.key === 'plataformas_ativas_frontend') {
                 console.log('🔄 Plataformas alteradas, atualizando logos...');
@@ -911,7 +606,7 @@
   window.voltarParaHome = voltarParaHome;
 
   // ============================================
-  // CARREGAR 24 PRODUTOS MAIS VENDIDOS (RANDOMIZADO COM FILTRO) - CORRIGIDO COM REGISTRO DE CLIQUE
+  // CARREGAR 24 PRODUTOS MAIS VENDIDOS
   // ============================================
   async function carregarMaisVendidos() {
       try {
@@ -939,7 +634,6 @@
           const track = document.getElementById('carousel-track');
           if (!track) return;
           
-          // CORREÇÃO: Adiciona onclick que registra clique antes de abrir o link
           track.innerHTML = produtos.map(p => {
               const produtoId = p.id;
               const plataforma = p.plataforma || 'Mercado Livre';
