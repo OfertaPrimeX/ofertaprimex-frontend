@@ -250,29 +250,41 @@ document.getElementById('close-modal')?.addEventListener('click', () => {
 });
 
 // ============================================
-// CARREGAR TOTAL DE CLIQUES
+// CARREGAR TOTAL DE CLIQUES (CORRIGIDO)
 // ============================================
 async function carregarTotalCliques() {
     try {
+        console.log('📊 Buscando total de cliques da API...');
+        
         // Tentar buscar total de cliques da API
         const response = await apiRequest('/api/admin/cliques/total');
+        
         if (response.ok) {
             const data = await response.json();
+            console.log('📊 Resposta da API de cliques:', data);
+            
             const totalCliquesElement = document.getElementById('total-cliques');
-            if (totalCliquesElement && data.total !== undefined) {
-                totalCliquesElement.textContent = data.total;
+            if (totalCliquesElement) {
+                // A API pode retornar { total: X } ou { cliques: X }
+                const total = data.total || data.cliques || 0;
+                totalCliquesElement.textContent = total;
+                console.log(`✅ Total de cliques atualizado via API: ${total}`);
                 return;
             }
+        } else {
+            console.warn(`⚠️ API de cliques retornou status: ${response.status}`);
         }
     } catch (error) {
-        console.log('API de cliques não disponível, usando fallback');
+        console.log('API de cliques não disponível:', error.message);
     }
     
     // Fallback: calcular a partir dos produtos carregados
+    console.log('📊 Usando fallback: somando cliques dos produtos');
     const totalCliques = produtos.reduce((acc, p) => acc + (p.cliques || 0), 0);
     const totalCliquesElement = document.getElementById('total-cliques');
     if (totalCliquesElement) {
         totalCliquesElement.textContent = totalCliques;
+        console.log(`✅ Total de cliques (fallback): ${totalCliques}`);
     }
 }
 
@@ -560,7 +572,7 @@ async function carregarEstatisticasPesquisas() {
             const termosTbody = document.getElementById('tabela-termos-nao-encontrados');
             if (termosTbody && data.data.top_nao_encontrados) {
                 if (data.data.top_nao_encontrados.length === 0) {
-                    termosTbody.innerHTML = '<td><td colspan="3" style="text-align: center;">Nenhum termo não encontrado</td</tr>';
+                    termosTbody.innerHTML = '<tr><td colspan="3" style="text-align: center;">Nenhum termo não encontrado</td</tr>';
                 } else {
                     termosTbody.innerHTML = data.data.top_nao_encontrados.map(t => `
                         <tr>
