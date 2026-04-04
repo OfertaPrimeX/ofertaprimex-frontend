@@ -246,6 +246,28 @@
             gap: 20px;
             margin-top: 20px;
         }
+
+        /* ===== ESTILOS DOS LOGOS DAS PLATAFORMAS ===== */
+        .plataforma-logos {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin-top: 15px;
+        }
+
+        .plataforma-logo {
+            height: 30px;
+            width: auto;
+            object-fit: contain;
+            opacity: 1;
+            transition: opacity 0.3s;
+        }
+
+        .hero-subtitle {
+            margin-bottom: 20px;
+        }
     </style>
 </head>
 <body>
@@ -268,7 +290,9 @@
 <section class="hero" id="home">
     <div class="container">
         <h1 class="hero-title">Compare preços nas maiores plataformas</h1>
-        <p class="hero-subtitle">Mercado Livre • Amazon • Shopee • Magalu</p>
+        <div id="plataformas-container" class="plataforma-logos">
+            <!-- Logos serão inseridos via JavaScript -->
+        </div>
         <input id="busca" type="text" placeholder="Buscar produto">
         <button id="btnBuscar">Pesquisar</button>
     </div>
@@ -343,6 +367,69 @@
 </div>
 
 <script>
+    // ============================================
+    // CONFIGURAÇÃO DAS PLATAFORMAS COM LOGOS
+    // ============================================
+    const plataformasConfig = {
+        mercadolivre: {
+            nome: 'Mercado Livre',
+            logo: 'https://upload.wikimedia.org/wikipedia/pt/thumb/0/04/Logotipo_MercadoLivre.png/120px-Logotipo_MercadoLivre.png',
+            id: 'mercadolivre'
+        },
+        amazon: {
+            nome: 'Amazon',
+            logo: 'https://assets.aboutamazon.com/2e/d7/ac71f1f344c39f8949f48fc89e71/amazon-logo-squid-ink-smile-orange.png',
+            id: 'amazon'
+        },
+        shopee: {
+            nome: 'Shopee',
+            logo: 'https://fileproxycdn.cs.susercontent.com/api/v5/service/download/permanent/cs-saas/d794de6e4e8c449993444fb31e9a863a.png',
+            id: 'shopee'
+        },
+        magalu: {
+            nome: 'Magalu',
+            logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/archive/1/1b/20210515045113%21Magalu_-_novo_logo.png/120px-Magalu_-_novo_logo.png',
+            id: 'magalu'
+        }
+    };
+
+    // Função para obter plataformas ativas do localStorage
+    function getPlataformasAtivasFrontend() {
+        const saved = localStorage.getItem('plataformas_ativas_frontend');
+        if (saved) {
+            try {
+                return JSON.parse(saved);
+            } catch(e) {
+                console.log('Erro ao parsear plataformas ativas');
+            }
+        }
+        return ['mercadolivre', 'amazon', 'shopee', 'magalu'];
+    }
+
+    // Função para atualizar os logos das plataformas no hero
+    function atualizarLogosPlataformas() {
+        const container = document.getElementById('plataformas-container');
+        if (!container) return;
+        
+        const plataformasAtivas = getPlataformasAtivasFrontend();
+        
+        if (plataformasAtivas.length === 0) {
+            container.innerHTML = '<p class="hero-subtitle">Nenhuma plataforma ativa no momento</p>';
+            return;
+        }
+        
+        const logosHtml = plataformasAtivas.map(plataformaId => {
+            const config = plataformasConfig[plataformaId];
+            if (config) {
+                return `<img src="${config.logo}" alt="${config.nome}" class="plataforma-logo" title="${config.nome}">`;
+            }
+            return '';
+        }).filter(logo => logo !== '').join('');
+        
+        container.innerHTML = logosHtml;
+        console.log('🖼️ Logos atualizados:', plataformasAtivas);
+    }
+
     // Função global para registrar clique (usada pelo carrossel)
     window.registrarCliqueCarrossel = async function(produtoId, plataforma, link) {
         try {
@@ -413,6 +500,19 @@
         
         console.log('Plataformas ativas:', localStorage.getItem('plataformas_ativas_frontend'));
         console.log('Sessão ID:', localStorage.getItem('sessaoId'));
+    });
+
+    // Inicializar logos ao carregar a página
+    window.addEventListener('load', function() {
+        atualizarLogosPlataformas();
+        
+        // Escutar mudanças no localStorage (quando o admin alterar as plataformas)
+        window.addEventListener('storage', function(e) {
+            if (e.key === 'plataformas_ativas_frontend') {
+                console.log('🔄 Plataformas alteradas, atualizando logos...');
+                atualizarLogosPlataformas();
+            }
+        });
     });
 </script>
 
