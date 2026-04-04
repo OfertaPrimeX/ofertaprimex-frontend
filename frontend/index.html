@@ -343,11 +343,52 @@
 </div>
 
 <script>
+    // Função global para registrar clique (usada pelo carrossel)
+    window.registrarCliqueCarrossel = async function(produtoId, plataforma, link) {
+        try {
+            const sessaoId = localStorage.getItem('sessaoId');
+            if (!sessaoId) {
+                const novaSessao = 'sess_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+                localStorage.setItem('sessaoId', novaSessao);
+            }
+            
+            const sessaoIdAtual = localStorage.getItem('sessaoId');
+            
+            const plataformaMap = {
+                'Mercado Livre': 'mercadolivre',
+                'Amazon': 'amazon',
+                'Shopee': 'shopee',
+                'Magalu': 'magalu'
+            };
+            
+            const plataformaKey = plataformaMap[plataforma] || plataforma.toLowerCase();
+            
+            console.log(`📤 Carrossel - Enviando clique: Produto ID=${produtoId}, Plataforma=${plataformaKey}`);
+            
+            const response = await fetch('https://yo0g0cg4c88w88osc4s04c0c.72.61.33.248.sslip.io/api/cliques/registrar', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    produto_id: produtoId,
+                    plataforma: plataformaKey,
+                    link_original: link,
+                    sessao_id: sessaoIdAtual,
+                    pagina: window.location.pathname
+                })
+            });
+            
+            if (response.ok) {
+                console.log(`✅ Carrossel - Clique registrado: ${plataforma} - Produto: ${produtoId}`);
+            }
+        } catch (error) {
+            console.error('❌ Erro ao registrar clique:', error);
+        }
+    };
+
     // Botão de teste para debug
     document.getElementById('testeCliqueBtn')?.addEventListener('click', function() {
         console.log('=== TESTE DE CLIQUE MANUAL ===');
         
-        // Verificar produtos na página
         const cards = document.querySelectorAll('.product-card');
         console.log('Produtos encontrados (product-card):', cards.length);
         
@@ -370,27 +411,8 @@
             console.log('Nenhum produto encontrado na página');
         }
         
-        // Verificar localStorage
         console.log('Plataformas ativas:', localStorage.getItem('plataformas_ativas_frontend'));
         console.log('Sessão ID:', localStorage.getItem('sessaoId'));
-        
-        // Testar API de clique diretamente
-        console.log('Testando API de clique diretamente...');
-        fetch('https://yo0g0cg4c88w88osc4s04c0c.72.61.33.248.sslip.io/api/cliques/registrar', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                produto_id: 999,
-                plataforma: 'teste',
-                link_original: 'https://teste.com',
-                sessao_id: 'teste_botao',
-                pagina: '/index.html'
-            })
-        }).then(r => r.json()).then(data => {
-            console.log('Resposta da API de clique:', data);
-        }).catch(err => {
-            console.error('Erro na API:', err);
-        });
     });
 </script>
 
@@ -418,7 +440,6 @@
               console.log('Erro ao parsear plataformas ativas');
           }
       }
-      // Padrão: todas ativas
       return ['mercadolivre', 'amazon', 'shopee', 'magalu'];
   }
 
@@ -511,7 +532,6 @@
           return [];
       }
       
-      // Chama a API com header de plataformas ativas
       const headers = getHeaders();
       try {
           const response = await fetch(`https://yo0g0cg4c88w88osc4s04c0c.72.61.33.248.sslip.io/api/produtos/random?limit=${limit}`, {
@@ -743,7 +763,7 @@
   window.voltarParaHome = voltarParaHome;
 
   // ============================================
-  // CARREGAR 24 PRODUTOS MAIS VENDIDOS (RANDOMIZADO COM FILTRO)
+  // CARREGAR 24 PRODUTOS MAIS VENDIDOS (RANDOMIZADO COM FILTRO) - CORRIGIDO COM REGISTRO DE CLIQUE
   // ============================================
   async function carregarMaisVendidos() {
       try {
@@ -771,16 +791,30 @@
           const track = document.getElementById('carousel-track');
           if (!track) return;
           
-          track.innerHTML = produtos.map(p => `
-              <div class="carousel-card" onclick="window.open('${p.link_afiliado || p.link_original}', '_blank')">
-                  <img src="${p.imagem_principal || 'https://via.placeholder.com/150'}" 
-                       alt="${p.titulo}"
-                       onerror="this.src='https://via.placeholder.com/150'">
-                  <div class="product-title">${(p.titulo || '').substring(0, 50)}...</div>
-                  <div class="product-price">R$ ${formatarPreco(p.preco)}</div>
-                  <div class="product-platform">${p.plataforma || 'Mercado Livre'}</div>
-              </div>
-          `).join('');
+          // CORREÇÃO: Adiciona onclick que registra clique antes de abrir o link
+          track.innerHTML = produtos.map(p => {
+              const produtoId = p.id;
+              const plataforma = p.plataforma || 'Mercado Livre';
+              const link = p.link_afiliado || p.link_original;
+              const imagem = p.imagem_principal || 'https://via.placeholder.com/150';
+              const titulo = (p.titulo || '').substring(0, 50);
+              const preco = formatarPreco(p.preco);
+              
+              return `
+                  <div class="carousel-card" 
+                       data-id="${produtoId}"
+                       data-plataforma="${plataforma}"
+                       data-link="${link}"
+                       onclick="window.registrarCliqueCarrossel(${produtoId}, '${plataforma}', '${link}'); window.open('${link}', '_blank');">
+                      <img src="${imagem}" 
+                           alt="${titulo}"
+                           onerror="this.src='https://via.placeholder.com/150'">
+                      <div class="product-title">${titulo}...</div>
+                      <div class="product-price">R$ ${preco}</div>
+                      <div class="product-platform">${plataforma}</div>
+                  </div>
+              `;
+          }).join('');
           
           return produtos.length;
       } catch (error) {
