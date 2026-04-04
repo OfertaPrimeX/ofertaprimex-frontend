@@ -49,12 +49,6 @@
             padding: 20px;
             position: relative;
             overflow: hidden;
-            transition: all 0.3s;
-        }
-
-        .plataforma-card.disabled {
-            opacity: 0.6;
-            filter: grayscale(0.3);
         }
 
         .plataforma-card::before {
@@ -70,10 +64,6 @@
         .plataforma-card.amazon::before { background-color: #ff9900; }
         .plataforma-card.shopee::before { background-color: #ee4d2d; }
         .plataforma-card.magalu::before { background-color: #005c9e; }
-
-        .plataforma-card.disabled::before {
-            background-color: #999 !important;
-        }
 
         .plataforma-header {
             display: flex;
@@ -103,24 +93,6 @@
             font-size: 12px;
             color: #777;
             margin-bottom: 15px;
-        }
-
-        .plataforma-status-badge {
-            display: inline-block;
-            padding: 4px 10px;
-            border-radius: 20px;
-            font-size: 11px;
-            font-weight: bold;
-        }
-
-        .status-ativa {
-            background: #c8e6c9;
-            color: #2e7d32;
-        }
-
-        .status-inativa {
-            background: #ffcdd2;
-            color: #c62828;
         }
 
         .plataforma-acoes {
@@ -170,11 +142,6 @@
 
         .plataforma-btn.settings:hover {
             background-color: #333;
-        }
-
-        .plataforma-btn.disabled-btn {
-            opacity: 0.5;
-            pointer-events: none;
         }
 
         /* ===== ESTILOS DO CONTROLE DE PLATAFORMAS ===== */
@@ -611,7 +578,7 @@
                 </div>
             </div>
 
-            <!-- ================= SEÇÃO: CONTROLE DE PLATAFORMAS ================= -->
+            <!-- ================= NOVA SEÇÃO: CONTROLE DE PLATAFORMAS ================= -->
             <div class="admin-card">
                 <h3 class="admin-title">⚙️ Controle de Plataformas</h3>
                 <p class="admin-subtitle">Ative ou desative plataformas no site. Produtos de plataformas desativadas não aparecerão na busca e nas seções.</p>
@@ -620,12 +587,11 @@
 
             <div class="admin-card">
                 <h3 class="admin-title">📊 Gerenciar Plataformas</h3>
-                <div class="plataformas-grid" id="plataformas-grid">
+                <div class="plataformas-grid">
                     <!-- MERCADO LIVRE -->
-                    <div class="plataforma-card mercado-livre" id="card-mercadolivre">
+                    <div class="plataforma-card mercado-livre">
                         <div class="plataforma-header">
                             <span class="plataforma-nome mercado-livre">MERCADO LIVRE</span>
-                            <span class="plataforma-status-badge status-ativa" id="status-mercadolivre">✅ Ativa</span>
                         </div>
                         <div class="plataforma-contador" id="ml-contador">0</div>
                         <div class="plataforma-label">produtos no banco</div>
@@ -639,10 +605,9 @@
                     </div>
 
                     <!-- AMAZON -->
-                    <div class="plataforma-card amazon" id="card-amazon">
+                    <div class="plataforma-card amazon">
                         <div class="plataforma-header">
                             <span class="plataforma-nome amazon">AMAZON</span>
-                            <span class="plataforma-status-badge status-ativa" id="status-amazon">✅ Ativa</span>
                         </div>
                         <div class="plataforma-contador" id="amazon-contador">0</div>
                         <div class="plataforma-label">produtos no banco</div>
@@ -656,10 +621,9 @@
                     </div>
 
                     <!-- SHOPEE -->
-                    <div class="plataforma-card shopee" id="card-shopee">
+                    <div class="plataforma-card shopee">
                         <div class="plataforma-header">
                             <span class="plataforma-nome shopee">SHOPEE</span>
-                            <span class="plataforma-status-badge status-ativa" id="status-shopee">✅ Ativa</span>
                         </div>
                         <div class="plataforma-contador" id="shopee-contador">0</div>
                         <div class="plataforma-label">produtos no banco</div>
@@ -673,10 +637,9 @@
                     </div>
 
                     <!-- MAGALU -->
-                    <div class="plataforma-card magalu" id="card-magalu">
+                    <div class="plataforma-card magalu">
                         <div class="plataforma-header">
                             <span class="plataforma-nome magalu">MAGALU</span>
-                            <span class="plataforma-status-badge status-ativa" id="status-magalu">✅ Ativa</span>
                         </div>
                         <div class="plataforma-contador" id="magalu-contador">0</div>
                         <div class="plataforma-label">produtos no banco</div>
@@ -711,10 +674,10 @@
                                 <th>Preço</th>
                                 <th>Cliques</th>
                                 <th>Status</th>
-                              </tr>
+                               </tr>
                         </thead>
                         <tbody id="tabela-body">
-                            <tr><td colspan="6" style="text-align: center; padding: 30px;">Carregando...</td></tr>
+                             <td colspan="6" style="text-align: center; padding: 30px;">Carregando...</td>
                         </tbody>
                     </table>
                 </div>
@@ -737,16 +700,16 @@
                 <div style="overflow-x: auto;">
                     <table class="admin-table">
                         <thead>
-                            <tr>
+                             <tr>
                                 <th>Plataforma</th>
                                 <th>Total</th>
                                 <th>Encontradas</th>
                                 <th>Não Encontradas</th>
                                 <th>Tempo Médio</th>
-                            </tr>
+                              </tr>
                         </thead>
                         <tbody id="tabela-estatisticas-plataformas">
-                            <tr><td colspan="5" style="text-align: center;">Carregando...</td></tr>
+                             <td colspan="5" style="text-align: center;">Carregando...</td>
                         </tbody>
                     </table>
                 </div>
@@ -755,14 +718,14 @@
                 <div style="overflow-x: auto;">
                     <table class="admin-table">
                         <thead>
-                            <tr>
+                             <tr>
                                 <th>Termo</th>
                                 <th>Tentativas</th>
                                 <th>Plataformas</th>
-                            </tr>
+                              </tr>
                         </thead>
                         <tbody id="tabela-termos-nao-encontrados">
-                            <tr><td colspan="3" style="text-align: center;">Carregando...</td></tr>
+                             <td colspan="3" style="text-align: center;">Carregando...</td>
                         </tbody>
                     </table>
                 </div>
@@ -793,16 +756,16 @@
                 <div style="overflow-x: auto;">
                     <table class="admin-table">
                         <thead>
-                            <tr>
+                             <tr>
                                 <th>Termo</th>
                                 <th>Buscas</th>
                                 <th>No Banco</th>
                                 <th>Na Plataforma</th>
                                 <th>Não Encontrado</th>
-                            </tr>
+                              </tr>
                         </thead>
                         <tbody id="tabela-termos">
-                            <tr><td colspan="5" style="text-align: center;">Carregando...</td></tr>
+                             <td colspan="5" style="text-align: center;">Carregando...</td>
                         </tbody>
                     </table>
                 </div>
@@ -842,112 +805,6 @@
 <script>
     document.getElementById('admin-main').style.display = 'none';
 
-    // ============================================
-    // FUNÇÃO PARA ATUALIZAR CONTADOR DE PLATAFORMAS ATIVAS
-    // ============================================
-    function atualizarContadorPlataformasAtivas() {
-        // Usar a função global do admin.js se disponível
-        if (typeof getPlataformasAtivas === 'function') {
-            const ativas = getPlataformasAtivas();
-            const totalPlataformasElement = document.getElementById('total-plataformas');
-            if (totalPlataformasElement) {
-                totalPlataformasElement.textContent = ativas.length;
-            }
-            console.log('📊 Plataformas ativas:', ativas.length);
-            return;
-        }
-        
-        // Fallback: tentar carregar do localStorage
-        let plataformasAtivas = [];
-        const savedFrontend = localStorage.getItem('plataformas_ativas_frontend');
-        if (savedFrontend) {
-            try {
-                plataformasAtivas = JSON.parse(savedFrontend);
-            } catch(e) {}
-        }
-        
-        if (plataformasAtivas.length === 0) {
-            const savedAdmin = localStorage.getItem('plataformas_ativas');
-            if (savedAdmin) {
-                try {
-                    const config = JSON.parse(savedAdmin);
-                    plataformasAtivas = Object.keys(config).filter(key => config[key] === true);
-                } catch(e) {}
-            }
-        }
-        
-        if (plataformasAtivas.length === 0) {
-            plataformasAtivas = ['mercadolivre', 'amazon', 'shopee', 'magalu'];
-        }
-        
-        const totalPlataformasElement = document.getElementById('total-plataformas');
-        if (totalPlataformasElement) {
-            totalPlataformasElement.textContent = plataformasAtivas.length;
-        }
-        
-        console.log('📊 Plataformas ativas atualizado:', plataformasAtivas.length);
-    }
-
-    // ============================================
-    // FUNÇÃO PARA ATUALIZAR STATUS DAS PLATAFORMAS NO PAINEL
-    // ============================================
-    window.atualizarStatusPlataformasPainel = function() {
-        let plataformasAtivas = [];
-        
-        // Usar a função global do admin.js se disponível
-        if (typeof getPlataformasAtivas === 'function') {
-            plataformasAtivas = getPlataformasAtivas();
-        } else {
-            const savedFrontend = localStorage.getItem('plataformas_ativas_frontend');
-            if (savedFrontend) {
-                try {
-                    plataformasAtivas = JSON.parse(savedFrontend);
-                } catch(e) {}
-            }
-            
-            if (plataformasAtivas.length === 0) {
-                const savedAdmin = localStorage.getItem('plataformas_ativas');
-                if (savedAdmin) {
-                    try {
-                        const config = JSON.parse(savedAdmin);
-                        plataformasAtivas = Object.keys(config).filter(key => config[key] === true);
-                    } catch(e) {}
-                }
-            }
-        }
-        
-        if (plataformasAtivas.length === 0) {
-            plataformasAtivas = ['mercadolivre', 'amazon', 'shopee', 'magalu'];
-        }
-        
-        const plataformas = ['mercadolivre', 'amazon', 'shopee', 'magalu'];
-        
-        for (const plataforma of plataformas) {
-            const card = document.getElementById(`card-${plataforma}`);
-            const statusBadge = document.getElementById(`status-${plataforma}`);
-            const isAtiva = plataformasAtivas.includes(plataforma);
-            
-            if (card) {
-                if (isAtiva) {
-                    card.classList.remove('disabled');
-                    if (statusBadge) {
-                        statusBadge.className = 'plataforma-status-badge status-ativa';
-                        statusBadge.innerHTML = '✅ Ativa';
-                    }
-                } else {
-                    card.classList.add('disabled');
-                    if (statusBadge) {
-                        statusBadge.className = 'plataforma-status-badge status-inativa';
-                        statusBadge.innerHTML = '❌ Inativa';
-                    }
-                }
-            }
-        }
-        
-        atualizarContadorPlataformasAtivas();
-        console.log('🔄 Status das plataformas atualizado');
-    };
-
     function mostrarTab(tab) {
         document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
         document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
@@ -958,7 +815,6 @@
         if (tab === 'estatisticas') carregarEstatisticas();
         if (tab === 'pesquisas') carregarEstatisticasPesquisas();
         if (tab === 'logs') carregarLogsDisplay();
-        if (tab === 'produtos') window.atualizarStatusPlataformasPainel();
     }
 
     async function carregarEstatisticas() {
@@ -999,12 +855,12 @@
                              <td>${t.termo}</td>
                              <td>${t.tentativas}</td>
                              <td>${t.tentativas}</td>
-                             <td>0</td
+                             <td>0</td>
                              <td>${t.tentativas}</td>
                          </tr>
                     `).join('');
                 } else {
-                    tbody.innerHTML = '<tr><td colspan="5" style="text-align: center;">Nenhum termo buscado</td</tr>';
+                    tbody.innerHTML = '<tr><td colspan="5" style="text-align: center;">Nenhum termo buscado</td></tr>';
                 }
             }
         } catch (error) {
@@ -1031,6 +887,11 @@
         }
     }
 
+    // ============================================
+    // FUNÇÕES CORRIGIDAS: LIMPAR BANCO POR PLATAFORMA
+    // ROTA CORRETA: /api/produtos/limpar (sem /admin/)
+    // ============================================
+    
     async function limparBancoPlataforma(plataforma) {
         const confirmar = confirm(`⚠️ ATENÇÃO: Isso irá remover TODOS OS PRODUTOS da plataforma ${plataforma.toUpperCase()}. Esta ação não pode ser desfeita. Deseja continuar?`);
         
