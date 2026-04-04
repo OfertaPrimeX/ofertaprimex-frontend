@@ -247,9 +247,9 @@
             margin-top: 20px;
         }
 
-        /* ===== ESTILOS DA SEÇÃO PLATAFORMAS PARCEIRAS ===== */
+         /* ===== ESTILOS DA SEÇÃO PLATAFORMAS PARCEIRAS ===== */
         .plataformas-parceiras-section {
-            padding: 30px 0;
+            padding: 20px 0;
             background: #ffffff;
             border-bottom: 1px solid #e0e0e0;
         }
@@ -267,8 +267,7 @@
         .plataforma-logos-container {
             display: flex;
             align-items: center;
-            justify-content: center;
-            gap: 40px;
+            gap: 30px;
             flex-wrap: wrap;
         }
 
@@ -280,7 +279,7 @@
         }
 
         .plataforma-logo-img {
-            height: 40px;
+            height: 35px;
             width: auto;
             object-fit: contain;
             transition: transform 0.3s;
@@ -296,15 +295,15 @@
             font-weight: 500;
         }
 
-        @media (max-width: 768px) {
+         @media (max-width: 768px) {
+            .plataformas-parceiras-section {
+                padding: 15px 0;
+            }
             .plataforma-logos-container {
                 gap: 20px;
             }
             .plataforma-logo-img {
-                height: 30px;
-            }
-            .plataforma-logo-nome {
-                font-size: 10px;
+                height: 25px;
             }
         }
     </style>
@@ -337,11 +336,12 @@
 <!-- ================= SEÇÃO: PLATAFORMAS PARCEIRAS ================= -->
 <section class="plataformas-parceiras-section" id="plataformas-parceiras">
     <div class="container">
-        <h2 class="section-title">🤝 Plataformas Parceiras</h2>
-        <p class="section-subtitle">Trabalhamos com as melhores plataformas para você</p>
-        <div id="plataformas-logos-container" class="plataforma-logos-container">
-            <!-- Logos serão inseridos via JavaScript -->
-            <div style="text-align: center;">Carregando...</div>
+        <div style="display: flex; align-items: center; gap: 30px; flex-wrap: wrap;">
+            <h2 class="section-title" style="margin-bottom: 0; border-bottom: none; padding-bottom: 0;">🤝 Plataformas Parceiras</h2>
+            <div id="plataformas-logos-container" class="plataforma-logos-container" style="margin-top: 0;">
+                <!-- Logos serão inseridos via JavaScript -->
+                <div>Carregando...</div>
+            </div>
         </div>
     </div>
 </section>
@@ -462,19 +462,14 @@
         const plataformasAtivas = getPlataformasAtivasFrontend();
         
         if (plataformasAtivas.length === 0) {
-            container.innerHTML = '<div style="text-align: center; padding: 20px;">Nenhuma plataforma ativa no momento</div>';
+            container.innerHTML = '<div style="padding: 10px 0;">Nenhuma plataforma ativa no momento</div>';
             return;
         }
         
         const logosHtml = plataformasAtivas.map(plataformaId => {
             const config = plataformasConfig[plataformaId];
             if (config) {
-                return `
-                    <div class="plataforma-logo-item">
-                        <img src="${config.logo}" alt="${config.nome}" class="plataforma-logo-img" title="${config.nome}">
-                        <span class="plataforma-logo-nome">${config.nome}</span>
-                    </div>
-                `;
+                return `<img src="${config.logo}" alt="${config.nome}" class="plataforma-logo-img" title="${config.nome}">`;
             }
             return '';
         }).filter(logo => logo !== '').join('');
