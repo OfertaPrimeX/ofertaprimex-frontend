@@ -37,6 +37,28 @@ async function registrarClique(produtoId, plataforma) {
     }
 }
 
+// ============================================
+// FUNÇÃO PARA REDIRECIONAR PARA PÁGINA DO PRODUTO
+// ============================================
+function irParaPaginaProduto(produto) {
+    if (!produto) return;
+    
+    // Salva os dados do produto no sessionStorage para a página produto.html
+    sessionStorage.setItem('produtoSelecionado', JSON.stringify({
+        id: produto.id,
+        titulo: produto.titulo || produto.title,
+        preco: produto.preco,
+        plataforma: produto.plataforma,
+        link_original: produto.link_original,
+        link_afiliado: produto.link_afiliado,
+        imagem_principal: produto.imagem_principal || produto.thumbnail,
+        descricao: produto.descricao
+    }));
+    
+    // Redireciona para a página do produto
+    window.location.href = `produto.html?id=${produto.id}`;
+}
+
 /**
  * Renderiza produtos no container especificado
  * @param {HTMLElement} container - Elemento onde os produtos serão inseridos
@@ -63,20 +85,26 @@ export function renderProducts(container, products, isCarousel = false) {
     const card = document.createElement('div');
     card.className = 'product-card';
     
-    // Captura os dados do produto para o clique
+    // Captura os dados do produto
     const produtoId = p.id;
     const plataforma = p.plataforma || 'Mercado Livre';
-    const link = p.link_afiliado || p.link_original || '#';
     
-    // Adiciona evento de clique que registra antes de abrir o link
-    card.onclick = async () => {
-      // Registra o clique no backend (sem esperar para não travar a navegação)
+    // CORREÇÃO: Redireciona para produto.html em vez de abrir link direto
+    card.onclick = async (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      
+      // Registra o clique no backend
       if (produtoId) {
-        registrarClique(produtoId, plataforma);
+        await registrarClique(produtoId, plataforma);
       }
-      // Abre o link em nova aba
-      window.open(link, '_blank');
+      
+      // Redireciona para a página de detalhes do produto
+      irParaPaginaProduto(p);
     };
+
+    // Adiciona estilo de cursor pointer para indicar que é clicável
+    card.style.cursor = 'pointer';
 
     // ===== FORMATA PREÇO =====
     let precoFormatado = 'R$ 0,00';
@@ -163,16 +191,24 @@ export function renderProductsHTML(products) {
     
     const produtoId = p.id;
     const plataforma = p.plataforma || 'Mercado Livre';
-    const link = p.link_afiliado || p.link_original || '#';
     const imagem = p.imagem_principal || p.thumbnail || 'https://via.placeholder.com/200x200?text=Sem+Imagem';
     const titulo = (p.titulo || p.title || 'Produto sem título').substring(0, 60);
     const tituloEllipsis = (p.titulo || p.title || 'Produto sem título').length > 60 ? '...' : '';
+    const produtoData = encodeURIComponent(JSON.stringify({
+        id: p.id,
+        titulo: p.titulo || p.title,
+        preco: p.preco,
+        plataforma: p.plataforma,
+        link_original: p.link_original,
+        link_afiliado: p.link_afiliado,
+        imagem_principal: p.imagem_principal || p.thumbnail
+    }));
     
-    // Função inline para registrar clique
-    const onclickHandler = `fetch('/api/admin/cliques/incrementar', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({produto_id:${produtoId},plataforma:'${plataforma === 'Mercado Livre' ? 'mercadolivre' : plataforma.toLowerCase()}'})}).catch(e=>console.error(e)); window.open('${link}','_blank');`;
+    // CORREÇÃO: Redireciona para produto.html em vez de abrir link direto
+    const onclickHandler = `fetch('/api/admin/cliques/incrementar', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({produto_id:${produtoId},plataforma:'${plataforma === 'Mercado Livre' ? 'mercadolivre' : plataforma.toLowerCase()}'})}).catch(e=>console.error(e)); sessionStorage.setItem('produtoSelecionado', '${produtoData.replace(/'/g, "\\'")}'); window.location.href='produto.html?id=${produtoId}';`;
     
     return `
-      <div class="product-card" onclick="${onclickHandler.replace(/"/g, '&quot;')}">
+      <div class="product-card" style="cursor:pointer;" onclick="${onclickHandler.replace(/"/g, '&quot;')}">
         <img src="${imagem}" alt="${titulo}" class="product-image" onerror="this.src='https://via.placeholder.com/200x200?text=Sem+Imagem'">
         <div class="product-info">
           <h3 class="product-title">${titulo}${tituloEllipsis}</h3>
