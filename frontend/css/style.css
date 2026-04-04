@@ -571,17 +571,46 @@ body {
     }
 }
 
-/* ===== ESTILOS DA SEÇÃO DE PRODUTOS SELECIONADOS ===== */
+/* ===== ESTILOS DA SEÇÃO DE PRODUTOS SELECIONADOS (6 COLUNAS) ===== */
 .selecionados-section {
     padding: 40px 0;
     background: #f9f9f9;
 }
 
+/* 6 colunas para telas grandes */
 .selecionados-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    grid-template-columns: repeat(6, 1fr);
     gap: 20px;
     margin-top: 20px;
+}
+
+/* 5 colunas para telas médias */
+@media (max-width: 1200px) {
+    .selecionados-grid {
+        grid-template-columns: repeat(5, 1fr);
+    }
+}
+
+/* 4 colunas para tablets */
+@media (max-width: 992px) {
+    .selecionados-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+/* 3 colunas para tablets pequenos */
+@media (max-width: 768px) {
+    .selecionados-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+/* 2 colunas para celulares */
+@media (max-width: 480px) {
+    .selecionados-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
 }
 
 /* ===== ESTILOS DA SEÇÃO PLATAFORMAS PARCEIRAS ===== */

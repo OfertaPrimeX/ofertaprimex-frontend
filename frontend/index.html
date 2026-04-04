@@ -606,7 +606,7 @@
   window.voltarParaHome = voltarParaHome;
 
   // ============================================
-  // CARREGAR 24 PRODUTOS MAIS VENDIDOS
+  // CARREGAR 24 PRODUTOS MAIS VENDIDOS (CORRIGIDO: 24 PRODUTOS)
   // ============================================
   async function carregarMaisVendidos() {
       try {
@@ -630,6 +630,7 @@
               [todosProdutos[i], todosProdutos[j]] = [todosProdutos[j], todosProdutos[i]];
           }
           
+          // CORRIGIDO: 24 produtos
           const produtos = todosProdutos.slice(0, 24);
           const track = document.getElementById('carousel-track');
           if (!track) return;
