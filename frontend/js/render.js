@@ -1,64 +1,5 @@
 // /app/public/js/render.js
 
-// ============================================
-// FUNÇÃO PARA REGISTRAR CLIQUE NO BACKEND
-// ============================================
-async function registrarClique(produtoId, plataforma) {
-    try {
-        // Mapeamento de nomes de plataforma para os IDs usados no backend
-        const plataformaMap = {
-            'Mercado Livre': 'mercadolivre',
-            'Amazon': 'amazon',
-            'Shopee': 'shopee',
-            'Magalu': 'magalu'
-        };
-        
-        const plataformaKey = plataformaMap[plataforma] || 'mercadolivre';
-        
-        const response = await fetch('/api/admin/cliques/incrementar', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                produto_id: produtoId,
-                plataforma: plataformaKey
-            })
-        });
-        
-        if (response.ok) {
-            const data = await response.json();
-            console.log(`✅ Clique registrado: ${plataforma} ID:${produtoId} - Total: ${data.cliques}`);
-        } else {
-            console.warn(`⚠️ Falha ao registrar clique: ${response.status}`);
-        }
-    } catch (error) {
-        console.error('❌ Erro ao registrar clique:', error);
-    }
-}
-
-// ============================================
-// FUNÇÃO PARA REDIRECIONAR PARA PÁGINA DO PRODUTO
-// ============================================
-function irParaPaginaProduto(produto) {
-    if (!produto) return;
-    
-    // Salva os dados do produto no sessionStorage para a página produto.html
-    sessionStorage.setItem('produtoSelecionado', JSON.stringify({
-        id: produto.id,
-        titulo: produto.titulo || produto.title,
-        preco: produto.preco,
-        plataforma: produto.plataforma,
-        link_original: produto.link_original,
-        link_afiliado: produto.link_afiliado,
-        imagem_principal: produto.imagem_principal || produto.thumbnail,
-        descricao: produto.descricao
-    }));
-    
-    // Redireciona para a página do produto
-    window.location.href = `produto.html?id=${produto.id}`;
-}
-
 /**
  * Renderiza produtos no container especificado
  * @param {HTMLElement} container - Elemento onde os produtos serão inseridos
@@ -84,29 +25,12 @@ export function renderProducts(container, products, isCarousel = false) {
   products.forEach(p => {
     const card = document.createElement('div');
     card.className = 'product-card';
-    
-    // Captura os dados do produto
-    const produtoId = p.id;
-    const plataforma = p.plataforma || 'Mercado Livre';
-    
-    // CORREÇÃO: Redireciona para produto.html em vez de abrir link direto
-    card.onclick = async (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      
-      // Registra o clique no backend
-      if (produtoId) {
-        await registrarClique(produtoId, plataforma);
-      }
-      
-      // Redireciona para a página de detalhes do produto
-      irParaPaginaProduto(p);
+    card.onclick = () => {
+      const link = p.link_afiliado || p.link_original || '#';
+      window.open(link, '_blank');
     };
 
-    // Adiciona estilo de cursor pointer para indicar que é clicável
-    card.style.cursor = 'pointer';
-
-    // ===== FORMATA PREÇO =====
+    // ===== FORMATA PREÇO (CORRIGIDO) =====
     let precoFormatado = 'R$ 0,00';
     if (p.preco) {
       let precoNum = 0;
@@ -119,6 +43,8 @@ export function renderProducts(container, products, isCarousel = false) {
       }
       
       // CORREÇÃO: se o valor for maior que 1000, provavelmente está em centavos
+      // Produtos baratos (R$ 10,00) vêm como 1000 centavos
+      // Produtos caros (R$ 1000,00) vêm como 100000 centavos
       if (precoNum > 1000) {
         precoNum = precoNum / 100;
       }
@@ -137,11 +63,17 @@ export function renderProducts(container, products, isCarousel = false) {
       imagem = 'https://via.placeholder.com/200x200?text=Sem+Imagem';
     }
 
+    // ===== DEFINE LINK =====
+    const link = p.link_afiliado || p.link_original || '#';
+
+    // ===== PLATAFORMA =====
+    const plataforma = p.plataforma || 'Mercado Livre';
+
     // ===== TÍTULO (limitado a 60 caracteres) =====
     const titulo = (p.titulo || p.title || 'Produto sem título').substring(0, 60);
     const tituloEllipsis = (p.titulo || p.title || 'Produto sem título').length > 60 ? '...' : '';
 
-    // ===== CONSTRÓI O CARD =====
+    // ===== CONSTRÓI O CARD (PADRÃO) =====
     card.innerHTML = `
       <img src="${imagem}" alt="${titulo}" 
            class="product-image"
@@ -166,7 +98,7 @@ export function renderProductsHTML(products) {
   if (!products || products.length === 0) return '';
   
   return products.map(p => {
-    // Formata preço
+    // Formata preço (CORRIGIDO)
     let precoFormatado = 'R$ 0,00';
     if (p.preco) {
       let precoNum = 0;
@@ -177,6 +109,7 @@ export function renderProductsHTML(products) {
         precoNum = parseFloat(precoLimpo);
       }
       
+      // CORREÇÃO: se o valor for maior que 1000, provavelmente está em centavos
       if (precoNum > 1000) {
         precoNum = precoNum / 100;
       }
@@ -189,26 +122,13 @@ export function renderProductsHTML(products) {
       }
     }
     
-    const produtoId = p.id;
-    const plataforma = p.plataforma || 'Mercado Livre';
     const imagem = p.imagem_principal || p.thumbnail || 'https://via.placeholder.com/200x200?text=Sem+Imagem';
+    const plataforma = p.plataforma || 'Mercado Livre';
     const titulo = (p.titulo || p.title || 'Produto sem título').substring(0, 60);
     const tituloEllipsis = (p.titulo || p.title || 'Produto sem título').length > 60 ? '...' : '';
-    const produtoData = encodeURIComponent(JSON.stringify({
-        id: p.id,
-        titulo: p.titulo || p.title,
-        preco: p.preco,
-        plataforma: p.plataforma,
-        link_original: p.link_original,
-        link_afiliado: p.link_afiliado,
-        imagem_principal: p.imagem_principal || p.thumbnail
-    }));
-    
-    // CORREÇÃO: Redireciona para produto.html em vez de abrir link direto
-    const onclickHandler = `fetch('/api/admin/cliques/incrementar', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({produto_id:${produtoId},plataforma:'${plataforma === 'Mercado Livre' ? 'mercadolivre' : plataforma.toLowerCase()}'})}).catch(e=>console.error(e)); sessionStorage.setItem('produtoSelecionado', '${produtoData.replace(/'/g, "\\'")}'); window.location.href='produto.html?id=${produtoId}';`;
     
     return `
-      <div class="product-card" style="cursor:pointer;" onclick="${onclickHandler.replace(/"/g, '&quot;')}">
+      <div class="product-card" onclick="window.open('${p.link_afiliado || p.link_original || '#'}', '_blank')">
         <img src="${imagem}" alt="${titulo}" class="product-image" onerror="this.src='https://via.placeholder.com/200x200?text=Sem+Imagem'">
         <div class="product-info">
           <h3 class="product-title">${titulo}${tituloEllipsis}</h3>
