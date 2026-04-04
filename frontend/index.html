@@ -247,26 +247,65 @@
             margin-top: 20px;
         }
 
-        /* ===== ESTILOS DOS LOGOS DAS PLATAFORMAS ===== */
-        .plataforma-logos {
+        /* ===== ESTILOS DA SEÇÃO PLATAFORMAS PARCEIRAS ===== */
+        .plataformas-parceiras-section {
+            padding: 30px 0;
+            background: #ffffff;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .plataformas-parceiras-section .section-title {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .plataformas-parceiras-section .section-subtitle {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .plataforma-logos-container {
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 20px;
+            gap: 40px;
             flex-wrap: wrap;
-            margin-top: 15px;
         }
 
-        .plataforma-logo {
-            height: 30px;
+        .plataforma-logo-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .plataforma-logo-img {
+            height: 40px;
             width: auto;
             object-fit: contain;
-            opacity: 1;
-            transition: opacity 0.3s;
+            transition: transform 0.3s;
         }
 
-        .hero-subtitle {
-            margin-bottom: 20px;
+        .plataforma-logo-img:hover {
+            transform: scale(1.05);
+        }
+
+        .plataforma-logo-nome {
+            font-size: 12px;
+            color: #666;
+            font-weight: 500;
+        }
+
+        @media (max-width: 768px) {
+            .plataforma-logos-container {
+                gap: 20px;
+            }
+            .plataforma-logo-img {
+                height: 30px;
+            }
+            .plataforma-logo-nome {
+                font-size: 10px;
+            }
         }
     </style>
 </head>
@@ -290,11 +329,20 @@
 <section class="hero" id="home">
     <div class="container">
         <h1 class="hero-title">Compare preços nas maiores plataformas</h1>
-        <div id="plataformas-container" class="plataforma-logos">
-            <!-- Logos serão inseridos via JavaScript -->
-        </div>
         <input id="busca" type="text" placeholder="Buscar produto">
         <button id="btnBuscar">Pesquisar</button>
+    </div>
+</section>
+
+<!-- ================= SEÇÃO: PLATAFORMAS PARCEIRAS ================= -->
+<section class="plataformas-parceiras-section" id="plataformas-parceiras">
+    <div class="container">
+        <h2 class="section-title">🤝 Plataformas Parceiras</h2>
+        <p class="section-subtitle">Trabalhamos com as melhores plataformas para você</p>
+        <div id="plataformas-logos-container" class="plataforma-logos-container">
+            <!-- Logos serão inseridos via JavaScript -->
+            <div style="text-align: center;">Carregando...</div>
+        </div>
     </div>
 </section>
 
@@ -406,28 +454,33 @@
         return ['mercadolivre', 'amazon', 'shopee', 'magalu'];
     }
 
-    // Função para atualizar os logos das plataformas no hero
+    // Função para atualizar os logos das plataformas parceiras
     function atualizarLogosPlataformas() {
-        const container = document.getElementById('plataformas-container');
+        const container = document.getElementById('plataformas-logos-container');
         if (!container) return;
         
         const plataformasAtivas = getPlataformasAtivasFrontend();
         
         if (plataformasAtivas.length === 0) {
-            container.innerHTML = '<p class="hero-subtitle">Nenhuma plataforma ativa no momento</p>';
+            container.innerHTML = '<div style="text-align: center; padding: 20px;">Nenhuma plataforma ativa no momento</div>';
             return;
         }
         
         const logosHtml = plataformasAtivas.map(plataformaId => {
             const config = plataformasConfig[plataformaId];
             if (config) {
-                return `<img src="${config.logo}" alt="${config.nome}" class="plataforma-logo" title="${config.nome}">`;
+                return `
+                    <div class="plataforma-logo-item">
+                        <img src="${config.logo}" alt="${config.nome}" class="plataforma-logo-img" title="${config.nome}">
+                        <span class="plataforma-logo-nome">${config.nome}</span>
+                    </div>
+                `;
             }
             return '';
         }).filter(logo => logo !== '').join('');
         
         container.innerHTML = logosHtml;
-        console.log('🖼️ Logos atualizados:', plataformasAtivas);
+        console.log('🖼️ Logos das plataformas parceiras atualizados:', plataformasAtivas);
     }
 
     // Função global para registrar clique (usada pelo carrossel)
