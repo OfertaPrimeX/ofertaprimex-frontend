@@ -4,20 +4,21 @@
 import { apiRequest } from './base.js';
 
 /**
- * Busca Top 20 produtos da Amazon
+ * Busca produtos mais vendidos (em destaque) da Amazon
+ * @param {number} limite - Limite de produtos (padrão 50)
  * @returns {Promise<Array>} Lista de produtos
  */
-export async function getTop20Amazon() {
+export async function getMaisVendidosAmazon(limite = 50) {
     try {
-        const data = await apiRequest('/api/produtos/top20/amazon');
+        const data = await apiRequest(`/api/produtos/mais-vendidos/amazon?limite=${limite}`);
         if (data.success && data.products) {
-            console.log(`✅ Top 20 Amazon: ${data.products.length} produtos`);
+            console.log(`✅ Mais Vendidos Amazon: ${data.products.length} produtos`);
             return data.products;
         }
         console.log('📭 Nenhum produto da Amazon disponível');
         return [];
     } catch (error) {
-        console.error('❌ Erro no Top 20 Amazon:', error);
+        console.error('❌ Erro nos Mais Vendidos Amazon:', error);
         return [];
     }
 }
@@ -29,7 +30,6 @@ export async function getTop20Amazon() {
  */
 export async function searchAmazon(termo) {
     try {
-        // Amazon pode ter busca específica futuramente
         console.log('🔍 Busca Amazon ainda não implementada');
         return [];
     } catch (error) {
@@ -53,4 +53,16 @@ export async function getContadorAmazon() {
         console.error('❌ Erro no contador Amazon:', error);
         return 0;
     }
+}
+
+// ============================================
+// FUNÇÕES DEPRECATED (mantidas para compatibilidade)
+// ============================================
+
+/**
+ * @deprecated Use getMaisVendidosAmazon()
+ */
+export async function getTop20Amazon() {
+    console.warn('⚠️ getTop20Amazon está obsoleto. Use getMaisVendidosAmazon()');
+    return getMaisVendidosAmazon(50);
 }

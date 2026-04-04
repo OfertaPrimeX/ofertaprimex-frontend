@@ -6,13 +6,15 @@ export { API_URL, apiRequest, getTop20ByPlatform, getContador } from './base.js'
 
 // Mercado Livre
 export { 
-    getTop20MercadoLivre, 
+    getMaisVendidosMercadoLivre,
+    getTop20MercadoLivre,
     searchMercadoLivre, 
     getContadorMercadoLivre 
 } from './mercadolivre.js';
 
 // Amazon
 export { 
+    getMaisVendidosAmazon,
     getTop20Amazon, 
     searchAmazon, 
     getContadorAmazon 
@@ -20,6 +22,7 @@ export {
 
 // Shopee
 export { 
+    getMaisVendidosShopee,
     getTop20Shopee, 
     searchShopee, 
     getContadorShopee 
@@ -27,6 +30,7 @@ export {
 
 // Magalu
 export { 
+    getMaisVendidosMagalu,
     getTop20Magalu, 
     searchMagalu, 
     getContadorMagalu 

@@ -4,20 +4,21 @@
 import { apiRequest } from './base.js';
 
 /**
- * Busca Top 20 produtos da Shopee
+ * Busca produtos mais vendidos (em destaque) da Shopee
+ * @param {number} limite - Limite de produtos (padrão 50)
  * @returns {Promise<Array>} Lista de produtos
  */
-export async function getTop20Shopee() {
+export async function getMaisVendidosShopee(limite = 50) {
     try {
-        const data = await apiRequest('/api/produtos/top20/shopee');
+        const data = await apiRequest(`/api/produtos/mais-vendidos/shopee?limite=${limite}`);
         if (data.success && data.products) {
-            console.log(`✅ Top 20 Shopee: ${data.products.length} produtos`);
+            console.log(`✅ Mais Vendidos Shopee: ${data.products.length} produtos`);
             return data.products;
         }
         console.log('📭 Nenhum produto da Shopee disponível');
         return [];
     } catch (error) {
-        console.error('❌ Erro no Top 20 Shopee:', error);
+        console.error('❌ Erro nos Mais Vendidos Shopee:', error);
         return [];
     }
 }
@@ -29,7 +30,6 @@ export async function getTop20Shopee() {
  */
 export async function searchShopee(termo) {
     try {
-        // Shopee será implementada após o seguro-desemprego
         console.log('🔍 Busca Shopee será implementada em breve');
         return [];
     } catch (error) {
@@ -53,4 +53,16 @@ export async function getContadorShopee() {
         console.error('❌ Erro no contador Shopee:', error);
         return 0;
     }
+}
+
+// ============================================
+// FUNÇÕES DEPRECATED (mantidas para compatibilidade)
+// ============================================
+
+/**
+ * @deprecated Use getMaisVendidosShopee()
+ */
+export async function getTop20Shopee() {
+    console.warn('⚠️ getTop20Shopee está obsoleto. Use getMaisVendidosShopee()');
+    return getMaisVendidosShopee(50);
 }

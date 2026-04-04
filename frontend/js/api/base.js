@@ -5,7 +5,7 @@ export const API_URL = 'https://yo0g0cg4c88w88osc4s04c0c.72.61.33.248.sslip.io';
 
 /**
  * Faz requisição para o backend com tratamento de erro padrão
- * @param {string} endpoint - Endpoint da API (ex: '/api/produtos/top20/mercadolivre')
+ * @param {string} endpoint - Endpoint da API (ex: '/api/produtos/mais-vendidos/mercadolivre')
  * @param {Object} options - Opções do fetch (method, headers, body)
  * @returns {Promise<Object>} Dados da resposta
  */
@@ -33,16 +33,17 @@ export async function apiRequest(endpoint, options = {}) {
 }
 
 /**
- * Busca Top 20 de uma plataforma específica
+ * Busca produtos em destaque (mais vendidos) de uma plataforma específica
  * @param {string} plataforma - mercadolivre, amazon, shopee, magalu
+ * @param {number} limite - Limite de produtos (padrão 50)
  * @returns {Promise<Array>} Lista de produtos
  */
-export async function getTop20ByPlatform(plataforma) {
+export async function getMaisVendidosByPlatform(plataforma, limite = 50) {
     const rotas = {
-        mercadolivre: '/api/produtos/top20/mercadolivre',
-        amazon: '/api/produtos/top20/amazon',
-        shopee: '/api/produtos/top20/shopee',
-        magalu: '/api/produtos/top20/magalu'
+        mercadolivre: `/api/produtos/mais-vendidos/mercadolivre?limite=${limite}`,
+        amazon: `/api/produtos/mais-vendidos/amazon?limite=${limite}`,
+        shopee: `/api/produtos/mais-vendidos/shopee?limite=${limite}`,
+        magalu: `/api/produtos/mais-vendidos/magalu?limite=${limite}`
     };
     
     const rota = rotas[plataforma];
@@ -58,9 +59,17 @@ export async function getTop20ByPlatform(plataforma) {
         }
         return [];
     } catch (error) {
-        console.error(`❌ Erro ao buscar Top 20 ${plataforma}:`, error);
+        console.error(`❌ Erro ao buscar mais vendidos ${plataforma}:`, error);
         return [];
     }
+}
+
+/**
+ * @deprecated Use getMaisVendidosByPlatform()
+ */
+export async function getTop20ByPlatform(plataforma) {
+    console.warn('⚠️ getTop20ByPlatform está obsoleto. Use getMaisVendidosByPlatform()');
+    return getMaisVendidosByPlatform(plataforma, 50);
 }
 
 /**

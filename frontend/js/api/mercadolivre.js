@@ -4,19 +4,20 @@
 import { apiRequest } from './base.js';
 
 /**
- * Busca Top 20 produtos do Mercado Livre
+ * Busca produtos mais vendidos (em destaque) do Mercado Livre
+ * @param {number} limite - Limite de produtos (padrão 50)
  * @returns {Promise<Array>} Lista de produtos
  */
-export async function getTop20MercadoLivre() {
+export async function getMaisVendidosMercadoLivre(limite = 50) {
     try {
-        const data = await apiRequest('/api/produtos/top20/mercadolivre');
+        const data = await apiRequest(`/api/produtos/mais-vendidos/mercadolivre?limite=${limite}`);
         if (data.success) {
-            console.log(`✅ Top 20 Mercado Livre: ${data.products?.length || 0} produtos`);
+            console.log(`✅ Mais Vendidos Mercado Livre: ${data.products?.length || 0} produtos`);
             return data.products || [];
         }
         return [];
     } catch (error) {
-        console.error('❌ Erro no Top 20 Mercado Livre:', error);
+        console.error('❌ Erro nos Mais Vendidos Mercado Livre:', error);
         return [];
     }
 }
@@ -55,4 +56,16 @@ export async function getContadorMercadoLivre() {
         console.error('❌ Erro no contador Mercado Livre:', error);
         return 0;
     }
+}
+
+// ============================================
+// FUNÇÕES DEPRECATED (mantidas para compatibilidade)
+// ============================================
+
+/**
+ * @deprecated Use getMaisVendidosMercadoLivre()
+ */
+export async function getTop20MercadoLivre() {
+    console.warn('⚠️ getTop20MercadoLivre está obsoleto. Use getMaisVendidosMercadoLivre()');
+    return getMaisVendidosMercadoLivre(50);
 }

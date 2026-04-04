@@ -4,20 +4,21 @@
 import { apiRequest } from './base.js';
 
 /**
- * Busca Top 20 produtos da Magalu
+ * Busca produtos mais vendidos (em destaque) da Magalu
+ * @param {number} limite - Limite de produtos (padrão 50)
  * @returns {Promise<Array>} Lista de produtos
  */
-export async function getTop20Magalu() {
+export async function getMaisVendidosMagalu(limite = 50) {
     try {
-        const data = await apiRequest('/api/produtos/top20/magalu');
+        const data = await apiRequest(`/api/produtos/mais-vendidos/magalu?limite=${limite}`);
         if (data.success && data.products) {
-            console.log(`✅ Top 20 Magalu: ${data.products.length} produtos`);
+            console.log(`✅ Mais Vendidos Magalu: ${data.products.length} produtos`);
             return data.products;
         }
         console.log('📭 Nenhum produto da Magalu disponível');
         return [];
     } catch (error) {
-        console.error('❌ Erro no Top 20 Magalu:', error);
+        console.error('❌ Erro nos Mais Vendidos Magalu:', error);
         return [];
     }
 }
@@ -29,7 +30,6 @@ export async function getTop20Magalu() {
  */
 export async function searchMagalu(termo) {
     try {
-        // Magalu pode ter busca específica futuramente
         console.log('🔍 Busca Magalu ainda não implementada');
         return [];
     } catch (error) {
@@ -53,4 +53,16 @@ export async function getContadorMagalu() {
         console.error('❌ Erro no contador Magalu:', error);
         return 0;
     }
+}
+
+// ============================================
+// FUNÇÕES DEPRECATED (mantidas para compatibilidade)
+// ============================================
+
+/**
+ * @deprecated Use getMaisVendidosMagalu()
+ */
+export async function getTop20Magalu() {
+    console.warn('⚠️ getTop20Magalu está obsoleto. Use getMaisVendidosMagalu()');
+    return getMaisVendidosMagalu(50);
 }
