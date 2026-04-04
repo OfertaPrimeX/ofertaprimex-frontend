@@ -1,5 +1,101 @@
 // /app/public/js/render.js
 
+// ============================================
+// FUNÇÃO PARA OBTER PLATAFORMAS ATIVAS
+// ============================================
+export function getPlataformasAtivas() {
+    const saved = localStorage.getItem('plataformas_ativas_frontend');
+    if (saved) {
+        try {
+            return JSON.parse(saved);
+        } catch(e) {
+            console.log('Erro ao parsear plataformas ativas');
+        }
+    }
+    // Padrão: todas ativas
+    return ['mercadolivre', 'amazon', 'shopee', 'magalu'];
+}
+
+// ============================================
+// FUNÇÃO PARA FILTRAR PRODUTOS POR PLATAFORMA ATIVA
+// ============================================
+export function filtrarProdutosPorPlataforma(produtos) {
+    const plataformasAtivas = getPlataformasAtivas();
+    
+    // Mapeamento de nomes de plataforma para IDs
+    const mapaPlataforma = {
+        'Mercado Livre': 'mercadolivre',
+        'Amazon': 'amazon',
+        'Shopee': 'shopee',
+        'Magalu': 'magalu',
+        'mercadolivre': 'mercadolivre',
+        'amazon': 'amazon',
+        'shopee': 'shopee',
+        'magalu': 'magalu'
+    };
+    
+    return produtos.filter(produto => {
+        const plataforma = produto.plataforma || '';
+        const plataformaId = mapaPlataforma[plataforma] || mapaPlataforma[plataforma.toLowerCase()];
+        
+        if (!plataformaId) {
+            // Se não conseguir identificar, mostra (fallback)
+            return true;
+        }
+        
+        const isAtiva = plataformasAtivas.includes(plataformaId);
+        if (!isAtiva) {
+            console.log(`🔴 Produto oculto: ${produto.titulo} (${plataforma} desativada)`);
+        }
+        return isAtiva;
+    });
+}
+
+// ============================================
+// FUNÇÃO PARA REGISTRAR CLIQUE NO BACKEND
+// ============================================
+async function registrarClique(produtoId, plataforma, linkOriginal, pagina) {
+    try {
+        const sessaoId = localStorage.getItem('sessaoId');
+        if (!sessaoId) {
+            const novaSessao = 'sess_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+            localStorage.setItem('sessaoId', novaSessao);
+        }
+        
+        const sessaoIdAtual = localStorage.getItem('sessaoId');
+        
+        // Mapeamento de nomes de plataforma
+        const plataformaMap = {
+            'Mercado Livre': 'mercadolivre',
+            'Amazon': 'amazon',
+            'Shopee': 'shopee',
+            'Magalu': 'magalu'
+        };
+        
+        const plataformaKey = plataformaMap[plataforma] || plataforma.toLowerCase();
+        
+        const response = await fetch('https://yo0g0cg4c88w88osc4s04c0c.72.61.33.248.sslip.io/api/cliques/registrar', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                produto_id: produtoId,
+                plataforma: plataformaKey,
+                link_original: linkOriginal,
+                sessao_id: sessaoIdAtual,
+                pagina: pagina || window.location.pathname
+            })
+        });
+        
+        if (response.ok) {
+            console.log(`✅ Clique registrado: ${plataforma} - Produto: ${produtoId}`);
+        } else {
+            console.warn(`⚠️ Falha ao registrar clique: ${response.status}`);
+        }
+    } catch (error) {
+        console.error('❌ Erro ao registrar clique:', error);
+    }
+}
+
 /**
  * Renderiza produtos no container especificado
  * @param {HTMLElement} container - Elemento onde os produtos serão inseridos
@@ -9,12 +105,15 @@
 export function renderProducts(container, products, isCarousel = false) {
   if (!container) return;
   
+  // FILTRA PRODUTOS POR PLATAFORMA ATIVA
+  const produtosFiltrados = filtrarProdutosPorPlataforma(products);
+  
   // Se for carrossel, limpa o container antes de adicionar
   if (isCarousel) {
     container.innerHTML = '';
   }
 
-  if (!products || products.length === 0) {
+  if (!produtosFiltrados || produtosFiltrados.length === 0) {
     if (isCarousel) {
       container.innerHTML = '<p style="text-align: center; grid-column: 1/-1;">Nenhum produto encontrado</p>';
     }
@@ -22,12 +121,34 @@ export function renderProducts(container, products, isCarousel = false) {
   }
 
   // Para cada produto, cria o card
-  products.forEach(p => {
+  produtosFiltrados.forEach(p => {
     const card = document.createElement('div');
     card.className = 'product-card';
-    card.onclick = () => {
-      const link = p.link_afiliado || p.link_original || '#';
-      window.open(link, '_blank');
+    card.style.cursor = 'pointer';
+    
+    // Captura os dados do produto
+    const produtoId = p.id;
+    const plataforma = p.plataforma || 'Mercado Livre';
+    const link = p.link_afiliado || p.link_original || '#';
+    
+    // CORREÇÃO: Adiciona registro de clique antes de abrir o link
+    card.onclick = async (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      
+      console.log(`🖱️ Clique no produto: ${p.titulo || p.title} | ID: ${produtoId} | Plataforma: ${plataforma}`);
+      
+      // Registra o clique no backend
+      if (produtoId) {
+        await registrarClique(produtoId, plataforma, link, window.location.pathname);
+      }
+      
+      // Abre o link em nova aba
+      if (link && link !== '#') {
+        window.open(link, '_blank');
+      } else {
+        console.warn('Link não disponível para este produto');
+      }
     };
 
     // ===== FORMATA PREÇO (CORRIGIDO) =====
@@ -63,12 +184,6 @@ export function renderProducts(container, products, isCarousel = false) {
       imagem = 'https://via.placeholder.com/200x200?text=Sem+Imagem';
     }
 
-    // ===== DEFINE LINK =====
-    const link = p.link_afiliado || p.link_original || '#';
-
-    // ===== PLATAFORMA =====
-    const plataforma = p.plataforma || 'Mercado Livre';
-
     // ===== TÍTULO (limitado a 60 caracteres) =====
     const titulo = (p.titulo || p.title || 'Produto sem título').substring(0, 60);
     const tituloEllipsis = (p.titulo || p.title || 'Produto sem título').length > 60 ? '...' : '';
@@ -97,7 +212,10 @@ export function renderProducts(container, products, isCarousel = false) {
 export function renderProductsHTML(products) {
   if (!products || products.length === 0) return '';
   
-  return products.map(p => {
+  // FILTRA PRODUTOS POR PLATAFORMA ATIVA
+  const produtosFiltrados = filtrarProdutosPorPlataforma(products);
+  
+  return produtosFiltrados.map(p => {
     // Formata preço (CORRIGIDO)
     let precoFormatado = 'R$ 0,00';
     if (p.preco) {
@@ -122,13 +240,28 @@ export function renderProductsHTML(products) {
       }
     }
     
-    const imagem = p.imagem_principal || p.thumbnail || 'https://via.placeholder.com/200x200?text=Sem+Imagem';
+    const produtoId = p.id;
     const plataforma = p.plataforma || 'Mercado Livre';
+    const link = p.link_afiliado || p.link_original || '#';
+    const imagem = p.imagem_principal || p.thumbnail || 'https://via.placeholder.com/200x200?text=Sem+Imagem';
     const titulo = (p.titulo || p.title || 'Produto sem título').substring(0, 60);
     const tituloEllipsis = (p.titulo || p.title || 'Produto sem título').length > 60 ? '...' : '';
     
+    // Função inline para registrar clique e abrir link
+    const onclickHandler = `(async () => { 
+      try { 
+        const sessaoId = localStorage.getItem('sessaoId') || 'anon_' + Date.now();
+        await fetch('https://yo0g0cg4c88w88osc4s04c0c.72.61.33.248.sslip.io/api/cliques/registrar', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ produto_id: ${produtoId || 'null'}, plataforma: '${plataforma === 'Mercado Livre' ? 'mercadolivre' : plataforma.toLowerCase()}', link_original: '${link}', sessao_id: sessaoId, pagina: window.location.pathname })
+        });
+      } catch(e) { console.error(e); }
+      window.open('${link}', '_blank');
+    })()`;
+    
     return `
-      <div class="product-card" onclick="window.open('${p.link_afiliado || p.link_original || '#'}', '_blank')">
+      <div class="product-card" style="cursor:pointer;" onclick="${onclickHandler.replace(/"/g, '&quot;')}">
         <img src="${imagem}" alt="${titulo}" class="product-image" onerror="this.src='https://via.placeholder.com/200x200?text=Sem+Imagem'">
         <div class="product-info">
           <h3 class="product-title">${titulo}${tituloEllipsis}</h3>
