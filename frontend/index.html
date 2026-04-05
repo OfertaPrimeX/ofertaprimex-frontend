@@ -71,7 +71,7 @@
     </div>
 </section>
 
-<!-- ================= SEÇÃO: 30 PRODUTOS SELECIONADOS (ATUALIZA A CADA 24H) ================= -->
+<!-- ================= SEÇÃO: 36 PRODUTOS SELECIONADOS (ATUALIZA A CADA 24H) ================= -->
 <section class="selecionados-section" id="selecionados">
     <div class="container">
         <h2 class="section-title">🔥 Selecionados do Dia</h2>
@@ -263,10 +263,10 @@
 <script type="module">
   import { 
       searchAllPlatforms,
-      getTop20MercadoLivre,
-      getTop20Amazon,
-      getTop20Shopee,
-      getTop20Magalu,
+      getMaisVendidosMercadoLivre,
+      getMaisVendidosAmazon,
+      getMaisVendidosShopee,
+      getMaisVendidosMagalu,
       getRandomProducts
   } from './js/api.js';
   import { renderProducts } from './js/render.js';
@@ -318,51 +318,51 @@
   }
 
   // ============================================
-  // FUNÇÃO SOBRESCRITA PARA BUSCAR TOP 20 MERCADO LIVRE (COM FILTRO)
+  // FUNÇÃO FILTRADA PARA BUSCAR MAIS VENDIDOS MERCADO LIVRE
   // ============================================
-  async function getTop20MercadoLivreFiltrado() {
+  async function getMaisVendidosMercadoLivreFiltrado(limite = 80) {
       const plataformasAtivas = getPlataformasAtivas();
       if (!plataformasAtivas.includes('mercadolivre')) {
           console.log('📭 Mercado Livre desativado - retornando vazio');
           return [];
       }
-      return await getTop20MercadoLivre();
+      return await getMaisVendidosMercadoLivre(limite);
   }
 
   // ============================================
-  // FUNÇÃO SOBRESCRITA PARA BUSCAR TOP 20 AMAZON (COM FILTRO)
+  // FUNÇÃO FILTRADA PARA BUSCAR MAIS VENDIDOS AMAZON
   // ============================================
-  async function getTop20AmazonFiltrado() {
+  async function getMaisVendidosAmazonFiltrado(limite = 80) {
       const plataformasAtivas = getPlataformasAtivas();
       if (!plataformasAtivas.includes('amazon')) {
           console.log('📭 Amazon desativada - retornando vazio');
           return [];
       }
-      return await getTop20Amazon();
+      return await getMaisVendidosAmazon(limite);
   }
 
   // ============================================
-  // FUNÇÃO SOBRESCRITA PARA BUSCAR TOP 20 SHOPEE (COM FILTRO)
+  // FUNÇÃO FILTRADA PARA BUSCAR MAIS VENDIDOS SHOPEE
   // ============================================
-  async function getTop20ShopeeFiltrado() {
+  async function getMaisVendidosShopeeFiltrado(limite = 80) {
       const plataformasAtivas = getPlataformasAtivas();
       if (!plataformasAtivas.includes('shopee')) {
           console.log('📭 Shopee desativada - retornando vazio');
           return [];
       }
-      return await getTop20Shopee();
+      return await getMaisVendidosShopee(limite);
   }
 
   // ============================================
-  // FUNÇÃO SOBRESCRITA PARA BUSCAR TOP 20 MAGALU (COM FILTRO)
+  // FUNÇÃO FILTRADA PARA BUSCAR MAIS VENDIDOS MAGALU
   // ============================================
-  async function getTop20MagaluFiltrado() {
+  async function getMaisVendidosMagaluFiltrado(limite = 80) {
       const plataformasAtivas = getPlataformasAtivas();
       if (!plataformasAtivas.includes('magalu')) {
           console.log('📭 Magalu desativada - retornando vazio');
           return [];
       }
-      return await getTop20Magalu();
+      return await getMaisVendidosMagalu(limite);
   }
 
   // ============================================
@@ -437,7 +437,7 @@
   }
 
   // ============================================
-  // FUNÇÃO PARA CARREGAR PRODUTOS SELECIONADOS (30 PRODUTOS - ATUALIZA A CADA 24H)
+  // FUNÇÃO PARA CARREGAR PRODUTOS SELECIONADOS (36 PRODUTOS - ATUALIZA A CADA 24H)
   // ============================================
   async function carregarSelecionados() {
       const container = document.getElementById('selecionados-grid');
@@ -463,10 +463,10 @@
               console.log('🔄 Buscando novos produtos selecionados para o dia...');
               
               const [ml, amazon, shopee, magalu] = await Promise.all([
-                  getTop20MercadoLivreFiltrado(),
-                  getTop20AmazonFiltrado(),
-                  getTop20ShopeeFiltrado(),
-                  getTop20MagaluFiltrado()
+                  getMaisVendidosMercadoLivreFiltrado(80),
+                  getMaisVendidosAmazonFiltrado(80),
+                  getMaisVendidosShopeeFiltrado(80),
+                  getMaisVendidosMagaluFiltrado(80)
               ]);
               
               let todosProdutos = [...ml, ...amazon, ...shopee, ...magalu];
@@ -483,7 +483,8 @@
                   [todosProdutos[i], todosProdutos[j]] = [todosProdutos[j], todosProdutos[i]];
               }
               
-              produtos = todosProdutos.slice(0, 30);
+              // CORRIGIDO: 36 produtos
+              produtos = todosProdutos.slice(0, 36);
               
               localStorage.setItem(cacheKey, JSON.stringify(produtos));
               localStorage.setItem(cacheDateKey, hoje);
@@ -606,15 +607,15 @@
   window.voltarParaHome = voltarParaHome;
 
   // ============================================
-  // CARREGAR 24 PRODUTOS MAIS VENDIDOS (CORRIGIDO: 24 PRODUTOS)
+  // CARREGAR 24 PRODUTOS MAIS VENDIDOS
   // ============================================
   async function carregarMaisVendidos() {
       try {
           const [ml, amazon, shopee, magalu] = await Promise.all([
-              getTop20MercadoLivreFiltrado(),
-              getTop20AmazonFiltrado(),
-              getTop20ShopeeFiltrado(),
-              getTop20MagaluFiltrado()
+              getMaisVendidosMercadoLivreFiltrado(50),
+              getMaisVendidosAmazonFiltrado(50),
+              getMaisVendidosShopeeFiltrado(50),
+              getMaisVendidosMagaluFiltrado(50)
           ]);
           
           let todosProdutos = [...ml, ...amazon, ...shopee, ...magalu];
@@ -630,7 +631,6 @@
               [todosProdutos[i], todosProdutos[j]] = [todosProdutos[j], todosProdutos[i]];
           }
           
-          // CORRIGIDO: 24 produtos
           const produtos = todosProdutos.slice(0, 24);
           const track = document.getElementById('carousel-track');
           if (!track) return;
