@@ -253,10 +253,10 @@
     window.addEventListener('load', function() {
         atualizarLogosPlataformas();
         
+        // Escutar mudanças no localStorage (quando admin.html salvar)
         window.addEventListener('storage', function(e) {
             if (e.key === 'plataformas_ativas_frontend') {
-                console.log('🔄 Plataformas alteradas, atualizando logos...');
-                atualizarLogosPlataformas();
+                console.log('🔄 Configurações alteradas no admin, recarregando página...');
                 location.reload();
             }
         });
