@@ -15,43 +15,8 @@ const PLATAFORMAS = [
     { id: 'magalu', nome: 'Magalu', icone: '🪄', cor: '#005c9e' }
 ];
 
-// Carregar configurações salvas (primeiro do backend, depois localStorage)
-async function carregarConfiguracoesPlataformas() {
-    try {
-        // Tentar carregar do backend primeiro
-        const user = localStorage.getItem('adminUser');
-        const pass = localStorage.getItem('adminPass');
-        
-        if (user && pass) {
-            const response = await fetch(`${API_URL}/api/admin/configuracoes/plataformas`, {
-                headers: { 'Authorization': 'Basic ' + btoa(user + ':' + pass) }
-            });
-            
-            if (response.ok) {
-                const data = await response.json();
-                if (data.success && data.plataformas) {
-                    // Aplicar configurações do backend
-                    PLATAFORMAS.forEach(p => {
-                        p.ativa = data.plataformas.includes(p.id);
-                    });
-                    // Salvar no localStorage também
-                    const config = {};
-                    PLATAFORMAS.forEach(p => {
-                        config[p.id] = p.ativa;
-                    });
-                    localStorage.setItem('plataformas_ativas', JSON.stringify(config));
-                    const ativas = getPlataformasAtivas();
-                    localStorage.setItem('plataformas_ativas_frontend', JSON.stringify(ativas));
-                    console.log('✅ Configurações carregadas do backend:', data.plataformas);
-                    return PLATAFORMAS;
-                }
-            }
-        }
-    } catch (error) {
-        console.log('⚠️ Não foi possível carregar configurações do backend, usando localStorage');
-    }
-    
-    // Fallback: carregar do localStorage
+// Carregar configurações salvas (apenas do localStorage para exibição inicial)
+function carregarConfiguracoesPlataformasLocal() {
     const saved = localStorage.getItem('plataformas_ativas');
     if (saved) {
         try {
@@ -68,7 +33,7 @@ async function carregarConfiguracoesPlataformas() {
     return PLATAFORMAS;
 }
 
-// Salvar configurações (no backend e localStorage)
+// Salvar configurações (apenas no localStorage e sincronizar frontend)
 async function salvarConfiguracoesPlataformas() {
     const config = {};
     PLATAFORMAS.forEach(p => {
@@ -82,7 +47,7 @@ async function salvarConfiguracoesPlataformas() {
     const ativas = getPlataformasAtivas();
     localStorage.setItem('plataformas_ativas_frontend', JSON.stringify(ativas));
     
-    // Salvar no backend
+    // Salvar no backend (opcional, para sincronização entre dispositivos)
     try {
         const user = localStorage.getItem('adminUser');
         const pass = localStorage.getItem('adminPass');
@@ -115,7 +80,46 @@ async function salvarConfiguracoesPlataformas() {
     // Atualizar contador de plataformas ativas
     atualizarContadorPlataformasAtivas();
     
-    console.log('✅ Configurações de plataformas salvas localmente:', config);
+    console.log('✅ Configurações de plataformas salvas:', config);
+}
+
+// Carregar configurações do backend (usado apenas na inicialização após login)
+async function carregarConfiguracoesDoBackend() {
+    try {
+        const user = localStorage.getItem('adminUser');
+        const pass = localStorage.getItem('adminPass');
+        
+        if (!user || !pass) {
+            return false;
+        }
+        
+        const response = await fetch(`${API_URL}/api/admin/configuracoes/plataformas`, {
+            headers: { 'Authorization': 'Basic ' + btoa(user + ':' + pass) }
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            if (data.success && data.plataformas && data.plataformas.length > 0) {
+                // Aplicar configurações do backend
+                PLATAFORMAS.forEach(p => {
+                    p.ativa = data.plataformas.includes(p.id);
+                });
+                // Salvar no localStorage também
+                const config = {};
+                PLATAFORMAS.forEach(p => {
+                    config[p.id] = p.ativa;
+                });
+                localStorage.setItem('plataformas_ativas', JSON.stringify(config));
+                const ativas = getPlataformasAtivas();
+                localStorage.setItem('plataformas_ativas_frontend', JSON.stringify(ativas));
+                console.log('✅ Configurações carregadas do backend:', data.plataformas);
+                return true;
+            }
+        }
+    } catch (error) {
+        console.log('⚠️ Não foi possível carregar configurações do backend');
+    }
+    return false;
 }
 
 // ============================================
@@ -287,15 +291,17 @@ document.getElementById('btn-login')?.addEventListener('click', async () => {
             loginError.textContent = '';
             mostrarAdmin();
             
-            // Carregar configurações do backend antes de tudo
-            await carregarConfiguracoesPlataformas();
+            // Carregar configurações do backend apenas na primeira vez
+            await carregarConfiguracoesDoBackend();
+            
+            // Atualizar o render com as configurações carregadas
+            renderizarControlesPlataformas();
             
             carregarDadosReais();
             carregarLogs();
             carregarContadores();
             carregarTotalCliques();
             atualizarContadorPlataformasAtivas();
-            renderizarControlesPlataformas();
         } else {
             loginError.textContent = 'Usuário ou senha inválidos';
         }
@@ -463,7 +469,7 @@ function atualizarTabela() {
     if (!tbody) return;
     
     if (produtos.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="6" style="text-align: center;">Nenhum produto encontrado</td</tr>';
+        tbody.innerHTML = '<td><td colspan="6" style="text-align: center;">Nenhum produto encontrado</td</tr>';
         return;
     }
     
@@ -677,6 +683,9 @@ function exportarTodas(formato) {
 if (window.location.pathname.includes('admin.html')) {
     document.getElementById('admin-main').style.display = 'none';
     
+    // Carregar configurações do localStorage primeiro
+    carregarConfiguracoesPlataformasLocal();
+    
     const user = localStorage.getItem('adminUser');
     const pass = localStorage.getItem('adminPass');
     
@@ -686,13 +695,13 @@ if (window.location.pathname.includes('admin.html')) {
         }).then(async (response) => {
             if (response.ok) {
                 mostrarAdmin();
-                // Carregar configurações do backend primeiro
-                await carregarConfiguracoesPlataformas();
+                // Carregar configurações do backend e sobrescrever as locais
+                await carregarConfiguracoesDoBackend();
+                renderizarControlesPlataformas();
                 carregarDadosReais();
                 carregarLogs();
                 carregarContadores();
                 carregarEstatisticasPesquisas();
-                renderizarControlesPlataformas();
                 atualizarContadorPlataformasAtivas();
                 
                 setTimeout(() => {
@@ -701,12 +710,15 @@ if (window.location.pathname.includes('admin.html')) {
                     }
                 }, 500);
             } else {
+                renderizarControlesPlataformas();
                 mostrarLogin();
             }
         }).catch(() => {
+            renderizarControlesPlataformas();
             mostrarLogin();
         });
     } else {
+        renderizarControlesPlataformas();
         mostrarLogin();
     }
 }
