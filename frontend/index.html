@@ -353,7 +353,7 @@
       }
   }
 
-  // CARREGAR SELECIONADOS (SEM CACHE, SEM RANDOMIZAÇÃO)
+  // CARREGAR SELECIONADOS (EXCLUINDO PRODUTOS DO CARROSSEL)
   async function carregarSelecionados() {
       const container = document.getElementById('selecionados-grid');
       if (!container) return;
@@ -361,20 +361,37 @@
       try {
           container.innerHTML = '<div style="text-align: center; grid-column: 1/-1; padding: 40px;">Carregando produtos selecionados...</div>';
           
+          // Buscar IDs do carrossel para excluir
+          const carrosselResponse = await fetch('https://yo0g0cg4c88w88osc4s04c0c.72.61.33.248.sslip.io/api/produtos/carrossel');
+          const carrosselData = await carrosselResponse.json();
+          const carrosselIds = carrosselData.carrossel_ids || [];
+          console.log(`🚫 IDs do carrossel a serem excluídos dos selecionados: ${carrosselIds.length}`);
+          
           const [ml, amazon, shopee, magalu] = await Promise.all([
-              getMaisVendidosMercadoLivreFiltrado(100),
-              getMaisVendidosAmazonFiltrado(100),
-              getMaisVendidosShopeeFiltrado(100),
-              getMaisVendidosMagaluFiltrado(100)
+              getMaisVendidosMercadoLivreFiltrado(150),
+              getMaisVendidosAmazonFiltrado(150),
+              getMaisVendidosShopeeFiltrado(150),
+              getMaisVendidosMagaluFiltrado(150)
           ]);
           
           let todosProdutos = [...ml, ...amazon, ...shopee, ...magalu];
+          
+          // Filtrar produtos que estão no carrossel (excluir)
+          const produtosFiltrados = todosProdutos.filter(p => {
+              if (carrosselIds.includes(p.id)) {
+                  console.log(`🚫 Produto excluído (já no carrossel): ${p.titulo?.substring(0, 40)}`);
+                  return false;
+              }
+              return true;
+          });
+          
+          console.log(`📊 Selecionados - ${produtosFiltrados.length} produtos após excluir ${todosProdutos.length - produtosFiltrados.length} do carrossel`);
           
           // Remove duplicados por título normalizado
           const titulosVistos = new Set();
           const produtosUnicos = [];
           
-          for (const produto of todosProdutos) {
+          for (const produto of produtosFiltrados) {
               const chave = normalizarTitulo(produto.titulo);
               if (!titulosVistos.has(chave)) {
                   titulosVistos.add(chave);
@@ -387,7 +404,7 @@
           
           container.innerHTML = '';
           renderProducts(container, produtos, false);
-          console.log(`✅ ${produtos.length} produtos selecionados carregados`);
+          console.log(`✅ ${produtos.length} produtos selecionados carregados (excluídos ${todosProdutos.length - produtosFiltrados.length} do carrossel)`);
       } catch (error) {
           console.error(error);
           container.innerHTML = '<p style="text-align: center;">⚠️ Erro ao carregar produtos</p>';
