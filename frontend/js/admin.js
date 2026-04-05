@@ -15,8 +15,43 @@ const PLATAFORMAS = [
     { id: 'magalu', nome: 'Magalu', icone: '🪄', cor: '#005c9e' }
 ];
 
-// Carregar configurações salvas
-function carregarConfiguracoesPlataformas() {
+// Carregar configurações salvas (primeiro do backend, depois localStorage)
+async function carregarConfiguracoesPlataformas() {
+    try {
+        // Tentar carregar do backend primeiro
+        const user = localStorage.getItem('adminUser');
+        const pass = localStorage.getItem('adminPass');
+        
+        if (user && pass) {
+            const response = await fetch(`${API_URL}/api/admin/configuracoes/plataformas`, {
+                headers: { 'Authorization': 'Basic ' + btoa(user + ':' + pass) }
+            });
+            
+            if (response.ok) {
+                const data = await response.json();
+                if (data.success && data.plataformas) {
+                    // Aplicar configurações do backend
+                    PLATAFORMAS.forEach(p => {
+                        p.ativa = data.plataformas.includes(p.id);
+                    });
+                    // Salvar no localStorage também
+                    const config = {};
+                    PLATAFORMAS.forEach(p => {
+                        config[p.id] = p.ativa;
+                    });
+                    localStorage.setItem('plataformas_ativas', JSON.stringify(config));
+                    const ativas = getPlataformasAtivas();
+                    localStorage.setItem('plataformas_ativas_frontend', JSON.stringify(ativas));
+                    console.log('✅ Configurações carregadas do backend:', data.plataformas);
+                    return PLATAFORMAS;
+                }
+            }
+        }
+    } catch (error) {
+        console.log('⚠️ Não foi possível carregar configurações do backend, usando localStorage');
+    }
+    
+    // Fallback: carregar do localStorage
     const saved = localStorage.getItem('plataformas_ativas');
     if (saved) {
         try {
@@ -33,17 +68,44 @@ function carregarConfiguracoesPlataformas() {
     return PLATAFORMAS;
 }
 
-// Salvar configurações
-function salvarConfiguracoesPlataformas() {
+// Salvar configurações (no backend e localStorage)
+async function salvarConfiguracoesPlataformas() {
     const config = {};
     PLATAFORMAS.forEach(p => {
         config[p.id] = p.ativa;
     });
+    
+    // Salvar no localStorage
     localStorage.setItem('plataformas_ativas', JSON.stringify(config));
     
     // Atualizar o frontend com as novas configurações
     const ativas = getPlataformasAtivas();
     localStorage.setItem('plataformas_ativas_frontend', JSON.stringify(ativas));
+    
+    // Salvar no backend
+    try {
+        const user = localStorage.getItem('adminUser');
+        const pass = localStorage.getItem('adminPass');
+        
+        if (user && pass) {
+            const response = await fetch(`${API_URL}/api/admin/configuracoes/plataformas`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': 'Basic ' + btoa(user + ':' + pass),
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ plataformas: ativas })
+            });
+            
+            if (response.ok) {
+                console.log('✅ Configurações salvas no backend:', ativas);
+            } else {
+                console.warn('⚠️ Falha ao salvar configurações no backend');
+            }
+        }
+    } catch (error) {
+        console.error('❌ Erro ao salvar configurações no backend:', error);
+    }
     
     // Atualizar o painel admin visualmente
     if (typeof window.atualizarStatusPlataformasPainel === 'function') {
@@ -53,7 +115,7 @@ function salvarConfiguracoesPlataformas() {
     // Atualizar contador de plataformas ativas
     atualizarContadorPlataformasAtivas();
     
-    console.log('✅ Configurações de plataformas salvas:', config);
+    console.log('✅ Configurações de plataformas salvas localmente:', config);
 }
 
 // ============================================
@@ -117,8 +179,8 @@ window.togglePlataforma = function(plataformaId, ativa) {
 };
 
 // Aplicar configurações
-window.aplicarConfiguracoesPlataformas = function() {
-    salvarConfiguracoesPlataformas();
+window.aplicarConfiguracoesPlataformas = async function() {
+    await salvarConfiguracoesPlataformas();
     const statusDiv = document.getElementById('status-plataformas');
     if (statusDiv) {
         const ativas = PLATAFORMAS.filter(p => p.ativa).map(p => p.nome).join(', ');
@@ -128,9 +190,9 @@ window.aplicarConfiguracoesPlataformas = function() {
 };
 
 // Resetar para todas ativas
-window.resetarConfiguracoesPlataformas = function() {
+window.resetarConfiguracoesPlataformas = async function() {
     PLATAFORMAS.forEach(p => p.ativa = true);
-    salvarConfiguracoesPlataformas();
+    await salvarConfiguracoesPlataformas();
     renderizarControlesPlataformas();
     const statusDiv = document.getElementById('status-plataformas');
     if (statusDiv) {
@@ -224,11 +286,16 @@ document.getElementById('btn-login')?.addEventListener('click', async () => {
             
             loginError.textContent = '';
             mostrarAdmin();
+            
+            // Carregar configurações do backend antes de tudo
+            await carregarConfiguracoesPlataformas();
+            
             carregarDadosReais();
             carregarLogs();
             carregarContadores();
             carregarTotalCliques();
             atualizarContadorPlataformasAtivas();
+            renderizarControlesPlataformas();
         } else {
             loginError.textContent = 'Usuário ou senha inválidos';
         }
@@ -610,18 +677,17 @@ function exportarTodas(formato) {
 if (window.location.pathname.includes('admin.html')) {
     document.getElementById('admin-main').style.display = 'none';
     
-    // Carregar configurações de plataformas
-    carregarConfiguracoesPlataformas();
-    
     const user = localStorage.getItem('adminUser');
     const pass = localStorage.getItem('adminPass');
     
     if (user && pass) {
         fetch(`${API_URL}/api/admin/logs/importacao`, {
             headers: { 'Authorization': 'Basic ' + btoa(user + ':' + pass) }
-        }).then(response => {
+        }).then(async (response) => {
             if (response.ok) {
                 mostrarAdmin();
+                // Carregar configurações do backend primeiro
+                await carregarConfiguracoesPlataformas();
                 carregarDadosReais();
                 carregarLogs();
                 carregarContadores();
@@ -629,7 +695,6 @@ if (window.location.pathname.includes('admin.html')) {
                 renderizarControlesPlataformas();
                 atualizarContadorPlataformasAtivas();
                 
-                // Atualizar o status das plataformas no painel
                 setTimeout(() => {
                     if (typeof window.atualizarStatusPlataformasPainel === 'function') {
                         window.atualizarStatusPlataformasPainel();
