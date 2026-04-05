@@ -287,25 +287,25 @@
   };
 
   // FUNÇÕES FILTRADAS
-  async function getMaisVendidosMercadoLivreFiltrado(limite = 80) {
+  async function getMaisVendidosMercadoLivreFiltrado(limite = 60) {
       const ativas = await getPlataformasAtivas();
       if (!ativas.includes('mercadolivre')) return [];
       return await getMaisVendidosMercadoLivre(limite);
   }
 
-  async function getMaisVendidosAmazonFiltrado(limite = 80) {
+  async function getMaisVendidosAmazonFiltrado(limite = 60) {
       const ativas = await getPlataformasAtivas();
       if (!ativas.includes('amazon')) return [];
       return await getMaisVendidosAmazon(limite);
   }
 
-  async function getMaisVendidosShopeeFiltrado(limite = 80) {
+  async function getMaisVendidosShopeeFiltrado(limite = 60) {
       const ativas = await getPlataformasAtivas();
       if (!ativas.includes('shopee')) return [];
       return await getMaisVendidosShopee(limite);
   }
 
-  async function getMaisVendidosMagaluFiltrado(limite = 80) {
+  async function getMaisVendidosMagaluFiltrado(limite = 60) {
       const ativas = await getPlataformasAtivas();
       if (!ativas.includes('magalu')) return [];
       return await getMaisVendidosMagalu(limite);
@@ -364,19 +364,33 @@
           ]);
           
           let todosProdutos = [...ml, ...amazon, ...shopee, ...magalu];
-          const linksVistos = new Set();
-          todosProdutos = todosProdutos.filter(p => {
-              if (linksVistos.has(p.link_original)) return false;
-              linksVistos.add(p.link_original);
-              return true;
-          });
           
-          for (let i = todosProdutos.length - 1; i > 0; i--) {
-              const j = Math.floor(Math.random() * (i + 1));
-              [todosProdutos[i], todosProdutos[j]] = [todosProdutos[j], todosProdutos[i]];
+          // Remove duplicados por título normalizado
+          const titulosVistos = new Set();
+          const produtosUnicos = [];
+          
+          for (const produto of todosProdutos) {
+              let tituloNormalizado = (produto.titulo || '')
+                  .toLowerCase()
+                  .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+                  .replace(/\s+/g, ' ')
+                  .trim();
+              
+              tituloNormalizado = tituloNormalizado.replace(/(com|para|de|da|do|das|dos|em|uma|um|o|a|e|que|kg|g|ml|pote|cx|un|unid)/g, '');
+              const chave = tituloNormalizado.substring(0, 40);
+              
+              if (!titulosVistos.has(chave)) {
+                  titulosVistos.add(chave);
+                  produtosUnicos.push(produto);
+              }
           }
           
-          const produtos = todosProdutos.slice(0, 36);
+          for (let i = produtosUnicos.length - 1; i > 0; i--) {
+              const j = Math.floor(Math.random() * (i + 1));
+              [produtosUnicos[i], produtosUnicos[j]] = [produtosUnicos[j], produtosUnicos[i]];
+          }
+          
+          const produtos = produtosUnicos.slice(0, 36);
           
           container.innerHTML = '';
           renderProducts(container, produtos, false);
@@ -387,30 +401,54 @@
       }
   }
 
-  // CARREGAR MAIS VENDIDOS
+  // CARREGAR MAIS VENDIDOS (CORRIGIDO - SEM REPETIÇÕES)
   async function carregarMaisVendidos() {
       try {
+          // Busca produtos de todas as plataformas ativas
           const [ml, amazon, shopee, magalu] = await Promise.all([
-              getMaisVendidosMercadoLivreFiltrado(50),
-              getMaisVendidosAmazonFiltrado(50),
-              getMaisVendidosShopeeFiltrado(50),
-              getMaisVendidosMagaluFiltrado(50)
+              getMaisVendidosMercadoLivreFiltrado(60),
+              getMaisVendidosAmazonFiltrado(60),
+              getMaisVendidosShopeeFiltrado(60),
+              getMaisVendidosMagaluFiltrado(60)
           ]);
           
+          // Junta todos os produtos
           let todosProdutos = [...ml, ...amazon, ...shopee, ...magalu];
-          const linksVistos = new Set();
-          todosProdutos = todosProdutos.filter(p => {
-              if (linksVistos.has(p.link_original)) return false;
-              linksVistos.add(p.link_original);
-              return true;
-          });
           
-          for (let i = todosProdutos.length - 1; i > 0; i--) {
-              const j = Math.floor(Math.random() * (i + 1));
-              [todosProdutos[i], todosProdutos[j]] = [todosProdutos[j], todosProdutos[i]];
+          // REMOVE DUPLICADOS POR TÍTULO NORMALIZADO
+          const titulosVistos = new Set();
+          const produtosUnicos = [];
+          
+          for (const produto of todosProdutos) {
+              // Normaliza o título: remove acentos, espaços extras, converte para minúsculo
+              let tituloNormalizado = (produto.titulo || '')
+                  .toLowerCase()
+                  .normalize('NFD').replace(/[\u0300-\u036f]/g, '') // remove acentos
+                  .replace(/\s+/g, ' ') // espaços simples
+                  .trim();
+              
+              // Remove palavras comuns que podem causar falsos duplicados
+              tituloNormalizado = tituloNormalizado.replace(/(com|para|de|da|do|das|dos|em|uma|um|o|a|e|que|kg|g|ml|pote|cx|un|unid)/g, '');
+              
+              // Pega as primeiras 40 letras como chave
+              const chave = tituloNormalizado.substring(0, 40);
+              
+              if (!titulosVistos.has(chave)) {
+                  titulosVistos.add(chave);
+                  produtosUnicos.push(produto);
+              }
           }
           
-          const produtos = todosProdutos.slice(0, 24);
+          console.log(`📊 Carrossel - Total de produtos únicos: ${produtosUnicos.length} (de ${todosProdutos.length} originais)`);
+          
+          // Embaralha (randomiza)
+          for (let i = produtosUnicos.length - 1; i > 0; i--) {
+              const j = Math.floor(Math.random() * (i + 1));
+              [produtosUnicos[i], produtosUnicos[j]] = [produtosUnicos[j], produtosUnicos[i]];
+          }
+          
+          // Pega os 24 primeiros
+          const produtos = produtosUnicos.slice(0, 24);
           const track = document.getElementById('carousel-track');
           if (!track) return;
           
@@ -424,10 +462,12 @@
               
               return `<div class="carousel-card" onclick="window.registrarCliqueCarrossel(${produtoId}, '${plataforma}', '${link}'); window.open('${link}', '_blank');"><img src="${imagem}" alt="${titulo}" onerror="this.src='https://via.placeholder.com/150'"><div class="product-title">${titulo}...</div><div class="product-price">R$ ${preco}</div><div class="product-platform">${plataforma}</div></div>`;
           }).join('');
+          
+          console.log(`✅ Carrossel carregado com ${produtos.length} produtos únicos`);
       } catch (error) {
           console.error(error);
           const track = document.getElementById('carousel-track');
-          if (track) track.innerHTML = '<p>⚠️ Erro</p>';
+          if (track) track.innerHTML = '<p>⚠️ Erro ao carregar produtos</p>';
       }
   }
 
