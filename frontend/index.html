@@ -209,9 +209,6 @@
   } from './js/api.js';
   import { renderProducts } from './js/render.js';
 
-  // Variável para guardar produtos do carrossel (evitar repetição nos selecionados)
-  let produtosCarrosselSet = new Set();
-
   // FUNÇÃO PARA OBTER PLATAFORMAS ATIVAS DO BACKEND (SINCRONIZADA)
   let plataformasCache = null;
   
@@ -242,8 +239,6 @@
       localStorage.removeItem('selecionados_data');
       localStorage.removeItem('selecionados_date');
       plataformasCache = null;
-      produtosCarrosselSet.clear();
-      await carregarMaisVendidos();
       await carregarSelecionados();
   };
 
@@ -290,18 +285,6 @@
           console.error('Erro:', error);
       }
   };
-
-  // FUNÇÃO PARA NORMALIZAR TÍTULO (usada para comparação)
-  function normalizarTitulo(titulo) {
-      if (!titulo) return '';
-      return titulo
-          .toLowerCase()
-          .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-          .replace(/\s+/g, ' ')
-          .trim()
-          .replace(/(com|para|de|da|do|das|dos|em|uma|um|o|a|e|que|kg|g|ml|pote|cx|un|unid)/g, '')
-          .substring(0, 40);
-  }
 
   // FUNÇÕES FILTRADAS
   async function getMaisVendidosMercadoLivreFiltrado(limite = 60) {
@@ -365,7 +348,7 @@
       }
   }
 
-  // CARREGAR SELECIONADOS (excluindo produtos que já estão no carrossel)
+  // CARREGAR SELECIONADOS (SEM CACHE QUANDO PLATAFORMAS MUDAM)
   async function carregarSelecionados() {
       const container = document.getElementById('selecionados-grid');
       if (!container) return;
@@ -387,13 +370,14 @@
           const produtosUnicos = [];
           
           for (const produto of todosProdutos) {
-              const chave = normalizarTitulo(produto.titulo);
+              let tituloNormalizado = (produto.titulo || '')
+                  .toLowerCase()
+                  .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+                  .replace(/\s+/g, ' ')
+                  .trim();
               
-              // Verifica se já está no carrossel
-              if (produtosCarrosselSet.has(chave)) {
-                  console.log(`🚫 Produto ignorado (já no carrossel): ${produto.titulo?.substring(0, 40)}`);
-                  continue;
-              }
+              tituloNormalizado = tituloNormalizado.replace(/(com|para|de|da|do|das|dos|em|uma|um|o|a|e|que|kg|g|ml|pote|cx|un|unid)/g, '');
+              const chave = tituloNormalizado.substring(0, 40);
               
               if (!titulosVistos.has(chave)) {
                   titulosVistos.add(chave);
@@ -410,14 +394,14 @@
           
           container.innerHTML = '';
           renderProducts(container, produtos, false);
-          console.log(`✅ ${produtos.length} produtos selecionados carregados (${produtosUnicos.length} disponíveis após filtro)`);
+          console.log(`✅ ${produtos.length} produtos selecionados carregados`);
       } catch (error) {
           console.error(error);
           container.innerHTML = '<p style="text-align: center;">⚠️ Erro ao carregar produtos</p>';
       }
   }
 
-  // CARREGAR MAIS VENDIDOS (guarda os títulos para evitar repetição nos selecionados)
+  // CARREGAR MAIS VENDIDOS (CORRIGIDO - SEM REPETIÇÕES)
   async function carregarMaisVendidos() {
       try {
           // Busca produtos de todas as plataformas ativas
@@ -435,22 +419,27 @@
           const titulosVistos = new Set();
           const produtosUnicos = [];
           
-          // Limpa o set de produtos do carrossel
-          produtosCarrosselSet.clear();
-          
           for (const produto of todosProdutos) {
-              const chave = normalizarTitulo(produto.titulo);
+              // Normaliza o título: remove acentos, espaços extras, converte para minúsculo
+              let tituloNormalizado = (produto.titulo || '')
+                  .toLowerCase()
+                  .normalize('NFD').replace(/[\u0300-\u036f]/g, '') // remove acentos
+                  .replace(/\s+/g, ' ') // espaços simples
+                  .trim();
+              
+              // Remove palavras comuns que podem causar falsos duplicados
+              tituloNormalizado = tituloNormalizado.replace(/(com|para|de|da|do|das|dos|em|uma|um|o|a|e|que|kg|g|ml|pote|cx|un|unid)/g, '');
+              
+              // Pega as primeiras 40 letras como chave
+              const chave = tituloNormalizado.substring(0, 40);
               
               if (!titulosVistos.has(chave)) {
                   titulosVistos.add(chave);
                   produtosUnicos.push(produto);
-                  // Guarda o título normalizado para evitar nos selecionados
-                  produtosCarrosselSet.add(chave);
               }
           }
           
           console.log(`📊 Carrossel - Total de produtos únicos: ${produtosUnicos.length} (de ${todosProdutos.length} originais)`);
-          console.log(`📊 Carrossel - ${produtosCarrosselSet.size} títulos guardados para evitar repetição`);
           
           // Embaralha (randomiza)
           for (let i = produtosUnicos.length - 1; i > 0; i--) {
@@ -732,10 +721,10 @@
 
   renderizarCategorias();
   
-  // Inicializar (carrossel primeiro, depois selecionados)
+  // Inicializar
   (async function() {
-      await carregarMaisVendidos();
       await carregarSelecionados();
+      await carregarMaisVendidos();
       updateItemsPerView();
       setTimeout(() => { updateCardWidth(); updateTotalPages(); updateCarousel(); }, 150);
   })();
