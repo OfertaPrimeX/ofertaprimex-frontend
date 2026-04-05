@@ -247,34 +247,6 @@
       await carregarSelecionados();
   };
 
-  // FUNÇÃO PARA VERIFICAR SE O CACHE DO CARROSSEL EXPIRou (meia-noite)
-  function isCarrosselCacheExpirado() {
-      const cacheDate = localStorage.getItem('carrossel_data_date');
-      if (!cacheDate) return true;
-      
-      const hoje = new Date().toLocaleDateString('pt-BR');
-      return cacheDate !== hoje;
-  }
-
-  // FUNÇÃO PARA SALVAR CACHE DO CARROSSEL
-  function salvarCarrosselCache(produtos) {
-      localStorage.setItem('carrossel_data', JSON.stringify(produtos));
-      localStorage.setItem('carrossel_data_date', new Date().toLocaleDateString('pt-BR'));
-  }
-
-  // FUNÇÃO PARA CARREGAR CACHE DO CARROSSEL
-  function carregarCarrosselCache() {
-      const cached = localStorage.getItem('carrossel_data');
-      if (cached && !isCarrosselCacheExpirado()) {
-          try {
-              return JSON.parse(cached);
-          } catch(e) {
-              return null;
-          }
-      }
-      return null;
-  }
-
   // FUNÇÃO PARA CRIAR HEADERS
   async function getHeaders() {
       const plataformasAtivas = await getPlataformasAtivas();
@@ -422,15 +394,22 @@
       }
   }
 
-  // CARREGAR MAIS VENDIDOS (COM CACHE DIÁRIO E SEM REPETIÇÃO)
+  // CARREGAR MAIS VENDIDOS (USANDO CACHE DO BACKEND)
   async function carregarMaisVendidos() {
-      // Verificar cache diário
-      const cachedProdutos = carregarCarrosselCache();
-      if (cachedProdutos && cachedProdutos.length > 0) {
-          console.log(`📦 Usando cache do carrossel (válido até meia-noite): ${cachedProdutos.length} produtos`);
-          const track = document.getElementById('carousel-track');
-          if (track) {
-              track.innerHTML = cachedProdutos.map(p => {
+      const track = document.getElementById('carousel-track');
+      if (!track) return;
+      
+      try {
+          track.innerHTML = '<p style="text-align: center;">Carregando produtos...</p>';
+          
+          // Buscar produtos do carrossel via backend (cache automático)
+          const response = await fetch('https://yo0g0cg4c88w88osc4s04c0c.72.61.33.248.sslip.io/api/produtos/carrossel');
+          const data = await response.json();
+          
+          if (data.success && data.products && data.products.length > 0) {
+              const produtos = data.products;
+              
+              track.innerHTML = produtos.map(p => {
                   const produtoId = p.id;
                   const plataforma = p.plataforma || 'Mercado Livre';
                   const link = p.link_afiliado || p.link_original;
@@ -440,62 +419,14 @@
                   
                   return `<div class="carousel-card" onclick="window.registrarCliqueCarrossel(${produtoId}, '${plataforma}', '${link}'); window.open('${link}', '_blank');"><img src="${imagem}" alt="${titulo}" onerror="this.src='https://via.placeholder.com/150'"><div class="product-title">${titulo}...</div><div class="product-price">R$ ${preco}</div><div class="product-platform">${plataforma}</div></div>`;
               }).join('');
-          }
-          return;
-      }
-      
-      // Buscar novos produtos
-      try {
-          console.log('🔄 Buscando novos produtos para o carrossel...');
-          
-          const [ml, amazon, shopee, magalu] = await Promise.all([
-              getMaisVendidosMercadoLivreFiltrado(100),
-              getMaisVendidosAmazonFiltrado(100),
-              getMaisVendidosShopeeFiltrado(100),
-              getMaisVendidosMagaluFiltrado(100)
-          ]);
-          
-          let todosProdutos = [...ml, ...amazon, ...shopee, ...magalu];
-          
-          // Remove duplicados por título normalizado
-          const titulosVistos = new Set();
-          const produtosUnicos = [];
-          
-          for (const produto of todosProdutos) {
-              const chave = normalizarTitulo(produto.titulo);
-              if (!titulosVistos.has(chave)) {
-                  titulosVistos.add(chave);
-                  produtosUnicos.push(produto);
-              }
-          }
-          
-          console.log(`📊 Carrossel - ${produtosUnicos.length} produtos únicos encontrados (de ${todosProdutos.length} originais)`);
-          
-          // SEM RANDOMIZAÇÃO - mantém ordem original (mais vendidos primeiro)
-          const produtos = produtosUnicos.slice(0, 24);
-          
-          // Salvar no cache diário
-          salvarCarrosselCache(produtos);
-          
-          const track = document.getElementById('carousel-track');
-          if (!track) return;
-          
-          track.innerHTML = produtos.map(p => {
-              const produtoId = p.id;
-              const plataforma = p.plataforma || 'Mercado Livre';
-              const link = p.link_afiliado || p.link_original;
-              const imagem = p.imagem_principal || 'https://via.placeholder.com/150';
-              const titulo = (p.titulo || '').substring(0, 50);
-              const preco = formatarPreco(p.preco);
               
-              return `<div class="carousel-card" onclick="window.registrarCliqueCarrossel(${produtoId}, '${plataforma}', '${link}'); window.open('${link}', '_blank');"><img src="${imagem}" alt="${titulo}" onerror="this.src='https://via.placeholder.com/150'"><div class="product-title">${titulo}...</div><div class="product-price">R$ ${preco}</div><div class="product-platform">${plataforma}</div></div>`;
-          }).join('');
-          
-          console.log(`✅ Carrossel carregado com ${produtos.length} produtos únicos (cache salvo até meia-noite)`);
+              console.log(`✅ Carrossel carregado com ${produtos.length} produtos (cache: ${data.cache ? 'usado' : 'novo'})`);
+          } else {
+              track.innerHTML = '<p>⚠️ Nenhum produto encontrado</p>';
+          }
       } catch (error) {
-          console.error(error);
-          const track = document.getElementById('carousel-track');
-          if (track) track.innerHTML = '<p>⚠️ Erro ao carregar produtos</p>';
+          console.error('Erro ao carregar carrossel:', error);
+          track.innerHTML = '<p>⚠️ Erro ao carregar produtos</p>';
       }
   }
 
@@ -750,7 +681,6 @@
   renderizarCategorias();
   
   // Inicializar
-  //
   (async function() {
       await carregarMaisVendidos();
       await carregarSelecionados();

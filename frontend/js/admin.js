@@ -137,10 +137,55 @@ function renderizarControlesPlataformas() {
         <div style="margin-top: 15px;">
             <button class="plataforma-btn" onclick="window.aplicarConfiguracoesPlataformas()" style="background-color: #2e7d32; margin-right: 10px;">💾 Aplicar Configurações</button>
             <button class="plataforma-btn" onclick="window.resetarConfiguracoesPlataformas()" style="background-color: #555;">🔄 Resetar (Todas Ativas)</button>
+            <button class="plataforma-btn" onclick="window.atualizarCarrossel()" style="background-color: #ff6a00; margin-left: 10px;">🎠 Atualizar Carrossel Agora</button>
         </div>
         <div id="status-plataformas" style="margin-top: 10px; font-size: 12px; color: #666;"></div>
     `;
 }
+
+// Função para forçar atualização do carrossel
+window.atualizarCarrossel = async function() {
+    if (!confirm('Deseja forçar a atualização do carrossel agora? Isso irá gerar novos produtos para hoje.')) return;
+    
+    const statusDiv = document.getElementById('status-plataformas');
+    if (statusDiv) {
+        statusDiv.innerHTML = '<span style="color: #ff6a00;">⏳ Atualizando carrossel...</span>';
+    }
+    
+    try {
+        const user = localStorage.getItem('adminUser');
+        const pass = localStorage.getItem('adminPass');
+        const basicAuth = 'Basic ' + btoa(user + ':' + pass);
+        
+        const response = await fetch(`${API_URL}/api/admin/carrossel/atualizar`, {
+            method: 'POST',
+            headers: { 'Authorization': basicAuth }
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            if (statusDiv) {
+                statusDiv.innerHTML = `<span style="color: #2e7d32;">✅ Carrossel atualizado com ${data.products?.length || 0} produtos!</span>`;
+                setTimeout(() => { statusDiv.innerHTML = ''; }, 3000);
+            }
+            alert(`✅ Carrossel atualizado com ${data.products?.length || 0} produtos!`);
+        } else {
+            if (statusDiv) {
+                statusDiv.innerHTML = `<span style="color: #c62828;">❌ Erro: ${data.error || 'Falha ao atualizar'}</span>`;
+                setTimeout(() => { statusDiv.innerHTML = ''; }, 3000);
+            }
+            alert('❌ Erro ao atualizar carrossel');
+        }
+    } catch (error) {
+        console.error('Erro:', error);
+        if (statusDiv) {
+            statusDiv.innerHTML = '<span style="color: #c62828;">❌ Erro de conexão</span>';
+            setTimeout(() => { statusDiv.innerHTML = ''; }, 3000);
+        }
+        alert('❌ Erro ao atualizar carrossel');
+    }
+};
 
 window.togglePlataforma = function(plataformaId, ativa) {
     const plataforma = PLATAFORMAS.find(p => p.id === plataformaId);
@@ -609,7 +654,7 @@ async function carregarEstatisticasPesquisas() {
             const termosTbody = document.getElementById('tabela-termos-nao-encontrados');
             if (termosTbody && data.data.top_nao_encontrados) {
                 if (data.data.top_nao_encontrados.length === 0) {
-                    termosTbody.innerHTML = '<tr><td colspan="3" style="text-align: center;">Nenhum termo não encontrado</td</tr>';
+                    termosTbody.innerHTML = '<tr><td colspan="3" style="text-align: center;">Nenhum termo não encontrado</td<tr>';
                 } else {
                     termosTbody.innerHTML = data.data.top_nao_encontrados.map(t => `
                         <tr>

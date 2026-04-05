@@ -660,6 +660,7 @@
                 <button class="admin-btn secondary" onclick="exportarTodas('csv')">📄 Exportar Todas (CSV)</button>
                 <button class="admin-btn secondary" onclick="exportarTodas('excel')">📊 Exportar Todas (Excel)</button>
                 <button class="admin-btn delete" onclick="limparTodosBancos()" style="background-color:#c62828; color:white; padding:10px 20px; border:none; border-radius:6px; cursor:pointer; margin-left:10px;">🗑️ Limpar Todos os Bancos</button>
+                <button class="admin-btn" onclick="atualizarCarrossel()" style="background-color:#ff6a00; margin-left:10px;">🎠 Atualizar Carrossel Agora</button>
             </div>
 
             <div class="admin-card">
@@ -674,7 +675,7 @@
                                 <th>Preço</th>
                                 <th>Cliques</th>
                                 <th>Status</th>
-                               </tr>
+                              </tr>
                         </thead>
                         <tbody id="tabela-body">
                              <td colspan="6" style="text-align: center; padding: 30px;">Carregando...</td>
@@ -855,8 +856,8 @@
                              <td>${t.termo}</td>
                              <td>${t.tentativas}</td>
                              <td>${t.tentativas}</td>
-                             <td>0</td>
-                             <td>${t.tentativas}</td>
+                             <td>0</td
+                             <td>${t.tentativas}</td
                          </tr>
                     `).join('');
                 } else {
