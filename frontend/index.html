@@ -178,6 +178,10 @@
                 container.innerHTML = novosLogos;
                 console.log('🔄 Logos recarregados:', novasConfigs);
             }
+            // Recarregar produtos quando plataformas mudam
+            if (typeof window.recarregarProdutos === 'function') {
+                window.recarregarProdutos();
+            }
         }, 10000);
     });
 </script>
@@ -210,6 +214,13 @@
       }
       return ['mercadolivre', 'amazon', 'shopee', 'magalu'];
   }
+
+  // FUNÇÃO PARA RECARREGAR PRODUTOS QUANDO PLATAFORMAS MUDAM
+  window.recarregarProdutos = async function() {
+      console.log('🔄 Plataformas alteradas, recarregando produtos...');
+      await carregarMaisVendidos();
+      await carregarSelecionados();
+  };
 
   // FUNÇÃO PARA CRIAR HEADERS
   async function getHeaders() {
@@ -317,59 +328,47 @@
       }
   }
 
-  // CARREGAR SELECIONADOS
+  // CARREGAR SELECIONADOS (SEM CACHE, SEM RANDOMIZAÇÃO)
   async function carregarSelecionados() {
       const container = document.getElementById('selecionados-grid');
       if (!container) return;
       
       try {
-          const cacheKey = 'selecionados_data';
-          const cacheDateKey = 'selecionados_date';
-          const hoje = new Date().toDateString();
-          const cacheDate = localStorage.getItem(cacheDateKey);
+          container.innerHTML = '<div style="text-align: center; grid-column: 1/-1; padding: 40px;">Carregando produtos selecionados...</div>';
           
-          let produtos = [];
+          const [ml, amazon, shopee, magalu] = await Promise.all([
+              getMaisVendidosMercadoLivreFiltrado(80),
+              getMaisVendidosAmazonFiltrado(80),
+              getMaisVendidosShopeeFiltrado(80),
+              getMaisVendidosMagaluFiltrado(80)
+          ]);
           
-          if (cacheDate === hoje) {
-              const cached = localStorage.getItem(cacheKey);
-              if (cached) produtos = JSON.parse(cached);
-          }
+          let todosProdutos = [...ml, ...amazon, ...shopee, ...magalu];
           
-          if (produtos.length === 0) {
-              const [ml, amazon, shopee, magalu] = await Promise.all([
-                  getMaisVendidosMercadoLivreFiltrado(80),
-                  getMaisVendidosAmazonFiltrado(80),
-                  getMaisVendidosShopeeFiltrado(80),
-                  getMaisVendidosMagaluFiltrado(80)
-              ]);
-              
-              let todosProdutos = [...ml, ...amazon, ...shopee, ...magalu];
-              const linksVistos = new Set();
-              todosProdutos = todosProdutos.filter(p => {
-                  if (linksVistos.has(p.link_original)) return false;
-                  linksVistos.add(p.link_original);
-                  return true;
-              });
-              
-              for (let i = todosProdutos.length - 1; i > 0; i--) {
-                  const j = Math.floor(Math.random() * (i + 1));
-                  [todosProdutos[i], todosProdutos[j]] = [todosProdutos[j], todosProdutos[i]];
+          // Remove duplicados por link_original
+          const linksVistos = new Set();
+          const produtosUnicos = [];
+          
+          for (const produto of todosProdutos) {
+              if (produto.link_original && !linksVistos.has(produto.link_original)) {
+                  linksVistos.add(produto.link_original);
+                  produtosUnicos.push(produto);
               }
-              
-              produtos = todosProdutos.slice(0, 36);
-              localStorage.setItem(cacheKey, JSON.stringify(produtos));
-              localStorage.setItem(cacheDateKey, hoje);
           }
+          
+          // SEM RANDOMIZAÇÃO - mantém ordem original
+          const produtos = produtosUnicos.slice(0, 36);
           
           container.innerHTML = '';
           renderProducts(container, produtos, false);
+          console.log(`✅ ${produtos.length} produtos selecionados carregados`);
       } catch (error) {
           console.error(error);
-          container.innerHTML = '<p>⚠️ Erro ao carregar produtos</p>';
+          container.innerHTML = '<p style="text-align: center;">⚠️ Erro ao carregar produtos</p>';
       }
   }
 
-  // CARREGAR MAIS VENDIDOS
+  // CARREGAR MAIS VENDIDOS (SEM RANDOMIZAÇÃO)
   async function carregarMaisVendidos() {
       try {
           const [ml, amazon, shopee, magalu] = await Promise.all([
@@ -380,19 +379,20 @@
           ]);
           
           let todosProdutos = [...ml, ...amazon, ...shopee, ...magalu];
-          const linksVistos = new Set();
-          todosProdutos = todosProdutos.filter(p => {
-              if (linksVistos.has(p.link_original)) return false;
-              linksVistos.add(p.link_original);
-              return true;
-          });
           
-          for (let i = todosProdutos.length - 1; i > 0; i--) {
-              const j = Math.floor(Math.random() * (i + 1));
-              [todosProdutos[i], todosProdutos[j]] = [todosProdutos[j], todosProdutos[i]];
+          // Remove duplicados por link_original
+          const linksVistos = new Set();
+          const produtosUnicos = [];
+          
+          for (const produto of todosProdutos) {
+              if (produto.link_original && !linksVistos.has(produto.link_original)) {
+                  linksVistos.add(produto.link_original);
+                  produtosUnicos.push(produto);
+              }
           }
           
-          const produtos = todosProdutos.slice(0, 24);
+          // SEM RANDOMIZAÇÃO - mantém ordem original
+          const produtos = produtosUnicos.slice(0, 24);
           const track = document.getElementById('carousel-track');
           if (!track) return;
           
@@ -406,6 +406,8 @@
               
               return `<div class="carousel-card" onclick="window.registrarCliqueCarrossel(${produtoId}, '${plataforma}', '${link}'); window.open('${link}', '_blank');"><img src="${imagem}" alt="${titulo}" onerror="this.src='https://via.placeholder.com/150'"><div class="product-title">${titulo}...</div><div class="product-price">R$ ${preco}</div><div class="product-platform">${plataforma}</div></div>`;
           }).join('');
+          
+          console.log(`✅ Carrossel carregado com ${produtos.length} produtos`);
       } catch (error) {
           console.error(error);
           const track = document.getElementById('carousel-track');
@@ -662,11 +664,14 @@
   window.addEventListener('resize', () => { updateItemsPerView(); updateTotalPages(); updateCarousel(); });
 
   renderizarCategorias();
-  carregarSelecionados();
-  carregarMaisVendidos().then(() => {
+  
+  // Inicializar
+  (async function() {
+      await carregarMaisVendidos();
+      await carregarSelecionados();
       updateItemsPerView();
       setTimeout(() => { updateCardWidth(); updateTotalPages(); updateCarousel(); }, 150);
-  });
+  })();
 </script>
 </body>
 </html>
