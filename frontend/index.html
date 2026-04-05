@@ -137,50 +137,28 @@
         }
     };
 
-    // Função para carregar configurações do backend (pública)
-    async function carregarConfiguracoesBackend() {
-        try {
-            const response = await fetch('https://yo0g0cg4c88w88osc4s04c0c.72.61.33.248.sslip.io/api/admin/configuracoes/publicas');
-            if (response.ok) {
-                const data = await response.json();
-                if (data.success && data.plataformas) {
-                    localStorage.setItem('plataformas_ativas_frontend', JSON.stringify(data.plataformas));
-                    console.log('✅ Configurações carregadas do backend:', data.plataformas);
-                    return data.plataformas;
-                }
-            }
-        } catch (error) {
-            console.error('❌ Erro ao carregar configurações do backend:', error);
-        }
-        return null;
-    }
-
-    // Função para obter plataformas ativas (prioriza backend)
-    async function getPlataformasAtivasFrontend() {
-        // Tentar carregar do backend primeiro
-        const backendConfig = await carregarConfiguracoesBackend();
-        if (backendConfig) {
-            return backendConfig;
-        }
-        
-        // Fallback: localStorage
+    // Função para obter plataformas ativas do localStorage (APENAS LOCALSTORAGE)
+    function getPlataformasAtivasFrontend() {
         const saved = localStorage.getItem('plataformas_ativas_frontend');
         if (saved) {
             try {
-                return JSON.parse(saved);
+                const parsed = JSON.parse(saved);
+                console.log('📦 Configurações carregadas do localStorage:', parsed);
+                return parsed;
             } catch(e) {
                 console.log('Erro ao parsear plataformas ativas');
             }
         }
+        // Padrão: todas ativas
         return ['mercadolivre', 'amazon', 'shopee', 'magalu'];
     }
 
     // Função para atualizar os logos das plataformas parceiras
-    async function atualizarLogosPlataformas() {
+    function atualizarLogosPlataformas() {
         const container = document.getElementById('plataformas-logos-container');
         if (!container) return;
         
-        const plataformasAtivas = await getPlataformasAtivasFrontend();
+        const plataformasAtivas = getPlataformasAtivasFrontend();
         
         if (plataformasAtivas.length === 0) {
             container.innerHTML = '<div style="padding: 10px 0;">Nenhuma plataforma ativa no momento</div>';
@@ -272,25 +250,14 @@
     });
 
     // Inicializar logos ao carregar a página
-    window.addEventListener('load', async function() {
-        await atualizarLogosPlataformas();
-        
-        // Recarregar configurações a cada 30 segundos
-        setInterval(async () => {
-            const novasConfigs = await carregarConfiguracoesBackend();
-            if (novasConfigs) {
-                const atuais = localStorage.getItem('plataformas_ativas_frontend');
-                if (atuais !== JSON.stringify(novasConfigs)) {
-                    console.log('🔄 Configurações alteradas, recarregando página...');
-                    location.reload();
-                }
-            }
-        }, 30000);
+    window.addEventListener('load', function() {
+        atualizarLogosPlataformas();
         
         window.addEventListener('storage', function(e) {
             if (e.key === 'plataformas_ativas_frontend') {
                 console.log('🔄 Plataformas alteradas, atualizando logos...');
                 atualizarLogosPlataformas();
+                location.reload();
             }
         });
     });
@@ -309,28 +276,15 @@
   import { renderProducts } from './js/render.js';
 
   // ============================================
-  // FUNÇÃO PARA OBTER PLATAFORMAS ATIVAS (COM BACKEND)
+  // FUNÇÃO PARA OBTER PLATAFORMAS ATIVAS (APENAS LOCALSTORAGE)
   // ============================================
-  async function getPlataformasAtivas() {
-      // Tentar carregar do backend primeiro
-      try {
-          const response = await fetch('https://yo0g0cg4c88w88osc4s04c0c.72.61.33.248.sslip.io/api/admin/configuracoes/publicas');
-          if (response.ok) {
-              const data = await response.json();
-              if (data.success && data.plataformas) {
-                  localStorage.setItem('plataformas_ativas_frontend', JSON.stringify(data.plataformas));
-                  return data.plataformas;
-              }
-          }
-      } catch (error) {
-          console.log('Erro ao buscar configurações do backend:', error);
-      }
-      
-      // Fallback: localStorage
+  function getPlataformasAtivas() {
       const saved = localStorage.getItem('plataformas_ativas_frontend');
       if (saved) {
           try {
-              return JSON.parse(saved);
+              const parsed = JSON.parse(saved);
+              console.log('📦 Configurações carregadas do localStorage:', parsed);
+              return parsed;
           } catch(e) {
               console.log('Erro ao parsear plataformas ativas');
           }
@@ -341,8 +295,8 @@
   // ============================================
   // FUNÇÃO PARA CRIAR HEADERS COM PLATAFORMAS ATIVAS
   // ============================================
-  async function getHeaders() {
-      const plataformasAtivas = await getPlataformasAtivas();
+  function getHeaders() {
+      const plataformasAtivas = getPlataformasAtivas();
       return {
           'X-Platforms-Enabled': JSON.stringify(plataformasAtivas),
           'Content-Type': 'application/json'
@@ -373,7 +327,7 @@
   // FUNÇÃO FILTRADA PARA BUSCAR MAIS VENDIDOS MERCADO LIVRE
   // ============================================
   async function getMaisVendidosMercadoLivreFiltrado(limite = 80) {
-      const plataformasAtivas = await getPlataformasAtivas();
+      const plataformasAtivas = getPlataformasAtivas();
       if (!plataformasAtivas.includes('mercadolivre')) {
           console.log('📭 Mercado Livre desativado - retornando vazio');
           return [];
@@ -385,7 +339,7 @@
   // FUNÇÃO FILTRADA PARA BUSCAR MAIS VENDIDOS AMAZON
   // ============================================
   async function getMaisVendidosAmazonFiltrado(limite = 80) {
-      const plataformasAtivas = await getPlataformasAtivas();
+      const plataformasAtivas = getPlataformasAtivas();
       if (!plataformasAtivas.includes('amazon')) {
           console.log('📭 Amazon desativada - retornando vazio');
           return [];
@@ -397,7 +351,7 @@
   // FUNÇÃO FILTRADA PARA BUSCAR MAIS VENDIDOS SHOPEE
   // ============================================
   async function getMaisVendidosShopeeFiltrado(limite = 80) {
-      const plataformasAtivas = await getPlataformasAtivas();
+      const plataformasAtivas = getPlataformasAtivas();
       if (!plataformasAtivas.includes('shopee')) {
           console.log('📭 Shopee desativada - retornando vazio');
           return [];
@@ -409,7 +363,7 @@
   // FUNÇÃO FILTRADA PARA BUSCAR MAIS VENDIDOS MAGALU
   // ============================================
   async function getMaisVendidosMagaluFiltrado(limite = 80) {
-      const plataformasAtivas = await getPlataformasAtivas();
+      const plataformasAtivas = getPlataformasAtivas();
       if (!plataformasAtivas.includes('magalu')) {
           console.log('📭 Magalu desativada - retornando vazio');
           return [];
@@ -421,13 +375,13 @@
   // FUNÇÃO SOBRESCRITA PARA BUSCAR PRODUTOS ALEATÓRIOS (COM FILTRO)
   // ============================================
   async function getRandomProductsFiltrado(limit = 50) {
-      const plataformasAtivas = await getPlataformasAtivas();
+      const plataformasAtivas = getPlataformasAtivas();
       if (plataformasAtivas.length === 0) {
           console.log('📭 Nenhuma plataforma ativa');
           return [];
       }
       
-      const headers = await getHeaders();
+      const headers = getHeaders();
       try {
           const response = await fetch(`https://yo0g0cg4c88w88osc4s04c0c.72.61.33.248.sslip.io/api/produtos/random?limit=${limit}`, {
               headers: headers
@@ -447,13 +401,13 @@
   // FUNÇÃO SOBRESCRITA PARA BUSCA MULTIPLATAFORMA (COM FILTRO)
   // ============================================
   async function searchAllPlatformsFiltrado(termo) {
-      const plataformasAtivas = await getPlataformasAtivas();
+      const plataformasAtivas = getPlataformasAtivas();
       if (plataformasAtivas.length === 0) {
           console.log('📭 Nenhuma plataforma ativa');
           return { products: [], resultados_plataformas: [], total: 0 };
       }
       
-      const headers = await getHeaders();
+      const headers = getHeaders();
       let sessaoId = localStorage.getItem('sessaoId');
       if (!sessaoId) {
           sessaoId = 'sess_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
