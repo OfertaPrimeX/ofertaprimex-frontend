@@ -163,7 +163,6 @@
         container.innerHTML = logosHtml;
         console.log('🖼️ Logos atualizados:', plataformasAtivas);
         
-        // Verificar se as configurações mudaram para recarregar produtos
         if (ultimasConfiguracoes && JSON.stringify(ultimasConfiguracoes) !== JSON.stringify(plataformasAtivas)) {
             console.log('🔄 Configurações mudaram, recarregando produtos...');
             if (typeof window.recarregarProdutos === 'function') {
@@ -177,7 +176,6 @@
     window.addEventListener('load', async function() {
         await atualizarLogos();
         
-        // Verificar mudanças a cada 10 segundos, mas só recarregar produtos se houver mudança real
         setInterval(async () => {
             const novasConfigs = await carregarConfiguracoesBackend();
             const container = document.getElementById('plataformas-logos-container');
@@ -190,7 +188,6 @@
                 console.log('🔄 Logos recarregados:', novasConfigs);
             }
             
-            // Só recarregar produtos se as configurações realmente mudaram
             if (ultimasConfiguracoes && JSON.stringify(ultimasConfiguracoes) !== JSON.stringify(novasConfigs)) {
                 console.log('🔄 Configurações detectadas, recarregando produtos...');
                 ultimasConfiguracoes = novasConfigs;
@@ -213,6 +210,18 @@
       getRandomProducts
   } from './js/api.js';
   import { renderProducts } from './js/render.js';
+
+  // FUNÇÃO PARA NORMALIZAR TÍTULO (remove acentos, espaços, palavras comuns)
+  function normalizarTitulo(titulo) {
+      if (!titulo) return '';
+      return titulo
+          .toLowerCase()
+          .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+          .replace(/\s+/g, ' ')
+          .trim()
+          .replace(/(com|para|de|da|do|das|dos|em|uma|um|o|a|e|que|kg|g|ml|pote|cx|un|unid)/g, '')
+          .substring(0, 50);
+  }
 
   // FUNÇÃO PARA OBTER PLATAFORMAS ATIVAS DO BACKEND
   async function getPlataformasAtivas() {
@@ -237,6 +246,34 @@
       await carregarMaisVendidos();
       await carregarSelecionados();
   };
+
+  // FUNÇÃO PARA VERIFICAR SE O CACHE DO CARROSSEL EXPIRou (meia-noite)
+  function isCarrosselCacheExpirado() {
+      const cacheDate = localStorage.getItem('carrossel_data_date');
+      if (!cacheDate) return true;
+      
+      const hoje = new Date().toLocaleDateString('pt-BR');
+      return cacheDate !== hoje;
+  }
+
+  // FUNÇÃO PARA SALVAR CACHE DO CARROSSEL
+  function salvarCarrosselCache(produtos) {
+      localStorage.setItem('carrossel_data', JSON.stringify(produtos));
+      localStorage.setItem('carrossel_data_date', new Date().toLocaleDateString('pt-BR'));
+  }
+
+  // FUNÇÃO PARA CARREGAR CACHE DO CARROSSEL
+  function carregarCarrosselCache() {
+      const cached = localStorage.getItem('carrossel_data');
+      if (cached && !isCarrosselCacheExpirado()) {
+          try {
+              return JSON.parse(cached);
+          } catch(e) {
+              return null;
+          }
+      }
+      return null;
+  }
 
   // FUNÇÃO PARA CRIAR HEADERS
   async function getHeaders() {
@@ -283,25 +320,25 @@
   };
 
   // FUNÇÕES FILTRADAS
-  async function getMaisVendidosMercadoLivreFiltrado(limite = 80) {
+  async function getMaisVendidosMercadoLivreFiltrado(limite = 100) {
       const ativas = await getPlataformasAtivas();
       if (!ativas.includes('mercadolivre')) return [];
       return await getMaisVendidosMercadoLivre(limite);
   }
 
-  async function getMaisVendidosAmazonFiltrado(limite = 80) {
+  async function getMaisVendidosAmazonFiltrado(limite = 100) {
       const ativas = await getPlataformasAtivas();
       if (!ativas.includes('amazon')) return [];
       return await getMaisVendidosAmazon(limite);
   }
 
-  async function getMaisVendidosShopeeFiltrado(limite = 80) {
+  async function getMaisVendidosShopeeFiltrado(limite = 100) {
       const ativas = await getPlataformasAtivas();
       if (!ativas.includes('shopee')) return [];
       return await getMaisVendidosShopee(limite);
   }
 
-  async function getMaisVendidosMagaluFiltrado(limite = 80) {
+  async function getMaisVendidosMagaluFiltrado(limite = 100) {
       const ativas = await getPlataformasAtivas();
       if (!ativas.includes('magalu')) return [];
       return await getMaisVendidosMagalu(limite);
@@ -353,21 +390,22 @@
           container.innerHTML = '<div style="text-align: center; grid-column: 1/-1; padding: 40px;">Carregando produtos selecionados...</div>';
           
           const [ml, amazon, shopee, magalu] = await Promise.all([
-              getMaisVendidosMercadoLivreFiltrado(80),
-              getMaisVendidosAmazonFiltrado(80),
-              getMaisVendidosShopeeFiltrado(80),
-              getMaisVendidosMagaluFiltrado(80)
+              getMaisVendidosMercadoLivreFiltrado(100),
+              getMaisVendidosAmazonFiltrado(100),
+              getMaisVendidosShopeeFiltrado(100),
+              getMaisVendidosMagaluFiltrado(100)
           ]);
           
           let todosProdutos = [...ml, ...amazon, ...shopee, ...magalu];
           
-          // Remove duplicados por link_original
-          const linksVistos = new Set();
+          // Remove duplicados por título normalizado
+          const titulosVistos = new Set();
           const produtosUnicos = [];
           
           for (const produto of todosProdutos) {
-              if (produto.link_original && !linksVistos.has(produto.link_original)) {
-                  linksVistos.add(produto.link_original);
+              const chave = normalizarTitulo(produto.titulo);
+              if (!titulosVistos.has(chave)) {
+                  titulosVistos.add(chave);
                   produtosUnicos.push(produto);
               }
           }
@@ -384,31 +422,61 @@
       }
   }
 
-  // CARREGAR MAIS VENDIDOS (SEM RANDOMIZAÇÃO)
+  // CARREGAR MAIS VENDIDOS (COM CACHE DIÁRIO E SEM REPETIÇÃO)
   async function carregarMaisVendidos() {
+      // Verificar cache diário
+      const cachedProdutos = carregarCarrosselCache();
+      if (cachedProdutos && cachedProdutos.length > 0) {
+          console.log(`📦 Usando cache do carrossel (válido até meia-noite): ${cachedProdutos.length} produtos`);
+          const track = document.getElementById('carousel-track');
+          if (track) {
+              track.innerHTML = cachedProdutos.map(p => {
+                  const produtoId = p.id;
+                  const plataforma = p.plataforma || 'Mercado Livre';
+                  const link = p.link_afiliado || p.link_original;
+                  const imagem = p.imagem_principal || 'https://via.placeholder.com/150';
+                  const titulo = (p.titulo || '').substring(0, 50);
+                  const preco = formatarPreco(p.preco);
+                  
+                  return `<div class="carousel-card" onclick="window.registrarCliqueCarrossel(${produtoId}, '${plataforma}', '${link}'); window.open('${link}', '_blank');"><img src="${imagem}" alt="${titulo}" onerror="this.src='https://via.placeholder.com/150'"><div class="product-title">${titulo}...</div><div class="product-price">R$ ${preco}</div><div class="product-platform">${plataforma}</div></div>`;
+              }).join('');
+          }
+          return;
+      }
+      
+      // Buscar novos produtos
       try {
+          console.log('🔄 Buscando novos produtos para o carrossel...');
+          
           const [ml, amazon, shopee, magalu] = await Promise.all([
-              getMaisVendidosMercadoLivreFiltrado(50),
-              getMaisVendidosAmazonFiltrado(50),
-              getMaisVendidosShopeeFiltrado(50),
-              getMaisVendidosMagaluFiltrado(50)
+              getMaisVendidosMercadoLivreFiltrado(100),
+              getMaisVendidosAmazonFiltrado(100),
+              getMaisVendidosShopeeFiltrado(100),
+              getMaisVendidosMagaluFiltrado(100)
           ]);
           
           let todosProdutos = [...ml, ...amazon, ...shopee, ...magalu];
           
-          // Remove duplicados por link_original
-          const linksVistos = new Set();
+          // Remove duplicados por título normalizado
+          const titulosVistos = new Set();
           const produtosUnicos = [];
           
           for (const produto of todosProdutos) {
-              if (produto.link_original && !linksVistos.has(produto.link_original)) {
-                  linksVistos.add(produto.link_original);
+              const chave = normalizarTitulo(produto.titulo);
+              if (!titulosVistos.has(chave)) {
+                  titulosVistos.add(chave);
                   produtosUnicos.push(produto);
               }
           }
           
-          // SEM RANDOMIZAÇÃO - mantém ordem original
+          console.log(`📊 Carrossel - ${produtosUnicos.length} produtos únicos encontrados (de ${todosProdutos.length} originais)`);
+          
+          // SEM RANDOMIZAÇÃO - mantém ordem original (mais vendidos primeiro)
           const produtos = produtosUnicos.slice(0, 24);
+          
+          // Salvar no cache diário
+          salvarCarrosselCache(produtos);
+          
           const track = document.getElementById('carousel-track');
           if (!track) return;
           
@@ -423,11 +491,11 @@
               return `<div class="carousel-card" onclick="window.registrarCliqueCarrossel(${produtoId}, '${plataforma}', '${link}'); window.open('${link}', '_blank');"><img src="${imagem}" alt="${titulo}" onerror="this.src='https://via.placeholder.com/150'"><div class="product-title">${titulo}...</div><div class="product-price">R$ ${preco}</div><div class="product-platform">${plataforma}</div></div>`;
           }).join('');
           
-          console.log(`✅ Carrossel carregado com ${produtos.length} produtos`);
+          console.log(`✅ Carrossel carregado com ${produtos.length} produtos únicos (cache salvo até meia-noite)`);
       } catch (error) {
           console.error(error);
           const track = document.getElementById('carousel-track');
-          if (track) track.innerHTML = '<p>⚠️ Erro</p>';
+          if (track) track.innerHTML = '<p>⚠️ Erro ao carregar produtos</p>';
       }
   }
 
@@ -681,7 +749,7 @@
 
   renderizarCategorias();
   
-  // Inicializar (carrega produtos uma única vez)
+  // Inicializar
   (async function() {
       await carregarMaisVendidos();
       await carregarSelecionados();
