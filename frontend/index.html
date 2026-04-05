@@ -31,13 +31,13 @@
     </div>
 </section>
 
-<!-- ================= SEÇÃO: PLATAFORMAS PARCEIRAS ================= -->
+<!-- ================= SEÇÃO: PLATAFORMAS PARCEIRAS (VERSÃO SIMPLES) ================= -->
 <section class="plataformas-parceiras-section" id="plataformas-parceiras">
     <div class="container">
         <div style="display: flex; align-items: center; gap: 30px; flex-wrap: wrap;">
             <h2 class="section-title" style="margin-bottom: 0; border-bottom: none; padding-bottom: 0;">🤝 Plataformas Parceiras</h2>
-            <div id="plataformas-logos-container" class="plataforma-logos-container" style="margin-top: 0;">
-                <div>Carregando...</div>
+            <div id="teste-plataformas" style="font-size: 14px; color: #ff6a00; font-weight: bold;">
+                Carregando...
             </div>
         </div>
     </div>
@@ -104,69 +104,46 @@
 </footer>
 
 <script>
-    // CONFIGURAÇÃO DAS PLATAFORMAS COM LOGOS
-    const plataformasConfig = {
-        mercadolivre: {
-            nome: 'Mercado Livre',
-            logo: 'https://upload.wikimedia.org/wikipedia/pt/thumb/0/04/Logotipo_MercadoLivre.png/120px-Logotipo_MercadoLivre.png'
-        },
-        amazon: {
-            nome: 'Amazon',
-            logo: 'https://assets.aboutamazon.com/2e/d7/ac71f1f344c39f8949f48fc89e71/amazon-logo-squid-ink-smile-orange.png'
-        },
-        shopee: {
-            nome: 'Shopee',
-            logo: 'https://fileproxycdn.cs.susercontent.com/api/v5/service/download/permanent/cs-saas/d794de6e4e8c449993444fb31e9a863a.png'
-        },
-        magalu: {
-            nome: 'Magalu',
-            logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/archive/1/1b/20210515045113%21Magalu_-_novo_logo.png/120px-Magalu_-_novo_logo.png'
-        }
-    };
-
-    // OBTER PLATAFORMAS ATIVAS DO LOCALSTORAGE
-    function getPlataformasAtivas() {
+    // Função para ler plataformas ativas do localStorage e exibir
+    function atualizarTestePlataformas() {
+        const container = document.getElementById('teste-plataformas');
+        if (!container) return;
+        
         const saved = localStorage.getItem('plataformas_ativas_frontend');
+        let plataformas = ['mercadolivre', 'amazon', 'shopee', 'magalu'];
+        
         if (saved) {
             try {
-                return JSON.parse(saved);
+                plataformas = JSON.parse(saved);
+                console.log('📦 Plataformas carregadas do localStorage:', plataformas);
             } catch(e) {
                 console.log('Erro ao parsear');
             }
-        }
-        return ['mercadolivre', 'amazon', 'shopee', 'magalu'];
-    }
-
-    // ATUALIZAR LOGOS
-    function atualizarLogos() {
-        const container = document.getElementById('plataformas-logos-container');
-        if (!container) return;
-        
-        const ativas = getPlataformasAtivas();
-        console.log('Plataformas ativas:', ativas);
-        
-        if (ativas.length === 0) {
-            container.innerHTML = '<div>Nenhuma plataforma ativa</div>';
-            return;
+        } else {
+            console.log('📦 Nenhuma configuração no localStorage, usando padrão');
         }
         
-        const logosHtml = ativas.map(id => {
-            const config = plataformasConfig[id];
-            return config ? `<img src="${config.logo}" alt="${config.nome}" class="plataforma-logo-img" title="${config.nome}">` : '';
-        }).join('');
+        // Exibir as plataformas ativas como texto
+        const nomes = {
+            'mercadolivre': 'Mercado Livre',
+            'amazon': 'Amazon',
+            'shopee': 'Shopee',
+            'magalu': 'Magalu'
+        };
         
-        container.innerHTML = logosHtml;
+        const texto = plataformas.map(p => nomes[p] || p).join(' • ');
+        container.innerHTML = `✅ Plataformas ativas: ${texto}`;
     }
-
-    // INICIALIZAR
+    
+    // Inicializar ao carregar a página
     window.addEventListener('load', function() {
-        atualizarLogos();
+        atualizarTestePlataformas();
         
-        // ESCUTAR MUDANÇAS NO LOCALSTORAGE
+        // Escutar mudanças no localStorage (quando admin.html salvar)
         window.addEventListener('storage', function(e) {
             if (e.key === 'plataformas_ativas_frontend') {
-                console.log('Configurações alteradas, atualizando logos...');
-                atualizarLogos();
+                console.log('🔄 Configurações alteradas! Nova configuração:', e.newValue);
+                atualizarTestePlataformas();
             }
         });
     });
