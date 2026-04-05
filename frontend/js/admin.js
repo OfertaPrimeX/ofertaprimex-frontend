@@ -1,12 +1,12 @@
 // ============================================
-// ADMIN.JS - Painel Administrativo (VERSÃO SIMPLIFICADA - APENAS LOCALSTORAGE)
+// ADMIN.JS - Painel Administrativo (COM BACKEND)
 // ============================================
 
 const API_URL = 'https://yo0g0cg4c88w88osc4s04c0c.72.61.33.248.sslip.io';
 let produtos = [];
 
 // ============================================
-// CONFIGURAÇÃO DE PLATAFORMAS ATIVAS (APENAS LOCALSTORAGE)
+// CONFIGURAÇÃO DE PLATAFORMAS ATIVAS
 // ============================================
 const PLATAFORMAS = [
     { id: 'mercadolivre', nome: 'Mercado Livre', icone: '🛒', cor: '#ffe600' },
@@ -15,8 +15,33 @@ const PLATAFORMAS = [
     { id: 'magalu', nome: 'Magalu', icone: '🪄', cor: '#005c9e' }
 ];
 
-// Carregar configurações do localStorage
-function carregarConfiguracoesPlataformas() {
+// Carregar configurações do BACKEND
+async function carregarConfiguracoesPlataformas() {
+    try {
+        const user = localStorage.getItem('adminUser');
+        const pass = localStorage.getItem('adminPass');
+        
+        if (user && pass) {
+            const response = await fetch(`${API_URL}/api/admin/configuracoes/plataformas`, {
+                headers: { 'Authorization': 'Basic ' + btoa(user + ':' + pass) }
+            });
+            
+            if (response.ok) {
+                const data = await response.json();
+                if (data.success && data.plataformas) {
+                    PLATAFORMAS.forEach(p => {
+                        p.ativa = data.plataformas.includes(p.id);
+                    });
+                    console.log('✅ Configurações carregadas do backend:', data.plataformas);
+                    return PLATAFORMAS;
+                }
+            }
+        }
+    } catch (error) {
+        console.log('⚠️ Erro ao carregar do backend:', error);
+    }
+    
+    // Fallback: localStorage
     const saved = localStorage.getItem('plataformas_ativas');
     if (saved) {
         try {
@@ -33,34 +58,51 @@ function carregarConfiguracoesPlataformas() {
     return PLATAFORMAS;
 }
 
-// Salvar configurações no localStorage
-function salvarConfiguracoesPlataformas() {
+// Salvar configurações no BACKEND e localStorage
+async function salvarConfiguracoesPlataformas() {
     const config = {};
     PLATAFORMAS.forEach(p => {
         config[p.id] = p.ativa;
     });
     
-    // Salvar no localStorage
     localStorage.setItem('plataformas_ativas', JSON.stringify(config));
     
-    // Atualizar o frontend com as novas configurações
     const ativas = getPlataformasAtivas();
     localStorage.setItem('plataformas_ativas_frontend', JSON.stringify(ativas));
     
-    // Atualizar o painel admin visualmente
+    // SALVAR NO BACKEND
+    try {
+        const user = localStorage.getItem('adminUser');
+        const pass = localStorage.getItem('adminPass');
+        
+        if (user && pass) {
+            const response = await fetch(`${API_URL}/api/admin/configuracoes/plataformas`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': 'Basic ' + btoa(user + ':' + pass),
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ plataformas: ativas })
+            });
+            
+            if (response.ok) {
+                console.log('✅ Configurações salvas no BACKEND:', ativas);
+            } else {
+                console.warn('⚠️ Falha ao salvar no backend');
+            }
+        }
+    } catch (error) {
+        console.error('❌ Erro ao salvar no backend:', error);
+    }
+    
     if (typeof window.atualizarStatusPlataformasPainel === 'function') {
         window.atualizarStatusPlataformasPainel();
     }
     
-    // Atualizar contador de plataformas ativas
     atualizarContadorPlataformasAtivas();
-    
-    console.log('✅ Configurações salvas no localStorage:', config);
+    console.log('✅ Configurações salvas:', config);
 }
 
-// ============================================
-// FUNÇÃO PARA ATUALIZAR CONTADOR DE PLATAFORMAS ATIVAS
-// ============================================
 function atualizarContadorPlataformasAtivas() {
     const ativas = getPlataformasAtivas();
     const totalAtivas = ativas.length;
@@ -71,7 +113,6 @@ function atualizarContadorPlataformasAtivas() {
     console.log(`📊 Plataformas ativas: ${totalAtivas} (${ativas.join(', ')})`);
 }
 
-// Renderizar checkboxes de plataformas
 function renderizarControlesPlataformas() {
     const container = document.getElementById('controle-plataformas');
     if (!container) return;
@@ -101,7 +142,6 @@ function renderizarControlesPlataformas() {
     `;
 }
 
-// Alternar plataforma
 window.togglePlataforma = function(plataformaId, ativa) {
     const plataforma = PLATAFORMAS.find(p => p.id === plataformaId);
     if (plataforma) {
@@ -118,9 +158,8 @@ window.togglePlataforma = function(plataformaId, ativa) {
     }
 };
 
-// Aplicar configurações
-window.aplicarConfiguracoesPlataformas = function() {
-    salvarConfiguracoesPlataformas();
+window.aplicarConfiguracoesPlataformas = async function() {
+    await salvarConfiguracoesPlataformas();
     const statusDiv = document.getElementById('status-plataformas');
     if (statusDiv) {
         const ativas = PLATAFORMAS.filter(p => p.ativa).map(p => p.nome).join(', ');
@@ -129,10 +168,9 @@ window.aplicarConfiguracoesPlataformas = function() {
     }
 };
 
-// Resetar para todas ativas
-window.resetarConfiguracoesPlataformas = function() {
+window.resetarConfiguracoesPlataformas = async function() {
     PLATAFORMAS.forEach(p => p.ativa = true);
-    salvarConfiguracoesPlataformas();
+    await salvarConfiguracoesPlataformas();
     renderizarControlesPlataformas();
     const statusDiv = document.getElementById('status-plataformas');
     if (statusDiv) {
@@ -141,12 +179,10 @@ window.resetarConfiguracoesPlataformas = function() {
     }
 };
 
-// Obter plataformas ativas
 function getPlataformasAtivas() {
     return PLATAFORMAS.filter(p => p.ativa).map(p => p.id);
 }
 
-// Atualizar frontend com as configurações
 window.atualizarFrontendPlataformas = function() {
     const ativas = getPlataformasAtivas();
     localStorage.setItem('plataformas_ativas_frontend', JSON.stringify(ativas));
@@ -227,8 +263,7 @@ document.getElementById('btn-login')?.addEventListener('click', async () => {
             loginError.textContent = '';
             mostrarAdmin();
             
-            // Carregar configurações do localStorage
-            carregarConfiguracoesPlataformas();
+            await carregarConfiguracoesPlataformas();
             renderizarControlesPlataformas();
             
             carregarDadosReais();
@@ -612,18 +647,16 @@ function exportarTodas(formato) {
 if (window.location.pathname.includes('admin.html')) {
     document.getElementById('admin-main').style.display = 'none';
     
-    // Carregar configurações do localStorage primeiro
-    carregarConfiguracoesPlataformas();
-    
     const user = localStorage.getItem('adminUser');
     const pass = localStorage.getItem('adminPass');
     
     if (user && pass) {
         fetch(`${API_URL}/api/admin/logs/importacao`, {
             headers: { 'Authorization': 'Basic ' + btoa(user + ':' + pass) }
-        }).then(response => {
+        }).then(async (response) => {
             if (response.ok) {
                 mostrarAdmin();
+                await carregarConfiguracoesPlataformas();
                 renderizarControlesPlataformas();
                 carregarDadosReais();
                 carregarLogs();
