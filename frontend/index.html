@@ -124,6 +124,8 @@
         }
     };
 
+    let ultimasConfiguracoes = null;
+
     // BUSCAR CONFIGURAÇÕES DO BACKEND (ROTA PÚBLICA)
     async function carregarConfiguracoesBackend() {
         try {
@@ -160,13 +162,22 @@
         
         container.innerHTML = logosHtml;
         console.log('🖼️ Logos atualizados:', plataformasAtivas);
+        
+        // Verificar se as configurações mudaram para recarregar produtos
+        if (ultimasConfiguracoes && JSON.stringify(ultimasConfiguracoes) !== JSON.stringify(plataformasAtivas)) {
+            console.log('🔄 Configurações mudaram, recarregando produtos...');
+            if (typeof window.recarregarProdutos === 'function') {
+                window.recarregarProdutos();
+            }
+        }
+        ultimasConfiguracoes = plataformasAtivas;
     }
 
     // INICIALIZAR
-    window.addEventListener('load', function() {
-        atualizarLogos();
+    window.addEventListener('load', async function() {
+        await atualizarLogos();
         
-        // Recarregar a cada 10 segundos para sincronizar com mudanças no admin
+        // Verificar mudanças a cada 10 segundos, mas só recarregar produtos se houver mudança real
         setInterval(async () => {
             const novasConfigs = await carregarConfiguracoesBackend();
             const container = document.getElementById('plataformas-logos-container');
@@ -178,9 +189,14 @@
                 container.innerHTML = novosLogos;
                 console.log('🔄 Logos recarregados:', novasConfigs);
             }
-            // Recarregar produtos quando plataformas mudam
-            if (typeof window.recarregarProdutos === 'function') {
-                window.recarregarProdutos();
+            
+            // Só recarregar produtos se as configurações realmente mudaram
+            if (ultimasConfiguracoes && JSON.stringify(ultimasConfiguracoes) !== JSON.stringify(novasConfigs)) {
+                console.log('🔄 Configurações detectadas, recarregando produtos...');
+                ultimasConfiguracoes = novasConfigs;
+                if (typeof window.recarregarProdutos === 'function') {
+                    window.recarregarProdutos();
+                }
             }
         }, 10000);
     });
@@ -217,7 +233,7 @@
 
   // FUNÇÃO PARA RECARREGAR PRODUTOS QUANDO PLATAFORMAS MUDAM
   window.recarregarProdutos = async function() {
-      console.log('🔄 Plataformas alteradas, recarregando produtos...');
+      console.log('🔄 Recarregando produtos devido à mudança nas plataformas...');
       await carregarMaisVendidos();
       await carregarSelecionados();
   };
@@ -665,7 +681,7 @@
 
   renderizarCategorias();
   
-  // Inicializar
+  // Inicializar (carrega produtos uma única vez)
   (async function() {
       await carregarMaisVendidos();
       await carregarSelecionados();
