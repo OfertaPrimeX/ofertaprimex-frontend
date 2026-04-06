@@ -124,16 +124,13 @@
                 </div>
             </div>
 
-            <!-- AÇÕES GLOBAIS PADRONIZADAS -->
             <div class="admin-card">
                 <h3 class="admin-title">⚡ Ações Globais</h3>
-                <div class="plataforma-acoes">
-                    <button class="plataforma-btn" onclick="importarTodas()">📥 Importar Todas</button>
-                    <button class="plataforma-btn export" onclick="exportarTodas('csv')">📄 Exportar Todas (CSV)</button>
-                    <button class="plataforma-btn export" onclick="exportarTodas('excel')">📊 Exportar Todas (Excel)</button>
-                    <button class="plataforma-btn delete" onclick="limparTodosBancos()">🗑️ Limpar Todos os Bancos</button>
-                    <button class="plataforma-btn" onclick="atualizarCarrossel()" style="background-color:#ff6a00;">🎠 Atualizar Carrossel</button>
-                </div>
+                <button class="admin-btn" onclick="importarTodas()">📥 Importar Todas</button>
+                <button class="admin-btn secondary" onclick="exportarTodas('csv')">📄 Exportar Todas (CSV)</button>
+                <button class="admin-btn secondary" onclick="exportarTodas('excel')">📊 Exportar Todas (Excel)</button>
+                <button class="admin-btn delete" onclick="limparTodosBancos()" style="background-color:#c62828; color:white; padding:10px 20px; border:none; border-radius:6px; cursor:pointer; margin-left:10px;">🗑️ Limpar Todos os Bancos</button>
+                <button class="admin-btn" onclick="atualizarCarrossel()" style="background-color:#ff6a00; margin-left:10px;">🎠 Atualizar Carrossel Agora</button>
             </div>
 
             <div class="admin-card">
@@ -151,167 +148,167 @@
                               </tr>
                         </thead>
                         <tbody id="tabela-body">
-                            <tr><td colspan="6" style="text-align: center; padding: 30px;">Carregando...<\/td><\/tr>
+                            <tr><td colspan="6" style="text-align: center; padding: 30px;">Carregando...</td></tr>
                         </tbody>
-                    <\/table>
-                <\/div>
-            <\/div>
-        <\/div>
+                    </table>
+                </div>
+            </div>
+        </div>
 
         <!-- TAB CATEGORIAS -->
         <div id="tab-categorias" class="tab-content">
             <div class="admin-card">
-                <h3 class="admin-title">📂 Status das Categorias<\/h3>
-                <p class="admin-subtitle">Categorias com produtos (✅ Ativas) e sem produtos (❌ Inativas)<\/p>
+                <h3 class="admin-title">📂 Status das Categorias</h3>
+                <p class="admin-subtitle">Categorias com produtos (✅ Ativas) e sem produtos (❌ Inativas)</p>
                 
                 <div class="action-buttons">
-                    <button class="action-btn refresh" onclick="window.carregarCategoriasAdmin()">🔄 Atualizar<\/button>
-                <\/div>
+                    <button class="action-btn refresh" onclick="window.carregarCategoriasAdmin()">🔄 Atualizar</button>
+                </div>
                 
                 <div style="overflow-x: auto;">
                     <table class="categorias-table" id="tabela-categorias-admin">
                         <thead>
                             <tr>
-                                <th>Categoria<\/th>
-                                <th>Ícone<\/th>
-                                <th>Mercado Livre<\/th>
-                                <th>Amazon<\/th>
-                                <th>Shopee<\/th>
-                                <th>Magalu<\/th>
-                                <th>Total<\/th>
-                                <th>Status<\/th>
-                            〈/tr>
+                                <th>Categoria</th>
+                                <th>Ícone</th>
+                                <th>Mercado Livre</th>
+                                <th>Amazon</th>
+                                <th>Shopee</th>
+                                <th>Magalu</th>
+                                <th>Total</th>
+                                <th>Status</th>
+                            </tr>
                         </thead>
                         <tbody id="tabela-categorias-body">
-                            <td><td colspan="8" style="text-align: center; padding: 40px;">Carregando...<\/td><\/tr>
+                            <tr><td colspan="8" style="text-align: center; padding: 40px;">Carregando...</td></tr>
                         </tbody>
-                    <\/table>
-                <\/div>
+                    </table>
+                </div>
                 
                 <div id="categorias-resumo" style="margin-top: 15px; padding: 10px; background: #f5f5f5; border-radius: 6px; font-size: 13px;">
                     Carregando resumo...
-                <\/div>
-            <\/div>
-        <\/div>
+                </div>
+            </div>
+        </div>
 
         <!-- TAB PESQUISAS -->
         <div id="tab-pesquisas" class="tab-content">
             <div class="admin-card">
-                <h3 class="admin-title">🔍 Dados de Pesquisas Detalhadas<\/h3>
-                <p class="admin-subtitle">Registro detalhado de pesquisas por plataforma<\/p>
+                <h3 class="admin-title">🔍 Dados de Pesquisas Detalhadas</h3>
+                <p class="admin-subtitle">Registro detalhado de pesquisas por plataforma</p>
                 
                 <div class="action-buttons">
-                    <button class="action-btn export" onclick="exportarPesquisas()">📥 Exportar CSV<\/button>
-                    <button class="action-btn delete" onclick="limparPesquisas()">🗑️ Limpar Tabela<\/button>
-                    <button class="action-btn refresh" onclick="carregarEstatisticasPesquisas()">🔄 Atualizar<\/button>
-                <\/div>
+                    <button class="action-btn export" onclick="exportarPesquisas()">📥 Exportar CSV</button>
+                    <button class="action-btn delete" onclick="limparPesquisas()">🗑️ Limpar Tabela</button>
+                    <button class="action-btn refresh" onclick="carregarEstatisticasPesquisas()">🔄 Atualizar</button>
+                </div>
                 
-                <h4 class="platform-title">📊 Estatísticas por Plataforma<\/h4>
+                <h4 class="platform-title">📊 Estatísticas por Plataforma</h4>
                 <div style="overflow-x: auto;">
                     <table class="admin-table">
                         <thead>
-                             <tr>
-                                <th>Plataforma<\/th>
-                                <th>Total<\/th>
-                                <th>Encontradas<\/th>
-                                <th>Não Encontradas<\/th>
-                                <th>Tempo Médio<\/th>
-                              〈/tr>
+                            <tr>
+                                <th>Plataforma</th>
+                                <th>Total</th>
+                                <th>Encontradas</th>
+                                <th>Não Encontradas</th>
+                                <th>Tempo Médio</th>
+                              </tr>
                         </thead>
                         <tbody id="tabela-estatisticas-plataformas">
-                            <tr><td colspan="5" style="text-align: center;">Carregando...<\/td><\/tr>
+                            <tr><td colspan="5" style="text-align: center;">Carregando...</td></tr>
                         </tbody>
-                    <\/table>
-                <\/div>
+                    </table>
+                </div>
                 
-                <h4 class="platform-title" style="margin-top: 30px;">🔝 Termos Mais Buscados (não encontrados)<\/h4>
+                <h4 class="platform-title" style="margin-top: 30px;">🔝 Termos Mais Buscados (não encontrados)</h4>
                 <div style="overflow-x: auto;">
                     <table class="admin-table">
                         <thead>
-                             <tr>
-                                <th>Termo<\/th>
-                                <th>Tentativas<\/th>
-                                <th>Plataformas<\/th>
-                              〈/tr>
+                            <tr>
+                                <th>Termo</th>
+                                <th>Tentativas</th>
+                                <th>Plataformas</th>
+                              </tr>
                         </thead>
                         <tbody id="tabela-termos-nao-encontrados">
-                            <tr><td colspan="3" style="text-align: center;">Carregando...<\/td><\/tr>
+                            <tr><td colspan="3" style="text-align: center;">Carregando...</td></tr>
                         </tbody>
-                    <\/table>
-                <\/div>
-            <\/div>
-        <\/div>
+                    </table>
+                </div>
+            </div>
+        </div>
 
         <!-- TAB ESTATÍSTICAS -->
         <div id="tab-estatisticas" class="tab-content">
             <div class="admin-card">
-                <h3 class="admin-title">📊 Estatísticas de Pesquisa<\/h3>
+                <h3 class="admin-title">📊 Estatísticas de Pesquisa</h3>
                 
                 <div class="admin-stats">
                     <div class="admin-stat-card">
-                        <div class="number" id="total-pesquisas-24h">0<\/div>
-                        <div class="label">Pesquisas (24h)<\/div>
-                    <\/div>
+                        <div class="number" id="total-pesquisas-24h">0</div>
+                        <div class="label">Pesquisas (24h)</div>
+                    </div>
                     <div class="admin-stat-card">
-                        <div class="number" id="taxa-sucesso-banco">0%<\/div>
-                        <div class="label">Encontrados no banco<\/div>
-                    <\/div>
+                        <div class="number" id="taxa-sucesso-banco">0%</div>
+                        <div class="label">Encontrados no banco</div>
+                    </div>
                     <div class="admin-stat-card">
-                        <div class="number" id="tempo-medio">0ms<\/div>
-                        <div class="label">Tempo médio<\/div>
-                    <\/div>
-                <\/div>
+                        <div class="number" id="tempo-medio">0ms</div>
+                        <div class="label">Tempo médio</div>
+                    </div>
+                </div>
 
-                <h4 class="platform-title">🔝 Termos mais buscados (30 dias)<\/h4>
+                <h4 class="platform-title">🔝 Termos mais buscados (30 dias)</h4>
                 <div style="overflow-x: auto;">
                     <table class="admin-table">
                         <thead>
-                             <tr>
-                                <th>Termo<\/th>
-                                <th>Buscas<\/th>
-                                <th>No Banco<\/th>
-                                <th>Na Plataforma<\/th>
-                                <th>Não Encontrado<\/th>
-                              〈/tr>
+                            <tr>
+                                <th>Termo</th>
+                                <th>Buscas</th>
+                                <th>No Banco</th>
+                                <th>Na Plataforma</th>
+                                <th>Não Encontrado</th>
+                              </tr>
                         </thead>
                         <tbody id="tabela-termos">
-                            <tr><td colspan="5" style="text-align: center;">Carregando...<\/td><\/tr>
+                            <tr><td colspan="5" style="text-align: center;">Carregando...</td></tr>
                         </tbody>
-                    <\/table>
-                <\/div>
-            <\/div>
-        <\/div>
+                    </table>
+                </div>
+            </div>
+        </div>
 
         <!-- TAB LOGS -->
         <div id="tab-logs" class="tab-content">
             <div class="admin-card">
-                <h3 class="admin-title">📋 Logs de Importação<\/h3>
-                <button class="admin-btn secondary" onclick="window.open('/logs/importacao/', '_blank')">📂 Abrir Visualizador de Logs<\/button>
+                <h3 class="admin-title">📋 Logs de Importação</h3>
+                <button class="admin-btn secondary" onclick="window.open('/logs/importacao/', '_blank')">📂 Abrir Visualizador de Logs</button>
                 <div style="margin-top: 20px; background: #1e1e1e; color: #00ff00; padding: 15px; border-radius: 5px; max-height: 400px; overflow-y: auto; font-family: monospace;" id="logs-container">
                     Carregando logs...
-                <\/div>
-            <\/div>
-        <\/div>
-    <\/div>
-<\/section>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
 
 <div class="modal" id="login-modal">
     <div class="modal-content">
-        <span class="close" id="close-modal">&times;<\/span>
-        <h3 class="admin-title" style="text-align: center;">🔐 Login Administrativo<\/h3>
+        <span class="close" id="close-modal">&times;</span>
+        <h3 class="admin-title" style="text-align: center;">🔐 Login Administrativo</h3>
         <input type="text" id="login-user" class="login-input" placeholder="Usuário">
         <input type="password" id="login-pass" class="login-input" placeholder="Senha">
-        <div id="login-error" class="login-error"><\/div>
-        <button class="login-btn" id="btn-login">Entrar<\/button>
-    <\/div>
-<\/div>
+        <div id="login-error" class="login-error"></div>
+        <button class="login-btn" id="btn-login">Entrar</button>
+    </div>
+</div>
 
 <footer class="footer">
-    <p>© 2026 OfertaPrimeX - Painel Administrativo<\/p>
-<\/footer>
+    <p>© 2026 OfertaPrimeX - Painel Administrativo</p>
+</footer>
 
-<script src="js/main.js"><\/script>
-<script src="js/admin.js"><\/script>
+<script src="js/main.js"></script>
+<script src="js/admin.js"></script>
 <script>
     document.getElementById('admin-main').style.display = 'none';
 
@@ -369,15 +366,15 @@
                 if (data.data.top_nao_encontrados && data.data.top_nao_encontrados.length > 0) {
                     tbody.innerHTML = data.data.top_nao_encontrados.slice(0, 10).map(t => `
                         <tr>
-                            <td>${t.termo}<\/td>
-                            <td>${t.tentativas}<\/td>
-                            <td>${t.tentativas}<\/td>
-                            <td>0<\/td>
-                            <td>${t.tentativas}<\/td>
-                          〈/tr>
+                            <td>${t.termo}</td>
+                            <td>${t.tentativas}</td>
+                            <td>${t.tentativas}</td>
+                            <td>0</td>
+                            <td>${t.tentativas}</td>
+                        </tr>
                     `).join('');
                 } else {
-                    tbody.innerHTML = '<td><td colspan="5" style="text-align: center;">Nenhum termo buscado<\/td><\/tr>';
+                    tbody.innerHTML = '<tr><td colspan="5" style="text-align: center;">Nenhum termo buscado</td></tr>';
                 }
             }
         } catch (error) {
@@ -400,16 +397,16 @@
                 const tbody = document.getElementById('tabela-estatisticas-plataformas');
                 if (tbody && data.data.por_plataforma) {
                     if (data.data.por_plataforma.length === 0) {
-                        tbody.innerHTML = '<td><td colspan="5" style="text-align: center;">Nenhum dado disponível<\/td><\/tr>';
+                        tbody.innerHTML = '<tr><td colspan="5" style="text-align: center;">Nenhum dado disponível</td></tr>';
                     } else {
                         tbody.innerHTML = data.data.por_plataforma.map(p => `
                             <tr>
-                                <td>${p.plataforma}<\/td>
-                                <td>${p.total}<\/td>
-                                <td>${p.encontradas}<\/td>
-                                <td>${p.nao_encontradas}<\/td>
-                                <td>${p.tempo_medio_ms}ms<\/td>
-                            〈/tr>
+                                <td>${p.plataforma}</td>
+                                <td>${p.total}</td>
+                                <td>${p.encontradas}</td>
+                                <td>${p.nao_encontradas}</td>
+                                <td>${p.tempo_medio_ms}ms</td>
+                            </tr>
                         `).join('');
                     }
                 }
@@ -417,14 +414,14 @@
                 const termosTbody = document.getElementById('tabela-termos-nao-encontrados');
                 if (termosTbody && data.data.top_nao_encontrados) {
                     if (data.data.top_nao_encontrados.length === 0) {
-                        termosTbody.innerHTML = '<td><td colspan="3" style="text-align: center;">Nenhum termo não encontrado<\/td><\/tr>';
+                        termosTbody.innerHTML = '<tr><td colspan="3" style="text-align: center;">Nenhum termo não encontrado</td></tr>';
                     } else {
                         termosTbody.innerHTML = data.data.top_nao_encontrados.map(t => `
                             <tr>
-                                <td>${t.termo}<\/td>
-                                <td>${t.tentativas}<\/td>
-                                <td>${t.plataformas}<\/td>
-                            〈/tr>
+                                <td>${t.termo}</td>
+                                <td>${t.tentativas}</td>
+                                <td>${t.plataformas}</td>
+                            </tr>
                         `).join('');
                     }
                 }
@@ -499,13 +496,13 @@
             
             if (data.logs && data.logs.length > 0) {
                 container.innerHTML = data.logs.slice(-50).map(log => 
-                    `<div style="margin: 2px 0;">${log}<\/div>`
+                    `<div style="margin: 2px 0;">${log}</div>`
                 ).join('');
             } else {
-                container.innerHTML = '<div>📭 Nenhum log encontrado<\/div>';
+                container.innerHTML = '<div>📭 Nenhum log encontrado</div>';
             }
         } catch (error) {
-            document.getElementById('logs-container').innerHTML = '<div style="color: #ff5555;">❌ Erro ao carregar logs<\/div>';
+            document.getElementById('logs-container').innerHTML = '<div style="color: #ff5555;">❌ Erro ao carregar logs</div>';
         }
     }
 
@@ -516,7 +513,7 @@
         
         const statusDiv = document.getElementById(`${plataforma}-status`);
         if (statusDiv) {
-            statusDiv.innerHTML = '<div class="import-status info">⏳ Limpando banco de dados...<\/div>';
+            statusDiv.innerHTML = '<div class="import-status info">⏳ Limpando banco de dados...</div>';
         }
         
         try {
@@ -528,7 +525,7 @@
             
             if (response.ok) {
                 if (statusDiv) {
-                    statusDiv.innerHTML = `<div class="import-status success">✅ ${data.message || 'Banco limpo com sucesso!'}<\/div>`;
+                    statusDiv.innerHTML = `<div class="import-status success">✅ ${data.message || 'Banco limpo com sucesso!'}</div>`;
                 }
                 setTimeout(() => {
                     if (typeof carregarContadores === 'function') carregarContadores();
@@ -539,13 +536,13 @@
                 }, 1500);
             } else {
                 if (statusDiv) {
-                    statusDiv.innerHTML = `<div class="import-status error">❌ Erro: ${data.error || 'Falha ao limpar banco'}<\/div>`;
+                    statusDiv.innerHTML = `<div class="import-status error">❌ Erro: ${data.error || 'Falha ao limpar banco'}</div>`;
                 }
             }
         } catch (error) {
             console.error('❌ Erro ao limpar banco:', error);
             if (statusDiv) {
-                statusDiv.innerHTML = `<div class="import-status error">❌ Erro de conexão: ${error.message}<\/div>`;
+                statusDiv.innerHTML = `<div class="import-status error">❌ Erro de conexão: ${error.message}</div>`;
             }
         }
     }
@@ -560,7 +557,7 @@
         for (const plataforma of plataformas) {
             const statusDiv = document.getElementById(`${plataforma}-status`);
             if (statusDiv) {
-                statusDiv.innerHTML = '<div class="import-status info">⏳ Limpando...<\/div>';
+                statusDiv.innerHTML = '<div class="import-status info">⏳ Limpando...</div>';
             }
             
             try {
@@ -570,16 +567,16 @@
                 
                 if (response.ok) {
                     if (statusDiv) {
-                        statusDiv.innerHTML = '<div class="import-status success">✅ Limpo!<\/div>';
+                        statusDiv.innerHTML = '<div class="import-status success">✅ Limpo!</div>';
                     }
                 } else {
                     if (statusDiv) {
-                        statusDiv.innerHTML = '<div class="import-status error">❌ Erro<\/div>';
+                        statusDiv.innerHTML = '<div class="import-status error">❌ Erro</div>';
                     }
                 }
             } catch (error) {
                 if (statusDiv) {
-                    statusDiv.innerHTML = '<div class="import-status error">❌ Erro<\/div>';
+                    statusDiv.innerHTML = '<div class="import-status error">❌ Erro</div>';
                 }
             }
         }
