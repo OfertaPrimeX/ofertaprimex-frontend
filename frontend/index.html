@@ -157,7 +157,7 @@
         
         const logosHtml = plataformasAtivas.map(id => {
             const config = plataformasConfig[id];
-            return config ? `<img src="${config.logo}" alt="${config.nome}" class="plataforma-logo-img" title="${config.nome}">` : '';
+            return config ? `<img src="${config.logo}" alt="${config.nome}" class="plataforma-logo-img" title="${config.nome}" loading="lazy">` : '';
         }).join('');
         
         container.innerHTML = logosHtml;
@@ -182,7 +182,7 @@
             if (container) {
                 const novosLogos = novasConfigs.map(id => {
                     const config = plataformasConfig[id];
-                    return config ? `<img src="${config.logo}" alt="${config.nome}" class="plataforma-logo-img" title="${config.nome}">` : '';
+                    return config ? `<img src="${config.logo}" alt="${config.nome}" class="plataforma-logo-img" title="${config.nome}" loading="lazy">` : '';
                 }).join('');
                 container.innerHTML = novosLogos;
                 console.log('🔄 Logos recarregados:', novasConfigs);
@@ -411,7 +411,7 @@
       }
   }
 
-  // CARREGAR MAIS VENDIDOS (USANDO CACHE DO BACKEND)
+  // CARREGAR MAIS VENDIDOS (USANDO CACHE DO BACKEND) - COM LAZY LOADING NAS IMAGENS
   async function carregarMaisVendidos() {
       const track = document.getElementById('carousel-track');
       if (!track) return;
@@ -434,7 +434,7 @@
                   const titulo = (p.titulo || '').substring(0, 50);
                   const preco = formatarPreco(p.preco);
                   
-                  return `<div class="carousel-card" onclick="window.registrarCliqueCarrossel(${produtoId}, '${plataforma}', '${link}'); window.open('${link}', '_blank');"><img src="${imagem}" alt="${titulo}" onerror="this.src='https://via.placeholder.com/150'"><div class="product-title">${titulo}...</div><div class="product-price">R$ ${preco}</div><div class="product-platform">${plataforma}</div></div>`;
+                  return `<div class="carousel-card" onclick="window.registrarCliqueCarrossel(${produtoId}, '${plataforma}', '${link}'); window.open('${link}', '_blank');"><img src="${imagem}" alt="${titulo}" loading="lazy" onerror="this.src='https://via.placeholder.com/150'"><div class="product-title">${titulo}...</div><div class="product-price">R$ ${preco}</div><div class="product-platform">${plataforma}</div></div>`;
               }).join('');
               
               console.log(`✅ Carrossel carregado com ${produtos.length} produtos (cache: ${data.cache ? 'usado' : 'novo'})`);
