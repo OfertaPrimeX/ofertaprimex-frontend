@@ -148,7 +148,7 @@
                               </tr>
                         </thead>
                         <tbody id="tabela-body">
-                             <td colspan="6" style="text-align: center; padding: 30px;">Carregando...</td>
+                            <tr><td colspan="6" style="text-align: center; padding: 30px;">Carregando...</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -180,7 +180,7 @@
                             </tr>
                         </thead>
                         <tbody id="tabela-categorias-body">
-                             <td colspan="8" style="text-align: center; padding: 40px;">Carregando...</td>
+                            <tr><td colspan="8" style="text-align: center; padding: 40px;">Carregando...</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -216,7 +216,7 @@
                               </tr>
                         </thead>
                         <tbody id="tabela-estatisticas-plataformas">
-                             <td colspan="5" style="text-align: center;">Carregando...</td>
+                            <tr><td colspan="5" style="text-align: center;">Carregando...</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -232,7 +232,7 @@
                               </tr>
                         </thead>
                         <tbody id="tabela-termos-nao-encontrados">
-                             <td colspan="3" style="text-align: center;">Carregando...</td>
+                            <tr><td colspan="3" style="text-align: center;">Carregando...</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -272,7 +272,7 @@
                               </tr>
                         </thead>
                         <tbody id="tabela-termos">
-                             <td colspan="5" style="text-align: center;">Carregando...</td>
+                            <tr><td colspan="5" style="text-align: center;">Carregando...</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -366,11 +366,11 @@
                 if (data.data.top_nao_encontrados && data.data.top_nao_encontrados.length > 0) {
                     tbody.innerHTML = data.data.top_nao_encontrados.slice(0, 10).map(t => `
                         <tr>
-                            <td>${t.termo}</td
-                            <td>${t.tentativas}</td
-                            <td>${t.tentativas}</td
-                            <td>0</td
-                            <td>${t.tentativas}</td
+                            <td>${t.termo}</td>
+                            <td>${t.tentativas}</td>
+                            <td>${t.tentativas}</td>
+                            <td>0</td>
+                            <td>${t.tentativas}</td>
                         </tr>
                     `).join('');
                 } else {
@@ -380,6 +380,111 @@
         } catch (error) {
             console.error('Erro ao carregar estatísticas:', error);
             document.getElementById('total-pesquisas-24h').textContent = 'Erro';
+        }
+    }
+
+    async function carregarEstatisticasPesquisas() {
+        try {
+            const response = await apiRequest('/api/admin/pesquisas/estatisticas');
+            const data = await response.json();
+            
+            if (data.success && data.data) {
+                const totalElement = document.getElementById('total-pesquisas');
+                if (totalElement) {
+                    totalElement.textContent = data.data.total;
+                }
+                
+                const tbody = document.getElementById('tabela-estatisticas-plataformas');
+                if (tbody && data.data.por_plataforma) {
+                    if (data.data.por_plataforma.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="5" style="text-align: center;">Nenhum dado disponível</td></tr>';
+                    } else {
+                        tbody.innerHTML = data.data.por_plataforma.map(p => `
+                            <tr>
+                                <td>${p.plataforma}</td>
+                                <td>${p.total}</td>
+                                <td>${p.encontradas}</td>
+                                <td>${p.nao_encontradas}</td>
+                                <td>${p.tempo_medio_ms}ms</td>
+                            </tr>
+                        `).join('');
+                    }
+                }
+                
+                const termosTbody = document.getElementById('tabela-termos-nao-encontrados');
+                if (termosTbody && data.data.top_nao_encontrados) {
+                    if (data.data.top_nao_encontrados.length === 0) {
+                        termosTbody.innerHTML = '<tr><td colspan="3" style="text-align: center;">Nenhum termo não encontrado</td></tr>';
+                    } else {
+                        termosTbody.innerHTML = data.data.top_nao_encontrados.map(t => `
+                            <tr>
+                                <td>${t.termo}</td>
+                                <td>${t.tentativas}</td>
+                                <td>${t.plataformas}</td>
+                            </tr>
+                        `).join('');
+                    }
+                }
+            }
+        } catch (error) {
+            console.error('❌ Erro ao carregar estatísticas de pesquisas:', error);
+        }
+    }
+
+    async function exportarPesquisas() {
+        try {
+            console.log('📊 Exportando dados de pesquisas...');
+            
+            const response = await apiRequest('/api/admin/pesquisas/exportar?format=csv');
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}`);
+            }
+            
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `pesquisas_detalhadas_${new Date().toISOString().slice(0,19)}.csv`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+            
+            console.log('✅ Exportação concluída!');
+            alert('✅ Arquivo CSV exportado com sucesso!');
+            
+        } catch (error) {
+            console.error('❌ Erro ao exportar pesquisas:', error);
+            alert(`❌ Erro ao exportar: ${error.message}`);
+        }
+    }
+
+    async function limparPesquisas() {
+        const confirmar = confirm('⚠️ ATENÇÃO: Esta ação irá LIMPAR TODOS OS DADOS da tabela de pesquisas detalhadas. Esta operação é irreversível. Deseja continuar?');
+        
+        if (!confirmar) return;
+        
+        try {
+            console.log('🗑️ Limpando tabela pesquisas_detalhadas...');
+            
+            const response = await apiRequest('/api/admin/pesquisas/limpar?confirm=true', {
+                method: 'DELETE'
+            });
+            
+            const data = await response.json();
+            
+            if (response.ok) {
+                console.log(`✅ ${data.message}`);
+                alert(`✅ ${data.message}`);
+                carregarEstatisticasPesquisas();
+            } else {
+                throw new Error(data.error || 'Erro desconhecido');
+            }
+            
+        } catch (error) {
+            console.error('❌ Erro ao limpar pesquisas:', error);
+            alert(`❌ Erro ao limpar: ${error.message}`);
         }
     }
 
