@@ -447,49 +447,64 @@
       }
   }
 
-  // CATEGORIAS
-  const categorias = [
-    { nome: "Roupas Femininas", icone: "👗", termo: "roupas femininas" },
-    { nome: "Roupas Masculinas", icone: "👕", termo: "roupas masculinas" },
-    { nome: "Roupas Plus Size", icone: "👚", termo: "plus size" },
-    { nome: "Moda Infantil", icone: "👶", termo: "moda infantil" },
-    { nome: "Sapatos Femininos", icone: "👠", termo: "sapatos femininos" },
-    { nome: "Sapatos Masculinos", icone: "👞", termo: "sapatos masculinos" },
-    { nome: "Bolsas Femininas", icone: "👜", termo: "bolsas femininas" },
-    { nome: "Bolsas Masculinas", icone: "🎒", termo: "bolsas masculinas" },
-    { nome: "Acessórios de Moda", icone: "🧢", termo: "acessórios de moda" },
-    { nome: "Relógios", icone: "⌚", termo: "relógios" },
-    { nome: "Celulares e Dispositivos", icone: "📱", termo: "celulares" },
-    { nome: "Computadores e Acessórios", icone: "💻", termo: "computadores" },
-    { nome: "Jogos e Consoles", icone: "🎮", termo: "jogos e consoles" },
-    { nome: "Áudio", icone: "🎧", termo: "áudio" },
-    { nome: "Câmeras e Drones", icone: "📸", termo: "câmeras e drones" },
-    { nome: "Eletrodomésticos", icone: "🧺", termo: "eletrodomésticos" },
-    { nome: "Casa e Construção", icone: "🏠", termo: "casa e construção" },
-    { nome: "Cozinha", icone: "🍳", termo: "cozinha" },
-    { nome: "Beleza", icone: "💄", termo: "beleza" },
-    { nome: "Saúde", icone: "💊", termo: "saúde" },
-    { nome: "Esportes e Lazer", icone: "⚽", termo: "esportes" },
-    { nome: "Brinquedos e Hobbies", icone: "🧸", termo: "brinquedos" },
-    { nome: "Livros e Revistas", icone: "📚", termo: "livros" },
-    { nome: "Papelaria", icone: "✏️", termo: "papelaria" },
-    { nome: "Viagens e Bagagens", icone: "🧳", termo: "viagens" },
-    { nome: "Automóveis", icone: "🚗", termo: "automóveis" },
-    { nome: "Motocicletas", icone: "🏍️", termo: "motocicletas" },
-    { nome: "Acessórios para Veículos", icone: "🔧", termo: "acessórios automotivos" },
-    { nome: "Animais Domésticos", icone: "🐶", termo: "animais domésticos" },
-    { nome: "Alimentos e Bebidas", icone: "🍕", termo: "alimentos e bebidas" },
-    { nome: "Mãe e Bebê", icone: "🍼", termo: "mãe e bebê" },
-    { nome: "Ferramentas", icone: "🔨", termo: "ferramentas" },
-    { nome: "Jardim", icone: "🌻", termo: "jardim" },
-    { nome: "Instrumentos Musicais", icone: "🎸", termo: "instrumentos musicais" },
-    { nome: "Móveis", icone: "🛋️", termo: "móveis" },
-    { nome: "Escritório", icone: "📎", termo: "escritório" },
-    { nome: "Malas e Mochilas", icone: "🎒", termo: "malas e mochilas" },
-    { nome: "Religião", icone: "⛪", termo: "religião" },
-    { nome: "Festas", icone: "🎉", termo: "festas" }
-  ];
+  // RENDERIZAR CATEGORIAS (BUSCANDO DO BACKEND E OCULTANDO AS SEM PRODUTOS)
+  async function renderizarCategorias() {
+      const container = document.getElementById('categories-grid');
+      if (!container) return;
+      
+      try {
+          container.innerHTML = '<div style="text-align: center; grid-column: 1/-1; padding: 40px;">Carregando categorias...</div>';
+          
+          // Buscar categorias com contagem do backend
+          const response = await fetch('https://yo0g0cg4c88w88osc4s04c0c.72.61.33.248.sslip.io/api/produtos/categorias/contagem');
+          const data = await response.json();
+          
+          if (data.success && data.categorias && data.categorias.length > 0) {
+              const categoriasComStatus = data.categorias;
+              const categoriasAtivas = categoriasComStatus.filter(c => c.ativa);
+              
+              console.log(`📊 Total de categorias: ${categoriasComStatus.length}, ativas: ${categoriasAtivas.length}`);
+              
+              if (categoriasAtivas.length === 0) {
+                  container.innerHTML = '<div style="text-align: center; grid-column: 1/-1; padding: 40px;">Nenhuma categoria com produtos no momento</div>';
+                  return;
+              }
+              
+              container.innerHTML = categoriasAtivas.map(cat => `
+                  <div class="category-card" onclick="buscarPorCategoria('${cat.termo.replace(/'/g, "\\'")}')" style="cursor: pointer;">
+                      <div class="category-icon">${cat.icone}</div>
+                      <div class="category-name">${cat.nome}</div>
+                  </div>
+              `).join('');
+              
+              console.log(`✅ ${categoriasAtivas.length} categorias ativas renderizadas`);
+          } else {
+              // Fallback: usar categorias locais
+              console.log('⚠️ Usando categorias locais como fallback');
+              const categoriasFallback = [
+                { nome: "Celulares e Dispositivos", icone: "📱", termo: "celulares" },
+                { nome: "Computadores e Acessórios", icone: "💻", termo: "computadores" },
+                { nome: "Jogos e Consoles", icone: "🎮", termo: "jogos e consoles" },
+                { nome: "Áudio", icone: "🎧", termo: "áudio" },
+                { nome: "Eletrodomésticos", icone: "🧺", termo: "eletrodomésticos" },
+                { nome: "Beleza", icone: "💄", termo: "beleza" },
+                { nome: "Saúde", icone: "💊", termo: "saúde" }
+              ];
+              
+              container.innerHTML = categoriasFallback.map(cat => `
+                  <div class="category-card" onclick="buscarPorCategoria('${cat.termo}')" style="cursor: pointer;">
+                      <div class="category-icon">${cat.icone}</div>
+                      <div class="category-name">${cat.nome}</div>
+                  </div>
+              `).join('');
+          }
+      } catch (error) {
+          console.error('❌ Erro ao carregar categorias:', error);
+          container.innerHTML = '<div style="text-align: center; grid-column: 1/-1; padding: 40px;">⚠️ Erro ao carregar categorias</div>';
+      }
+  }
 
+  // FUNÇÕES PARA CONTROLAR A EXIBIÇÃO DAS SEÇÕES
   function ocultarTodasSecoes() {
       const secoes = ['categorias', 'mais-vendidos', 'selecionados'];
       secoes.forEach(id => {
@@ -537,12 +552,6 @@
   window.mostrarMaisVendidos = mostrarMaisVendidos;
   window.mostrarSelecionados = mostrarSelecionados;
   window.voltarParaHome = voltarParaHome;
-
-  function renderizarCategorias() {
-      const container = document.getElementById('categories-grid');
-      if (!container) return;
-      container.innerHTML = categorias.map(cat => `<div class="category-card" onclick="buscarPorCategoria('${cat.termo.replace(/'/g, "\\'")}')"><div class="category-icon">${cat.icone}</div><div class="category-name">${cat.nome}</div></div>`).join('');
-  }
 
   window.buscarPorCategoria = function(termo) {
       document.getElementById('busca').value = termo;
@@ -695,10 +704,9 @@
   document.getElementById('carousel-next')?.addEventListener('click', nextSlide);
   window.addEventListener('resize', () => { updateItemsPerView(); updateTotalPages(); updateCarousel(); });
 
-  renderizarCategorias();
-  
   // Inicializar
   (async function() {
+      await renderizarCategorias();
       await carregarMaisVendidos();
       await carregarSelecionados();
       updateItemsPerView();
