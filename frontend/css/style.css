@@ -765,6 +765,7 @@ body {
     flex-wrap: wrap;
 }
 
+/* ===== BOTÃO PADRÃO PLATAFORMA (ESTILO BASE) ===== */
 .plataforma-btn {
     flex: 1;
     background-color: #ff6a00;
@@ -775,14 +776,16 @@ body {
     cursor: pointer;
     font-size: 12px;
     font-weight: bold;
-    transition: background-color 0.2s;
+    transition: background-color 0.2s, transform 0.1s;
     min-width: 60px;
 }
 
 .plataforma-btn:hover {
     background-color: #e85f00;
+    transform: translateY(-1px);
 }
 
+/* Botão Export (verde) */
 .plataforma-btn.export {
     background-color: #2e7d32;
 }
@@ -791,6 +794,7 @@ body {
     background-color: #1f5a23;
 }
 
+/* Botão Delete (vermelho) */
 .plataforma-btn.delete {
     background-color: #c62828;
 }
@@ -799,12 +803,26 @@ body {
     background-color: #b71c1c;
 }
 
+/* Botão Configurações (cinza) */
 .plataforma-btn.settings {
     background-color: #555;
 }
 
 .plataforma-btn.settings:hover {
     background-color: #333;
+}
+
+/* ===== AÇÕES GLOBAIS - USANDO O MESMO PADRÃO ===== */
+.acoes-globais {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+}
+
+.acoes-globais .plataforma-btn {
+    flex: 0 0 auto;
+    margin: 0;
 }
 
 /* ===== ESTILOS DO CONTROLE DE PLATAFORMAS ===== */
