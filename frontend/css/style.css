@@ -1250,3 +1250,15 @@ body {
     font-weight: bold;
     text-align: center;
 }
+/* ===== AÇÕES GLOBAIS - PADRONIZADO COM BOTÕES DAS PLATAFORMAS ===== */
+.acoes-globais {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+}
+
+.acoes-globais .plataforma-btn {
+    flex: 0 0 auto;
+    margin: 0;
+}
