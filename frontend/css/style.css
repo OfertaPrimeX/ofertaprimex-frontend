@@ -1174,3 +1174,49 @@ body {
         font-size: 13px;
     }
 }
+
+/* ================= BOTÃO VOLTAR AO TOPO ================= */
+.btn-topo {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    width: 50px;
+    height: 50px;
+    background-color: #ff6a00;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 24px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    z-index: 1000;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    opacity: 0;
+    visibility: hidden;
+}
+
+.btn-topo:hover {
+    background-color: #e85f00;
+    transform: scale(1.1);
+    box-shadow: 0 6px 16px rgba(0,0,0,0.3);
+}
+
+.btn-topo.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Responsivo para celular */
+@media (max-width: 768px) {
+    .btn-topo {
+        bottom: 20px;
+        right: 20px;
+        width: 45px;
+        height: 45px;
+        font-size: 20px;
+    }
+}

@@ -91,5 +91,28 @@
   load();
 </script>
 
+<!-- Botão Voltar ao Topo -->
+<button class="btn-topo" id="btnTopo" title="Voltar ao topo">↑</button>
+
+<script>
+    // Botão Voltar ao Topo
+    const btnTopo = document.getElementById('btnTopo');
+    
+    window.addEventListener('scroll', function() {
+        if (window.scrollY > 300) {
+            btnTopo.classList.add('show');
+        } else {
+            btnTopo.classList.remove('show');
+        }
+    });
+    
+    btnTopo.addEventListener('click', function() {
+        window.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+        });
+    });
+</script>
+
 </body>
 </html>
