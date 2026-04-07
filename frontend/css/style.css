@@ -259,12 +259,19 @@ body {
 }
 
 /* ================= INPUT BUSCA ================= */
+.hero .container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
 #busca {
     padding: 10px;
     width: 300px;
     border: none;
     border-radius: 4px;
-    margin-right: 10px;
 }
 
 #btnBuscar {
@@ -987,27 +994,30 @@ body {
         font-size: 20px;
     }
     
-    #busca {
-        width: 200px;
-    }
-
-    .hero #btnBuscar {
-        padding: 14px 20px;
-        font-size: 16px;
-        min-width: 100px;
-    }
-    
-    .hero #busca {
-        padding: 14px 12px;
-        font-size: 16px;
-        width: calc(100% - 120px);
-        margin-bottom: 10px;
-    }
-    
+    /* CORREÇÃO: Campo e botão na mesma linha (lado a lado) */
     .hero .container {
         display: flex;
-        flex-direction: column;
-        gap: 12px;
+        flex-direction: row;
+        justify-content: center;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+    
+    #busca {
+        width: auto;
+        flex: 1;
+        min-width: 180px;
+        max-width: 250px;
+        padding: 12px 12px;
+        font-size: 14px;
+    }
+    
+    #btnBuscar {
+        width: auto;
+        padding: 12px 16px;
+        font-size: 14px;
+        white-space: nowrap;
     }
 
     .selecionados-grid {
@@ -1150,5 +1160,17 @@ body {
     
     .section-title {
         font-size: 18px;
+    }
+
+    #busca {
+        min-width: 140px;
+        max-width: 200px;
+        padding: 10px 10px;
+        font-size: 13px;
+    }
+    
+    #btnBuscar {
+        padding: 10px 14px;
+        font-size: 13px;
     }
 }
