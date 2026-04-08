@@ -1,6 +1,31 @@
 // /app/public/js/render.js
 
 // ============================================
+// MAPEAMENTO DOS ÍCONES DAS PLATAFORMAS
+// ============================================
+const plataformasIcones = {
+    'mercadolivre': 'https://www.mercadolivre.com.br/favicon.ico',
+    'amazon': 'https://www.amazon.com.br/favicon.ico',
+    'shopee': 'https://shopee.com.br/favicon.ico',
+    'magalu': 'https://www.magazineluiza.com.br/favicon.ico',
+    'Mercado Livre': 'https://www.mercadolivre.com.br/favicon.ico',
+    'Amazon': 'https://www.amazon.com.br/favicon.ico',
+    'Shopee': 'https://shopee.com.br/favicon.ico',
+    'Magalu': 'https://www.magazineluiza.com.br/favicon.ico'
+};
+
+// ============================================
+// FUNÇÃO PARA OBTER O ÍCONE DA PLATAFORMA
+// ============================================
+function getIconePlataforma(plataforma) {
+    const icone = plataformasIcones[plataforma];
+    if (icone) {
+        return `<img src="${icone}" alt="${plataforma}" class="platform-icon" style="width: 16px; height: 16px; margin-right: 4px; vertical-align: middle;">`;
+    }
+    return '';
+}
+
+// ============================================
 // FUNÇÃO PARA OBTER PLATAFORMAS ATIVAS
 // ============================================
 export function getPlataformasAtivas() {
@@ -200,7 +225,10 @@ export function renderProducts(container, products, isCarousel = false) {
     const titulo = (p.titulo || p.title || 'Produto sem título').substring(0, 60);
     const tituloEllipsis = (p.titulo || p.title || 'Produto sem título').length > 60 ? '...' : '';
 
-    // ===== CONSTRÓI O CARD (PADRÃO) =====
+    // ===== ÍCONE DA PLATAFORMA =====
+    const iconeHtml = getIconePlataforma(plataforma);
+
+    // ===== CONSTRÓI O CARD (COM ÍCONE E SEM TEXTO DA PLATAFORMA) =====
     card.innerHTML = `
       <img src="${imagem}" alt="${titulo}" 
            class="product-image"
@@ -208,7 +236,9 @@ export function renderProducts(container, products, isCarousel = false) {
       <div class="product-info">
         <h3 class="product-title">${titulo}${tituloEllipsis}</h3>
         <div class="product-price">${precoFormatado}</div>
-        <div class="product-platform">${plataforma}</div>
+        <div class="product-platform" style="display: flex; align-items: center; gap: 4px;">
+          ${iconeHtml}
+        </div>
       </div>
     `;
 
@@ -259,6 +289,9 @@ export function renderProductsHTML(products) {
     const titulo = (p.titulo || p.title || 'Produto sem título').substring(0, 60);
     const tituloEllipsis = (p.titulo || p.title || 'Produto sem título').length > 60 ? '...' : '';
     
+    // Ícone da plataforma
+    const iconeHtml = getIconePlataforma(plataforma);
+    
     // Função inline para registrar clique e abrir link
     const onclickHandler = `(async () => { 
       try { 
@@ -278,7 +311,9 @@ export function renderProductsHTML(products) {
         <div class="product-info">
           <h3 class="product-title">${titulo}${tituloEllipsis}</h3>
           <div class="product-price">${precoFormatado}</div>
-          <div class="product-platform">${plataforma}</div>
+          <div class="product-platform" style="display: flex; align-items: center; gap: 4px;">
+            ${iconeHtml}
+          </div>
         </div>
       </div>
     `;
