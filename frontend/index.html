@@ -2,9 +2,20 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>OfertaPrimeX - Compare os Melhores Preços</title>
+    <title id="seo-title">OfertaPrimeX - Compare os Melhores Preços</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- Meta Tags SEO -->
+    <meta name="description" id="seo-description" content="Carregando ofertas...">
+    <meta name="keywords" id="seo-keywords" content="ofertas, promoções, descontos, comparação de preços">
+    <meta name="author" content="OfertaPrimeX">
+    <meta name="robots" content="index, follow">
+    <meta name="language" content="Portuguese">
+    <meta name="revisit-after" content="7 days">
+    <link rel="canonical" href="https://ofertaprimex.com.br">
+    
     <link rel="stylesheet" href="css/style.css">
+    
     <!-- Favicon -->
     <link rel="icon" type="image/x-icon" href="img/favicon.ico">
     <link rel="shortcut icon" href="img/favicon.ico">
@@ -19,7 +30,7 @@
     </script>
     
     <!-- Meta Tags para WhatsApp e Facebook (dinâmicas via JavaScript) -->
-    <meta property="og:title" content="OfertaPrimeX - Compare os Melhores Preços">
+    <meta property="og:title" id="og-title" content="OfertaPrimeX - Compare os Melhores Preços">
     <meta property="og:description" id="og-description" content="Carregando ofertas...">
     <meta property="og:image" content="https://ofertaprimex.com.br/img/OPX.png">
     <meta property="og:image:width" content="1200">
@@ -28,7 +39,7 @@
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="OfertaPrimeX">
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="OfertaPrimeX - Compare os Melhores Preços">
+    <meta name="twitter:title" id="twitter-title" content="OfertaPrimeX - Compare os Melhores Preços">
     <meta name="twitter:description" id="twitter-description" content="Carregando ofertas...">
     <meta name="twitter:image" content="https://ofertaprimex.com.br/img/OPX.png">
 </head>
@@ -38,7 +49,7 @@
     <div class="container header-content">
         <div class="logo">
             <a href="#" onclick="voltarParaHome(event)" style="display: flex; align-items: center; text-decoration: none;">
-                <img src="img/OPX.png" alt="OfertaPrimeX" class="logo-img" style="height: 40px; width: auto; display: inline-block;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                <img src="img/OPX.png" alt="OfertaPrimeX - Logo" class="logo-img" style="height: 40px; width: auto; display: inline-block;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
                 <span style="display: none; color: #ff6a00; font-size: 22px; font-weight: bold; align-items: center;">OfertaPrime<span style="color:#222;">X</span></span>
             </a>
         </div>
@@ -275,6 +286,52 @@
     let ultimasConfiguracoes = null;
     let metaTagsAtualizadas = false;
 
+    // FUNÇÃO PARA GERAR TÍTULO DINÂMICO DAS PLATAFORMAS
+    function gerarTituloPlataformas(plataformas) {
+        const nomes = {
+            'mercadolivre': 'Mercado Livre',
+            'amazon': 'Amazon',
+            'shopee': 'Shopee',
+            'magalu': 'Magalu'
+        };
+        
+        const nomesAtivos = plataformas.map(p => nomes[p]).filter(n => n);
+        
+        if (nomesAtivos.length === 0) {
+            return 'OfertaPrimeX - Compare os Melhores Preços';
+        }
+        
+        if (nomesAtivos.length === 1) {
+            return `OfertaPrimeX | Compare Preços no ${nomesAtivos[0]}`;
+        }
+        
+        if (nomesAtivos.length === 2) {
+            return `OfertaPrimeX | Compare Preços no ${nomesAtivos[0]} e ${nomesAtivos[1]}`;
+        }
+        
+        const ultimo = nomesAtivos.pop();
+        return `OfertaPrimeX | Compare Preços no ${nomesAtivos.join(', ')} e ${ultimo}`;
+    }
+
+    // FUNÇÃO PARA GERAR KEYWORDS DINÂMICAS
+    function gerarKeywordsPlataformas(plataformas) {
+        const nomes = {
+            'mercadolivre': 'Mercado Livre',
+            'amazon': 'Amazon',
+            'shopee': 'Shopee',
+            'magalu': 'Magalu'
+        };
+        
+        const nomesAtivos = plataformas.map(p => nomes[p]).filter(n => n);
+        const keywordsBase = ['ofertas', 'promoções', 'descontos', 'comparação de preços', 'comprar online'];
+        
+        if (nomesAtivos.length > 0) {
+            keywordsBase.unshift(...nomesAtivos.map(n => n.toLowerCase()));
+        }
+        
+        return keywordsBase.join(', ');
+    }
+
     // FUNÇÃO PARA GERAR DESCRIÇÃO DINÂMICA DAS PLATAFORMAS
     function gerarDescricaoPlataformas(plataformas) {
         const nomes = {
@@ -287,40 +344,53 @@
         const nomesAtivos = plataformas.map(p => nomes[p]).filter(n => n);
         
         if (nomesAtivos.length === 0) {
-            return 'Compare preços nas maiores plataformas do Brasil.';
+            return 'Compare preços nas maiores plataformas do Brasil. Encontre as melhores ofertas e economize nas suas compras online.';
         }
         
         if (nomesAtivos.length === 1) {
-            return `Encontre as melhores ofertas no ${nomesAtivos[0]}. Compare preços e economize!`;
+            return `Encontre as melhores ofertas e promoções no ${nomesAtivos[0]}. Compare preços de celulares, eletrônicos, moda e muito mais. Economize agora no OfertaPrimeX!`;
         }
         
         if (nomesAtivos.length === 2) {
-            return `Encontre as melhores ofertas no ${nomesAtivos[0]} e ${nomesAtivos[1]}. Compare preços e economize!`;
+            return `Encontre as melhores ofertas e promoções no ${nomesAtivos[0]} e ${nomesAtivos[1]}. Compare preços de celulares, eletrônicos, moda e muito mais. Economize agora no OfertaPrimeX!`;
         }
         
         const ultimo = nomesAtivos.pop();
-        return `Encontre as melhores ofertas no ${nomesAtivos.join(', ')} e ${ultimo}. Compare preços e economize!`;
+        return `Encontre as melhores ofertas e promoções no ${nomesAtivos.join(', ')} e ${ultimo}. Compare preços de celulares, eletrônicos, moda e muito mais. Economize agora no OfertaPrimeX!`;
     }
 
-    // FUNÇÃO PARA ATUALIZAR META TAGS
-    async function atualizarMetaTags() {
+    // FUNÇÃO PARA ATUALIZAR TODAS AS META TAGS (SEO + REDES SOCIAIS)
+    async function atualizarTodasMetaTags() {
         try {
             const plataformasAtivas = await carregarConfiguracoesBackend();
+            const titulo = gerarTituloPlataformas(plataformasAtivas);
             const descricao = gerarDescricaoPlataformas(plataformasAtivas);
+            const keywords = gerarKeywordsPlataformas(plataformasAtivas);
+            
+            // Atualizar meta tags SEO
+            const seoTitle = document.getElementById('seo-title');
+            const seoDescription = document.getElementById('seo-description');
+            const seoKeywords = document.getElementById('seo-keywords');
+            
+            if (seoTitle) seoTitle.textContent = titulo;
+            if (seoDescription) seoDescription.setAttribute('content', descricao);
+            if (seoKeywords) seoKeywords.setAttribute('content', keywords);
             
             // Atualizar meta tags Open Graph (Facebook/WhatsApp)
-            const ogDescription = document.querySelector('meta[property="og:description"]');
-            if (ogDescription) {
-                ogDescription.setAttribute('content', descricao);
-            }
+            const ogTitle = document.getElementById('og-title');
+            const ogDescription = document.getElementById('og-description');
+            const twitterTitle = document.getElementById('twitter-title');
+            const twitterDescription = document.getElementById('twitter-description');
             
-            // Atualizar meta tags Twitter
-            const twitterDescription = document.querySelector('meta[name="twitter:description"]');
-            if (twitterDescription) {
-                twitterDescription.setAttribute('content', descricao);
-            }
+            if (ogTitle) ogTitle.setAttribute('content', titulo);
+            if (ogDescription) ogDescription.setAttribute('content', descricao);
+            if (twitterTitle) twitterTitle.setAttribute('content', titulo);
+            if (twitterDescription) twitterDescription.setAttribute('content', descricao);
             
-            console.log('✅ Meta tags atualizadas:', descricao);
+            // Atualizar o título da aba do navegador
+            document.title = titulo;
+            
+            console.log('✅ SEO e Meta tags atualizadas:', { titulo, descricao, keywords });
             metaTagsAtualizadas = true;
         } catch (error) {
             console.error('❌ Erro ao atualizar meta tags:', error);
@@ -376,7 +446,7 @@
     // INICIALIZAR
     window.addEventListener('load', async function() {
         await atualizarLogos();
-        await atualizarMetaTags();
+        await atualizarTodasMetaTags();
         
         setInterval(async () => {
             const novasConfigs = await carregarConfiguracoesBackend();
@@ -393,7 +463,7 @@
             if (ultimasConfiguracoes && JSON.stringify(ultimasConfiguracoes) !== JSON.stringify(novasConfigs)) {
                 console.log('🔄 Configurações detectadas, recarregando produtos e meta tags...');
                 ultimasConfiguracoes = novasConfigs;
-                await atualizarMetaTags();
+                await atualizarTodasMetaTags();
                 if (typeof window.recarregarProdutos === 'function') {
                     window.recarregarProdutos();
                 }
