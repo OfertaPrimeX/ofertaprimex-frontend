@@ -283,6 +283,14 @@
         }
     };
 
+    // Mapeamento dos ícones das plataformas para o carrossel
+    const iconesPlataformasCarrossel = {
+        'Mercado Livre': 'https://www.mercadolivre.com.br/favicon.ico',
+        'Amazon': 'https://www.amazon.com.br/favicon.ico',
+        'Shopee': 'https://shopee.com.br/favicon.ico',
+        'Magalu': 'https://www.magazineluiza.com.br/favicon.ico'
+    };
+
     let ultimasConfiguracoes = null;
     let metaTagsAtualizadas = false;
 
@@ -684,7 +692,7 @@
       }
   }
 
-  // CARREGAR MAIS VENDIDOS (USANDO CACHE DO BACKEND) - COM LAZY LOADING NAS IMAGENS
+  // CARREGAR MAIS VENDIDOS (CORRIGIDO COM ÍCONES E SEM TEXTO)
   async function carregarMaisVendidos() {
       const track = document.getElementById('carousel-track');
       if (!track) return;
@@ -707,7 +715,16 @@
                   const titulo = (p.titulo || '').substring(0, 50);
                   const preco = formatarPreco(p.preco);
                   
-                  return `<div class="carousel-card" onclick="window.registrarCliqueCarrossel(${produtoId}, '${plataforma}', '${link}'); window.open('${link}', '_blank');"><img src="${imagem}" alt="${titulo}" loading="lazy" onerror="this.src='https://via.placeholder.com/150'"><div class="product-title">${titulo}...</div><div class="product-price">R$ ${preco}</div><div class="product-platform">${plataforma}</div></div>`;
+                  // Ícone da plataforma (canto superior direito)
+                  const iconeUrl = iconesPlataformasCarrossel[plataforma] || '';
+                  const iconeHtml = iconeUrl ? `<img src="${iconeUrl}" alt="${plataforma}" class="platform-icon" style="width: 20px; height: 20px; position: absolute; top: 8px; right: 8px; z-index: 10; border-radius: 4px;">` : '';
+                  
+                  return `<div class="carousel-card" style="position: relative;" onclick="window.registrarCliqueCarrossel(${produtoId}, '${plataforma}', '${link}'); window.open('${link}', '_blank');">
+                    ${iconeHtml}
+                    <img src="${imagem}" alt="${titulo}" loading="lazy" onerror="this.src='https://via.placeholder.com/150'">
+                    <div class="product-title">${titulo}...</div>
+                    <div class="product-price">R$ ${preco}</div>
+                  </div>`;
               }).join('');
               
               console.log(`✅ Carrossel carregado com ${produtos.length} produtos (cache: ${data.cache ? 'usado' : 'novo'})`);
