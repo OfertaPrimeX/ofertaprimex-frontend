@@ -17,6 +17,20 @@
       gtag('js', new Date());
       gtag('config', 'G-X5QHMRK4J7');
     </script>
+    
+    <!-- Meta Tags para WhatsApp e Facebook (dinâmicas via JavaScript) -->
+    <meta property="og:title" content="OfertaPrimeX - Compare os Melhores Preços">
+    <meta property="og:description" id="og-description" content="Carregando ofertas...">
+    <meta property="og:image" content="https://ofertaprimex.com.br/img/OPX.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:url" content="https://ofertaprimex.com.br">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="OfertaPrimeX">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="OfertaPrimeX - Compare os Melhores Preços">
+    <meta name="twitter:description" id="twitter-description" content="Carregando ofertas...">
+    <meta name="twitter:image" content="https://ofertaprimex.com.br/img/OPX.png">
 </head>
 <body>
 
@@ -259,6 +273,59 @@
     };
 
     let ultimasConfiguracoes = null;
+    let metaTagsAtualizadas = false;
+
+    // FUNÇÃO PARA GERAR DESCRIÇÃO DINÂMICA DAS PLATAFORMAS
+    function gerarDescricaoPlataformas(plataformas) {
+        const nomes = {
+            'mercadolivre': 'Mercado Livre',
+            'amazon': 'Amazon',
+            'shopee': 'Shopee',
+            'magalu': 'Magalu'
+        };
+        
+        const nomesAtivos = plataformas.map(p => nomes[p]).filter(n => n);
+        
+        if (nomesAtivos.length === 0) {
+            return 'Compare preços nas maiores plataformas do Brasil.';
+        }
+        
+        if (nomesAtivos.length === 1) {
+            return `Encontre as melhores ofertas no ${nomesAtivos[0]}. Compare preços e economize!`;
+        }
+        
+        if (nomesAtivos.length === 2) {
+            return `Encontre as melhores ofertas no ${nomesAtivos[0]} e ${nomesAtivos[1]}. Compare preços e economize!`;
+        }
+        
+        const ultimo = nomesAtivos.pop();
+        return `Encontre as melhores ofertas no ${nomesAtivos.join(', ')} e ${ultimo}. Compare preços e economize!`;
+    }
+
+    // FUNÇÃO PARA ATUALIZAR META TAGS
+    async function atualizarMetaTags() {
+        try {
+            const plataformasAtivas = await carregarConfiguracoesBackend();
+            const descricao = gerarDescricaoPlataformas(plataformasAtivas);
+            
+            // Atualizar meta tags Open Graph (Facebook/WhatsApp)
+            const ogDescription = document.querySelector('meta[property="og:description"]');
+            if (ogDescription) {
+                ogDescription.setAttribute('content', descricao);
+            }
+            
+            // Atualizar meta tags Twitter
+            const twitterDescription = document.querySelector('meta[name="twitter:description"]');
+            if (twitterDescription) {
+                twitterDescription.setAttribute('content', descricao);
+            }
+            
+            console.log('✅ Meta tags atualizadas:', descricao);
+            metaTagsAtualizadas = true;
+        } catch (error) {
+            console.error('❌ Erro ao atualizar meta tags:', error);
+        }
+    }
 
     // BUSCAR CONFIGURAÇÕES DO BACKEND (ROTA PÚBLICA)
     async function carregarConfiguracoesBackend() {
@@ -298,7 +365,7 @@
         console.log('🖼️ Logos atualizados:', plataformasAtivas);
         
         if (ultimasConfiguracoes && JSON.stringify(ultimasConfiguracoes) !== JSON.stringify(plataformasAtivas)) {
-            console.log('🔄 Configurações mudaram, recarregando produtos...');
+            console.log('🔄 Configurações mudaram, recarregando produtos e meta tags...');
             if (typeof window.recarregarProdutos === 'function') {
                 window.recarregarProdutos();
             }
@@ -309,6 +376,7 @@
     // INICIALIZAR
     window.addEventListener('load', async function() {
         await atualizarLogos();
+        await atualizarMetaTags();
         
         setInterval(async () => {
             const novasConfigs = await carregarConfiguracoesBackend();
@@ -323,8 +391,9 @@
             }
             
             if (ultimasConfiguracoes && JSON.stringify(ultimasConfiguracoes) !== JSON.stringify(novasConfigs)) {
-                console.log('🔄 Configurações detectadas, recarregando produtos...');
+                console.log('🔄 Configurações detectadas, recarregando produtos e meta tags...');
                 ultimasConfiguracoes = novasConfigs;
+                await atualizarMetaTags();
                 if (typeof window.recarregarProdutos === 'function') {
                     window.recarregarProdutos();
                 }
