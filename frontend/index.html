@@ -42,99 +42,6 @@
     <meta name="twitter:title" id="twitter-title" content="OfertaPrimeX - Compare os Melhores Preços">
     <meta name="twitter:description" id="twitter-description" content="Carregando ofertas...">
     <meta name="twitter:image" content="https://ofertaprimex.com.br/img/OPX.png">
-    
-    <style>
-        /* Estilos para o menu dropdown */
-        .menu-btn {
-            background: none;
-            border: none;
-            color: #555;
-            font-size: 14px;
-            padding: 8px 12px;
-            cursor: pointer;
-            font-family: inherit;
-            transition: color 0.2s;
-            border-radius: 4px;
-        }
-        
-        .menu-btn:hover {
-            color: #ff6a00;
-            background-color: rgba(255, 106, 0, 0.1);
-        }
-        
-        .dropdown {
-            position: relative;
-            display: inline-block;
-        }
-        
-        .dropdown-content {
-            display: none;
-            position: absolute;
-            background-color: #fff;
-            min-width: 220px;
-            max-height: 300px;
-            overflow-y: auto;
-            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
-            z-index: 1000;
-            border-radius: 8px;
-            margin-top: 5px;
-        }
-        
-        /* Barra de rolagem personalizada */
-        .dropdown-content::-webkit-scrollbar {
-            width: 6px;
-        }
-        
-        .dropdown-content::-webkit-scrollbar-track {
-            background: #f1f1f1;
-            border-radius: 4px;
-        }
-        
-        .dropdown-content::-webkit-scrollbar-thumb {
-            background: #ff6a00;
-            border-radius: 4px;
-        }
-        
-        .dropdown-content::-webkit-scrollbar-thumb:hover {
-            background: #e85f00;
-        }
-        
-        .dropdown-content a {
-            color: #333;
-            padding: 12px 16px;
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-size: 14px;
-            transition: background-color 0.2s;
-        }
-        
-        .dropdown-content a:hover {
-            background-color: #f5f5f5;
-            color: #ff6a00;
-        }
-        
-        .dropdown:hover .dropdown-content {
-            display: block;
-        }
-        
-        /* Ajuste para mobile */
-        @media (max-width: 768px) {
-            .menu-btn {
-                padding: 6px 10px;
-                font-size: 12px;
-            }
-            .dropdown-content {
-                position: fixed;
-                left: 50%;
-                transform: translateX(-50%);
-                width: 90%;
-                max-width: 300px;
-                max-height: 250px;
-            }
-        }
-    </style>
 </head>
 <body>
 
@@ -340,227 +247,6 @@
     <p>© 2026 OfertaPrimeX - Todos os direitos reservados | <a href="#" onclick="mostrarTermos(event)" style="color:#ff6a00; text-decoration:none;">Termos de Uso</a> | <a href="#" onclick="mostrarPrivacidade(event)" style="color:#ff6a00; text-decoration:none;">Política de Privacidade</a></p>
 </footer>
 
-<script>
-    // CONFIGURAÇÃO DAS PLATAFORMAS COM LOGOS
-    const plataformasConfig = {
-        mercadolivre: {
-            nome: 'Mercado Livre',
-            logo: 'https://upload.wikimedia.org/wikipedia/pt/thumb/0/04/Logotipo_MercadoLivre.png/120px-Logotipo_MercadoLivre.png'
-        },
-        amazon: {
-            nome: 'Amazon',
-            logo: 'https://assets.aboutamazon.com/2e/d7/ac71f1f344c39f8949f48fc89e71/amazon-logo-squid-ink-smile-orange.png'
-        },
-        shopee: {
-            nome: 'Shopee',
-            logo: 'https://fileproxycdn.cs.susercontent.com/api/v5/service/download/permanent/cs-saas/d794de6e4e8c449993444fb31e9a863a.png'
-        },
-        magalu: {
-            nome: 'Magalu',
-            logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/archive/1/1b/20210515045113%21Magalu_-_novo_logo.png/120px-Magalu_-_novo_logo.png'
-        }
-    };
-
-    let ultimasConfiguracoes = null;
-    let metaTagsAtualizadas = false;
-    let categoriasCache = [];
-
-    // FUNÇÃO PARA CARREGAR CATEGORIAS PARA O DROPDOWN
-    async function carregarCategoriasDropdown() {
-        try {
-            const response = await fetch('https://yo0g0cg4c88w88osc4s04c0c.72.61.33.248.sslip.io/api/produtos/categorias/contagem');
-            const data = await response.json();
-            
-            const dropdown = document.getElementById('dropdown-categorias');
-            if (!dropdown) return;
-            
-            if (data.success && data.categorias && data.categorias.length > 0) {
-                const categoriasAtivas = data.categorias.filter(c => c.ativa);
-                categoriasCache = categoriasAtivas;
-                
-                if (categoriasAtivas.length === 0) {
-                    dropdown.innerHTML = '<a href="#" style="color: #999;">Nenhuma categoria disponível</a>';
-                    return;
-                }
-                
-                dropdown.innerHTML = categoriasAtivas.map(cat => `
-                    <a href="#" onclick="buscarPorCategoria('${cat.termo.replace(/'/g, "\\'")}'); return false;">
-                        <span>${cat.icone}</span> ${cat.nome}
-                    </a>
-                `).join('');
-            } else {
-                // Fallback
-                const categoriasFallback = [
-                    { nome: "Celulares e Dispositivos", icone: "📱", termo: "celulares" },
-                    { nome: "Computadores e Acessórios", icone: "💻", termo: "computadores" },
-                    { nome: "Jogos e Consoles", icone: "🎮", termo: "jogos e consoles" },
-                    { nome: "Áudio", icone: "🎧", termo: "áudio" },
-                    { nome: "Eletrodomésticos", icone: "🧺", termo: "eletrodomésticos" },
-                    { nome: "Beleza", icone: "💄", termo: "beleza" },
-                    { nome: "Saúde", icone: "💊", termo: "saúde" }
-                ];
-                categoriasCache = categoriasFallback;
-                dropdown.innerHTML = categoriasFallback.map(cat => `
-                    <a href="#" onclick="buscarPorCategoria('${cat.termo}'); return false;">
-                        <span>${cat.icone}</span> ${cat.nome}
-                    </a>
-                `).join('');
-            }
-            console.log('✅ Dropdown de categorias atualizado');
-        } catch (error) {
-            console.error('❌ Erro ao carregar dropdown de categorias:', error);
-            const dropdown = document.getElementById('dropdown-categorias');
-            if (dropdown) {
-                dropdown.innerHTML = '<a href="#" style="color: #999;">Erro ao carregar categorias</a>';
-            }
-        }
-    }
-
-    // FUNÇÃO PARA GERAR TÍTULO DINÂMICO DAS PLATAFORMAS
-    function gerarTituloPlataformas(plataformas) {
-        const nomes = {
-            'mercadolivre': 'Mercado Livre',
-            'amazon': 'Amazon',
-            'shopee': 'Shopee',
-            'magalu': 'Magalu'
-        };
-        
-        const nomesAtivos = plataformas.map(p => nomes[p]).filter(n => n);
-        
-        if (nomesAtivos.length === 0) {
-            return 'OfertaPrimeX - Compare os Melhores Preços';
-        }
-        
-        if (nomesAtivos.length === 1) {
-            return `OfertaPrimeX | Compare Preços no ${nomesAtivos[0]}`;
-        }
-        
-        if (nomesAtivos.length === 2) {
-            return `OfertaPrimeX | Compare Preços no ${nomesAtivos[0]} e ${nomesAtivos[1]}`;
-        }
-        
-        const ultimo = nomesAtivos.pop();
-        return `OfertaPrimeX | Compare Preços no ${nomesAtivos.join(', ')} e ${ultimo}`;
-    }
-
-    // FUNÇÃO PARA GERAR KEYWORDS DINÂMICAS
-    function gerarKeywordsPlataformas(plataformas) {
-        const nomes = {
-            'mercadolivre': 'Mercado Livre',
-            'amazon': 'Amazon',
-            'shopee': 'Shopee',
-            'magalu': 'Magalu'
-        };
-        
-        const nomesAtivos = plataformas.map(p => nomes[p]).filter(n => n);
-        const keywordsBase = ['ofertas', 'promoções', 'descontos', 'comparação de preços', 'comprar online'];
-        
-        if (nomesAtivos.length > 0) {
-            keywordsBase.unshift(...nomesAtivos.map(n => n.toLowerCase()));
-        }
-        
-        return keywordsBase.join(', ');
-    }
-
-    // FUNÇÃO PARA GERAR DESCRIÇÃO DINÂMICA DAS PLATAFORMAS
-    function gerarDescricaoPlataformas(plataformas) {
-        const nomes = {
-            'mercadolivre': 'Mercado Livre',
-            'amazon': 'Amazon',
-            'shopee': 'Shopee',
-            'magalu': 'Magalu'
-        };
-        
-        const nomesAtivos = plataformas.map(p => nomes[p]).filter(n => n);
-        
-        if (nomesAtivos.length === 0) {
-            return 'Compare preços nas maiores plataformas do Brasil. Encontre as melhores ofertas e economize nas suas compras online.';
-        }
-        
-        if (nomesAtivos.length === 1) {
-            return `Encontre as melhores ofertas e promoções no ${nomesAtivos[0]}. Compare preços de celulares, eletrônicos, moda e muito mais. Economize agora no OfertaPrimeX!`;
-        }
-        
-        if (nomesAtivos.length === 2) {
-            return `Encontre as melhores ofertas e promoções no ${nomesAtivos[0]} e ${nomesAtivos[1]}. Compare preços de celulares, eletrônicos, moda e muito mais. Economize agora no OfertaPrimeX!`;
-        }
-        
-        const ultimo = nomesAtivos.pop();
-        return `Encontre as melhores ofertas e promoções no ${nomesAtivos.join(', ')} e ${ultimo}. Compare preços de celulares, eletrônicos, moda e muito mais. Economize agora no OfertaPrimeX!`;
-    }
-
-    // FUNÇÃO PARA ATUALIZAR TODAS AS META TAGS (SEO + REDES SOCIAIS)
-    async function atualizarTodasMetaTags() {
-        try {
-            const plataformasAtivas = await carregarConfiguracoesBackend();
-            const titulo = gerarTituloPlataformas(plataformasAtivas);
-            const descricao = gerarDescricaoPlataformas(plataformasAtivas);
-            const keywords = gerarKeywordsPlataformas(plataformasAtivas);
-            
-            const seoTitle = document.getElementById('seo-title');
-            const seoDescription = document.getElementById('seo-description');
-            const seoKeywords = document.getElementById('seo-keywords');
-            
-            if (seoTitle) seoTitle.textContent = titulo;
-            if (seoDescription) seoDescription.setAttribute('content', descricao);
-            if (seoKeywords) seoKeywords.setAttribute('content', keywords);
-            
-            const ogTitle = document.getElementById('og-title');
-            const ogDescription = document.getElementById('og-description');
-            const twitterTitle = document.getElementById('twitter-title');
-            const twitterDescription = document.getElementById('twitter-description');
-            
-            if (ogTitle) ogTitle.setAttribute('content', titulo);
-            if (ogDescription) ogDescription.setAttribute('content', descricao);
-            if (twitterTitle) twitterTitle.setAttribute('content', titulo);
-            if (twitterDescription) twitterDescription.setAttribute('content', descricao);
-            
-            document.title = titulo;
-            
-            console.log('✅ SEO e Meta tags atualizadas:', { titulo, descricao, keywords });
-            metaTagsAtualizadas = true;
-        } catch (error) {
-            console.error('❌ Erro ao atualizar meta tags:', error);
-        }
-    }
-
-    // BUSCAR CONFIGURAÇÕES DO BACKEND (ROTA PÚBLICA)
-    async function carregarConfiguracoesBackend() {
-        try {
-            const response = await fetch('https://yo0g0cg4c88w88osc4s04c0c.72.61.33.248.sslip.io/api/admin/configuracoes/publicas');
-            if (response.ok) {
-                const data = await response.json();
-                if (data.success && data.plataformas) {
-                    console.log('✅ Configurações carregadas do backend:', data.plataformas);
-                    return data.plataformas;
-                }
-            }
-        } catch (error) {
-            console.error('❌ Erro ao carregar configurações do backend:', error);
-        }
-        return ['mercadolivre', 'amazon', 'shopee', 'magalu'];
-    }
-
-    // INICIALIZAR
-    window.addEventListener('load', async function() {
-        await carregarCategoriasDropdown();
-        await atualizarTodasMetaTags();
-        
-        setInterval(async () => {
-            const novasConfigs = await carregarConfiguracoesBackend();
-            
-            if (ultimasConfiguracoes && JSON.stringify(ultimasConfiguracoes) !== JSON.stringify(novasConfigs)) {
-                console.log('🔄 Configurações detectadas, recarregando produtos e meta tags...');
-                ultimasConfiguracoes = novasConfigs;
-                await atualizarTodasMetaTags();
-                if (typeof window.recarregarProdutos === 'function') {
-                    window.recarregarProdutos();
-                }
-            }
-        }, 10000);
-    });
-</script>
-
 <script src="js/main.js"></script>
 <script type="module">
   import { 
@@ -571,7 +257,7 @@
       getMaisVendidosMagalu,
       getRandomProducts
   } from './js/api.js';
-  import { renderProducts, renderCarousel } from './js/render.js';
+  import { renderProducts, renderCarousel, carregarCategoriasDropdown } from './js/render.js';
 
   // FUNÇÃO PARA NORMALIZAR TÍTULO
   function normalizarTitulo(titulo) {
@@ -756,7 +442,7 @@
       }
   }
 
-  // CARREGAR MAIS VENDIDOS (USANDO renderCarousel)
+  // CARREGAR MAIS VENDIDOS
   async function carregarMaisVendidos() {
       const track = document.getElementById('carousel-track');
       if (!track) return;
@@ -1015,7 +701,9 @@
   document.getElementById('carousel-next')?.addEventListener('click', nextSlide);
   window.addEventListener('resize', () => { updateItemsPerView(); updateTotalPages(); updateCarousel(); });
 
+  // INICIALIZAR
   (async function() {
+      await carregarCategoriasDropdown();
       await carregarMaisVendidos();
       await carregarSelecionados();
       updateItemsPerView();
