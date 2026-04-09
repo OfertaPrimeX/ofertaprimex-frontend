@@ -26,6 +26,17 @@ function getIconePlataforma(plataforma) {
 }
 
 // ============================================
+// FUNÇÃO PARA OBTER ÍCONE DO CARROSSEL (canto superior direito)
+// ============================================
+function getIconeCarrossel(plataforma) {
+    const icone = plataformasIcones[plataforma];
+    if (icone) {
+        return `<img src="${icone}" alt="${plataforma}" class="platform-icon-carousel" style="width: 20px; height: 20px; position: absolute; top: 8px; right: 8px; z-index: 10; border-radius: 4px;">`;
+    }
+    return '';
+}
+
+// ============================================
 // FUNÇÃO PARA OBTER PLATAFORMAS ATIVAS
 // ============================================
 export function getPlataformasAtivas() {
@@ -244,6 +255,64 @@ export function renderProducts(container, products, isCarousel = false) {
 
     container.appendChild(card);
   });
+}
+
+/**
+ * Renderiza produtos no carrossel (formato específico com ícone no canto superior direito)
+ * @param {HTMLElement} container - Elemento onde os produtos serão inseridos
+ * @param {Array} products - Lista de produtos a serem renderizados
+ */
+export function renderCarousel(container, products) {
+    if (!container) return;
+    
+    // FILTRA PRODUTOS POR PLATAFORMA ATIVA
+    const produtosFiltrados = filtrarProdutosPorPlataforma(products);
+    
+    if (!produtosFiltrados || produtosFiltrados.length === 0) {
+        container.innerHTML = '<p style="text-align: center;">⚠️ Nenhum produto encontrado</p>';
+        return;
+    }
+    
+    container.innerHTML = produtosFiltrados.map(p => {
+        const produtoId = p.id;
+        const plataforma = p.plataforma || 'Mercado Livre';
+        const link = p.link_afiliado || p.link_original || '#';
+        const imagem = p.imagem_principal || 'https://via.placeholder.com/150';
+        const titulo = (p.titulo || '').substring(0, 50);
+        
+        // Formata preço
+        let precoFormatado = 'R$ 0,00';
+        if (p.preco) {
+            let precoNum = 0;
+            if (typeof p.preco === 'number') {
+                precoNum = p.preco;
+            } else {
+                const precoLimpo = p.preco.toString().replace('R$', '').replace(/\./g, '').replace(',', '.').trim();
+                precoNum = parseFloat(precoLimpo);
+            }
+            if (precoNum > 1000) {
+                precoNum = precoNum / 100;
+            }
+            if (!isNaN(precoNum)) {
+                precoFormatado = precoNum.toLocaleString('pt-BR', {
+                    style: 'currency',
+                    currency: 'BRL'
+                });
+            }
+        }
+        
+        // Ícone da plataforma (canto superior direito)
+        const iconeHtml = getIconeCarrossel(plataforma);
+        
+        return `<div class="carousel-card" style="position: relative;" onclick="window.registrarCliqueCarrossel(${produtoId}, '${plataforma}', '${link}'); window.open('${link}', '_blank');">
+            ${iconeHtml}
+            <img src="${imagem}" alt="${titulo}" loading="lazy" onerror="this.src='https://via.placeholder.com/150'">
+            <div class="product-title">${titulo}...</div>
+            <div class="product-price">${precoFormatado}</div>
+        </div>`;
+    }).join('');
+    
+    console.log(`✅ Carrossel renderizado com ${produtosFiltrados.length} produtos`);
 }
 
 /**

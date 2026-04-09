@@ -283,14 +283,6 @@
         }
     };
 
-    // Mapeamento dos ícones das plataformas para o carrossel
-    const iconesPlataformasCarrossel = {
-        'Mercado Livre': 'https://www.mercadolivre.com.br/favicon.ico',
-        'Amazon': 'https://www.amazon.com.br/favicon.ico',
-        'Shopee': 'https://shopee.com.br/favicon.ico',
-        'Magalu': 'https://www.magazineluiza.com.br/favicon.ico'
-    };
-
     let ultimasConfiguracoes = null;
     let metaTagsAtualizadas = false;
 
@@ -375,7 +367,6 @@
             const descricao = gerarDescricaoPlataformas(plataformasAtivas);
             const keywords = gerarKeywordsPlataformas(plataformasAtivas);
             
-            // Atualizar meta tags SEO
             const seoTitle = document.getElementById('seo-title');
             const seoDescription = document.getElementById('seo-description');
             const seoKeywords = document.getElementById('seo-keywords');
@@ -384,7 +375,6 @@
             if (seoDescription) seoDescription.setAttribute('content', descricao);
             if (seoKeywords) seoKeywords.setAttribute('content', keywords);
             
-            // Atualizar meta tags Open Graph (Facebook/WhatsApp)
             const ogTitle = document.getElementById('og-title');
             const ogDescription = document.getElementById('og-description');
             const twitterTitle = document.getElementById('twitter-title');
@@ -395,7 +385,6 @@
             if (twitterTitle) twitterTitle.setAttribute('content', titulo);
             if (twitterDescription) twitterDescription.setAttribute('content', descricao);
             
-            // Atualizar o título da aba do navegador
             document.title = titulo;
             
             console.log('✅ SEO e Meta tags atualizadas:', { titulo, descricao, keywords });
@@ -490,9 +479,9 @@
       getMaisVendidosMagalu,
       getRandomProducts
   } from './js/api.js';
-  import { renderProducts } from './js/render.js';
+  import { renderProducts, renderCarousel } from './js/render.js';
 
-  // FUNÇÃO PARA NORMALIZAR TÍTULO (remove acentos, espaços, palavras comuns)
+  // FUNÇÃO PARA NORMALIZAR TÍTULO
   function normalizarTitulo(titulo) {
       if (!titulo) return '';
       return titulo
@@ -500,7 +489,6 @@
           .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
           .replace(/\s+/g, ' ')
           .trim()
-          .replace(/(com|para|de|da|do|das|dos|em|uma|um|o|a|e|que|kg|g|ml|pote|cx|un|unid)/g, '')
           .substring(0, 50);
   }
 
@@ -521,7 +509,7 @@
       return ['mercadolivre', 'amazon', 'shopee', 'magalu'];
   }
 
-  // FUNÇÃO PARA RECARREGAR PRODUTOS QUANDO PLATAFORMAS MUDAM
+  // FUNÇÃO PARA RECARREGAR PRODUTOS
   window.recarregarProdutos = async function() {
       console.log('🔄 Recarregando produtos devido à mudança nas plataformas...');
       await carregarMaisVendidos();
@@ -634,7 +622,7 @@
       }
   }
 
-  // CARREGAR SELECIONADOS (EXCLUINDO PRODUTOS DO CARROSSEL)
+  // CARREGAR SELECIONADOS
   async function carregarSelecionados() {
       const container = document.getElementById('selecionados-grid');
       if (!container) return;
@@ -642,11 +630,9 @@
       try {
           container.innerHTML = '<div style="text-align: center; grid-column: 1/-1; padding: 40px;">Carregando produtos selecionados...</div>';
           
-          // Buscar IDs do carrossel para excluir
           const carrosselResponse = await fetch('https://yo0g0cg4c88w88osc4s04c0c.72.61.33.248.sslip.io/api/produtos/carrossel');
           const carrosselData = await carrosselResponse.json();
           const carrosselIds = carrosselData.carrossel_ids || [];
-          console.log(`🚫 IDs do carrossel a serem excluídos dos selecionados: ${carrosselIds.length}`);
           
           const [ml, amazon, shopee, magalu] = await Promise.all([
               getMaisVendidosMercadoLivreFiltrado(150),
@@ -656,19 +642,8 @@
           ]);
           
           let todosProdutos = [...ml, ...amazon, ...shopee, ...magalu];
+          const produtosFiltrados = todosProdutos.filter(p => !carrosselIds.includes(p.id));
           
-          // Filtrar produtos que estão no carrossel (excluir)
-          const produtosFiltrados = todosProdutos.filter(p => {
-              if (carrosselIds.includes(p.id)) {
-                  console.log(`🚫 Produto excluído (já no carrossel): ${p.titulo?.substring(0, 40)}`);
-                  return false;
-              }
-              return true;
-          });
-          
-          console.log(`📊 Selecionados - ${produtosFiltrados.length} produtos após excluir ${todosProdutos.length - produtosFiltrados.length} do carrossel`);
-          
-          // Remove duplicados por título normalizado
           const titulosVistos = new Set();
           const produtosUnicos = [];
           
@@ -680,19 +655,16 @@
               }
           }
           
-          // SEM RANDOMIZAÇÃO - mantém ordem original
           const produtos = produtosUnicos.slice(0, 36);
-          
           container.innerHTML = '';
           renderProducts(container, produtos, false);
-          console.log(`✅ ${produtos.length} produtos selecionados carregados (excluídos ${todosProdutos.length - produtosFiltrados.length} do carrossel)`);
       } catch (error) {
           console.error(error);
           container.innerHTML = '<p style="text-align: center;">⚠️ Erro ao carregar produtos</p>';
       }
   }
 
-  // CARREGAR MAIS VENDIDOS (CORRIGIDO COM ÍCONES E SEM TEXTO)
+  // CARREGAR MAIS VENDIDOS (USANDO renderCarousel)
   async function carregarMaisVendidos() {
       const track = document.getElementById('carousel-track');
       if (!track) return;
@@ -700,34 +672,11 @@
       try {
           track.innerHTML = '<p style="text-align: center;">Carregando produtos...</p>';
           
-          // Buscar produtos do carrossel via backend (cache automático)
           const response = await fetch('https://yo0g0cg4c88w88osc4s04c0c.72.61.33.248.sslip.io/api/produtos/carrossel');
           const data = await response.json();
           
           if (data.success && data.products && data.products.length > 0) {
-              const produtos = data.products;
-              
-              track.innerHTML = produtos.map(p => {
-                  const produtoId = p.id;
-                  const plataforma = p.plataforma || 'Mercado Livre';
-                  const link = p.link_afiliado || p.link_original;
-                  const imagem = p.imagem_principal || 'https://via.placeholder.com/150';
-                  const titulo = (p.titulo || '').substring(0, 50);
-                  const preco = formatarPreco(p.preco);
-                  
-                  // Ícone da plataforma (canto superior direito)
-                  const iconeUrl = iconesPlataformasCarrossel[plataforma] || '';
-                  const iconeHtml = iconeUrl ? `<img src="${iconeUrl}" alt="${plataforma}" class="platform-icon" style="width: 20px; height: 20px; position: absolute; top: 8px; right: 8px; z-index: 10; border-radius: 4px;">` : '';
-                  
-                  return `<div class="carousel-card" style="position: relative;" onclick="window.registrarCliqueCarrossel(${produtoId}, '${plataforma}', '${link}'); window.open('${link}', '_blank');">
-                    ${iconeHtml}
-                    <img src="${imagem}" alt="${titulo}" loading="lazy" onerror="this.src='https://via.placeholder.com/150'">
-                    <div class="product-title">${titulo}...</div>
-                    <div class="product-price">R$ ${preco}</div>
-                  </div>`;
-              }).join('');
-              
-              console.log(`✅ Carrossel carregado com ${produtos.length} produtos (cache: ${data.cache ? 'usado' : 'novo'})`);
+              renderCarousel(track, data.products);
           } else {
               track.innerHTML = '<p>⚠️ Nenhum produto encontrado</p>';
           }
@@ -737,7 +686,7 @@
       }
   }
 
-  // RENDERIZAR CATEGORIAS (BUSCANDO DO BACKEND E OCULTANDO AS SEM PRODUTOS)
+  // RENDERIZAR CATEGORIAS
   async function renderizarCategorias() {
       const container = document.getElementById('categories-grid');
       if (!container) return;
@@ -745,15 +694,11 @@
       try {
           container.innerHTML = '<div style="text-align: center; grid-column: 1/-1; padding: 40px;">Carregando categorias...</div>';
           
-          // Buscar categorias com contagem do backend
           const response = await fetch('https://yo0g0cg4c88w88osc4s04c0c.72.61.33.248.sslip.io/api/produtos/categorias/contagem');
           const data = await response.json();
           
           if (data.success && data.categorias && data.categorias.length > 0) {
-              const categoriasComStatus = data.categorias;
-              const categoriasAtivas = categoriasComStatus.filter(c => c.ativa);
-              
-              console.log(`📊 Total de categorias: ${categoriasComStatus.length}, ativas: ${categoriasAtivas.length}`);
+              const categoriasAtivas = data.categorias.filter(c => c.ativa);
               
               if (categoriasAtivas.length === 0) {
                   container.innerHTML = '<div style="text-align: center; grid-column: 1/-1; padding: 40px;">Nenhuma categoria com produtos no momento</div>';
@@ -766,11 +711,7 @@
                       <div class="category-name">${cat.nome}</div>
                   </div>
               `).join('');
-              
-              console.log(`✅ ${categoriasAtivas.length} categorias ativas renderizadas`);
           } else {
-              // Fallback: usar categorias locais
-              console.log('⚠️ Usando categorias locais como fallback');
               const categoriasFallback = [
                 { nome: "Celulares e Dispositivos", icone: "📱", termo: "celulares" },
                 { nome: "Computadores e Acessórios", icone: "💻", termo: "computadores" },
@@ -794,7 +735,7 @@
       }
   }
 
-  // FUNÇÕES PARA CONTROLAR A EXIBIÇÃO DAS SEÇÕES
+  // FUNÇÕES DE CONTROLE DAS SEÇÕES
   function ocultarTodasSecoes() {
       const secoes = ['categorias', 'mais-vendidos', 'selecionados'];
       secoes.forEach(id => {
@@ -833,7 +774,6 @@
       secoes.forEach(id => {
           document.getElementById(id).classList.remove('hidden-section');
       });
-      // Esconder seções de termos e privacidade
       document.getElementById('termos-section').style.display = 'none';
       document.getElementById('privacidade-section').style.display = 'none';
       document.getElementById('sobre').style.display = 'block';
@@ -844,11 +784,9 @@
 
   function mostrarQuemSomos(event) {
       if (event) event.preventDefault();
-      // Esconder todas as seções extras
       document.getElementById('termos-section').style.display = 'none';
       document.getElementById('privacidade-section').style.display = 'none';
       document.getElementById('resultado-busca').style.display = 'none';
-      // Mostrar as seções normais
       const secoes = ['categorias', 'mais-vendidos', 'selecionados'];
       secoes.forEach(id => {
           document.getElementById(id).classList.remove('hidden-section');
@@ -859,32 +797,26 @@
   
   function mostrarTermos(event) {
       if (event) event.preventDefault();
-      // Esconder todas as seções normais
       const secoes = ['categorias', 'mais-vendidos', 'selecionados'];
       secoes.forEach(id => {
           document.getElementById(id).classList.add('hidden-section');
       });
       document.getElementById('sobre').style.display = 'none';
       document.getElementById('resultado-busca').style.display = 'none';
-      // Esconder privacidade se estiver visível
       document.getElementById('privacidade-section').style.display = 'none';
-      // Mostrar termos
       document.getElementById('termos-section').style.display = 'block';
       window.scrollTo({ top: 0, behavior: 'smooth' });
   }
   
   function mostrarPrivacidade(event) {
       if (event) event.preventDefault();
-      // Esconder todas as seções normais
       const secoes = ['categorias', 'mais-vendidos', 'selecionados'];
       secoes.forEach(id => {
           document.getElementById(id).classList.add('hidden-section');
       });
       document.getElementById('sobre').style.display = 'none';
       document.getElementById('resultado-busca').style.display = 'none';
-      // Esconder termos se estiver visível
       document.getElementById('termos-section').style.display = 'none';
-      // Mostrar privacidade
       document.getElementById('privacidade-section').style.display = 'block';
       window.scrollTo({ top: 0, behavior: 'smooth' });
   }
@@ -968,7 +900,6 @@
   async function realizarBusca() {
       const termo = buscaInput.value.trim();
       if (!termo) return;
-      // Esconder seções de termos e privacidade
       document.getElementById('termos-section').style.display = 'none';
       document.getElementById('privacidade-section').style.display = 'none';
       ocultarTodasSecoes();
@@ -1007,7 +938,6 @@
       }
   }
 
-  // EVENTOS
   btnBuscar.addEventListener('click', realizarBusca);
   buscaInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') realizarBusca(); });
 
@@ -1051,7 +981,6 @@
   document.getElementById('carousel-next')?.addEventListener('click', nextSlide);
   window.addEventListener('resize', () => { updateItemsPerView(); updateTotalPages(); updateCarousel(); });
 
-  // Inicializar
   (async function() {
       await renderizarCategorias();
       await carregarMaisVendidos();
@@ -1065,9 +994,7 @@
 <button class="btn-topo" id="btnTopo" title="Voltar ao topo">↑</button>
 
 <script>
-    // Botão Voltar ao Topo
     const btnTopo = document.getElementById('btnTopo');
-    
     window.addEventListener('scroll', function() {
         if (window.scrollY > 300) {
             btnTopo.classList.add('show');
@@ -1075,12 +1002,8 @@
             btnTopo.classList.remove('show');
         }
     });
-    
     btnTopo.addEventListener('click', function() {
-        window.scrollTo({
-            top: 0,
-            behavior: 'smooth'
-        });
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     });
 </script>
 
