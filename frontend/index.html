@@ -71,12 +71,32 @@
             display: none;
             position: absolute;
             background-color: #fff;
-            min-width: 200px;
+            min-width: 220px;
+            max-height: 300px;
+            overflow-y: auto;
             box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
             z-index: 1000;
             border-radius: 8px;
-            overflow: hidden;
             margin-top: 5px;
+        }
+        
+        /* Barra de rolagem personalizada */
+        .dropdown-content::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .dropdown-content::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+        
+        .dropdown-content::-webkit-scrollbar-thumb {
+            background: #ff6a00;
+            border-radius: 4px;
+        }
+        
+        .dropdown-content::-webkit-scrollbar-thumb:hover {
+            background: #e85f00;
         }
         
         .dropdown-content a {
@@ -111,6 +131,7 @@
                 transform: translateX(-50%);
                 width: 90%;
                 max-width: 300px;
+                max-height: 250px;
             }
         }
     </style>
