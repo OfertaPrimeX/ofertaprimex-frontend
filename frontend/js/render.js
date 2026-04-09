@@ -15,23 +15,12 @@ const plataformasIcones = {
 };
 
 // ============================================
-// FUNÇÃO PARA OBTER O ÍCONE DA PLATAFORMA
+// FUNÇÃO PARA OBTER ÍCONE (canto superior direito) - PADRÃO PARA TODOS OS CARDS
 // ============================================
-function getIconePlataforma(plataforma) {
+function getIconeCard(plataforma) {
     const icone = plataformasIcones[plataforma];
     if (icone) {
-        return `<img src="${icone}" alt="${plataforma}" class="platform-icon" style="width: 16px; height: 16px; margin-right: 4px; vertical-align: middle;">`;
-    }
-    return '';
-}
-
-// ============================================
-// FUNÇÃO PARA OBTER ÍCONE DO CARROSSEL (canto superior direito)
-// ============================================
-function getIconeCarrossel(plataforma) {
-    const icone = plataformasIcones[plataforma];
-    if (icone) {
-        return `<img src="${icone}" alt="${plataforma}" class="platform-icon-carousel" style="width: 20px; height: 20px; position: absolute; top: 8px; right: 8px; z-index: 10; border-radius: 4px;">`;
+        return `<img src="${icone}" alt="${plataforma}" class="platform-icon-card" style="width: 20px; height: 20px; position: absolute; top: 8px; right: 8px; z-index: 10; border-radius: 4px;">`;
     }
     return '';
 }
@@ -171,13 +160,14 @@ export function renderProducts(container, products, isCarousel = false) {
     const card = document.createElement('div');
     card.className = 'product-card';
     card.style.cursor = 'pointer';
+    card.style.position = 'relative'; // Necessário para o ícone absoluto
     
     // Captura os dados do produto
     const produtoId = p.id;
     const plataforma = p.plataforma || 'Mercado Livre';
     const link = p.link_afiliado || p.link_original || '#';
     
-    // CORREÇÃO: Adiciona registro de clique antes de abrir o link
+    // Adiciona registro de clique antes de abrir o link
     card.onclick = async (e) => {
       e.preventDefault();
       e.stopPropagation();
@@ -199,21 +189,17 @@ export function renderProducts(container, products, isCarousel = false) {
       }
     };
 
-    // ===== FORMATA PREÇO (CORRIGIDO) =====
+    // ===== FORMATA PREÇO =====
     let precoFormatado = 'R$ 0,00';
     if (p.preco) {
       let precoNum = 0;
       if (typeof p.preco === 'number') {
         precoNum = p.preco;
       } else {
-        // Remove R$, pontos e vírgulas, converte para número
         const precoLimpo = p.preco.toString().replace('R$', '').replace(/\./g, '').replace(',', '.').trim();
         precoNum = parseFloat(precoLimpo);
       }
       
-      // CORREÇÃO: se o valor for maior que 1000, provavelmente está em centavos
-      // Produtos baratos (R$ 10,00) vêm como 1000 centavos
-      // Produtos caros (R$ 1000,00) vêm como 100000 centavos
       if (precoNum > 1000) {
         precoNum = precoNum / 100;
       }
@@ -236,20 +222,18 @@ export function renderProducts(container, products, isCarousel = false) {
     const titulo = (p.titulo || p.title || 'Produto sem título').substring(0, 60);
     const tituloEllipsis = (p.titulo || p.title || 'Produto sem título').length > 60 ? '...' : '';
 
-    // ===== ÍCONE DA PLATAFORMA =====
-    const iconeHtml = getIconePlataforma(plataforma);
+    // ===== ÍCONE DA PLATAFORMA (canto superior direito) =====
+    const iconeHtml = getIconeCard(plataforma);
 
-    // ===== CONSTRÓI O CARD (COM ÍCONE E SEM TEXTO DA PLATAFORMA) =====
+    // ===== CONSTRÓI O CARD (COM ÍCONE NO CANTO SUPERIOR DIREITO E SEM TEXTO) =====
     card.innerHTML = `
+      ${iconeHtml}
       <img src="${imagem}" alt="${titulo}" 
            class="product-image"
            onerror="this.src='https://via.placeholder.com/200x200?text=Sem+Imagem'">
       <div class="product-info">
         <h3 class="product-title">${titulo}${tituloEllipsis}</h3>
         <div class="product-price">${precoFormatado}</div>
-        <div class="product-platform" style="display: flex; align-items: center; gap: 4px;">
-          ${iconeHtml}
-        </div>
       </div>
     `;
 
@@ -302,7 +286,7 @@ export function renderCarousel(container, products) {
         }
         
         // Ícone da plataforma (canto superior direito)
-        const iconeHtml = getIconeCarrossel(plataforma);
+        const iconeHtml = getIconeCard(plataforma);
         
         return `<div class="carousel-card" style="position: relative;" onclick="window.registrarCliqueCarrossel(${produtoId}, '${plataforma}', '${link}'); window.open('${link}', '_blank');">
             ${iconeHtml}
@@ -327,7 +311,7 @@ export function renderProductsHTML(products) {
   const produtosFiltrados = filtrarProdutosPorPlataforma(products);
   
   return produtosFiltrados.map(p => {
-    // Formata preço (CORRIGIDO)
+    // Formata preço
     let precoFormatado = 'R$ 0,00';
     if (p.preco) {
       let precoNum = 0;
@@ -338,7 +322,6 @@ export function renderProductsHTML(products) {
         precoNum = parseFloat(precoLimpo);
       }
       
-      // CORREÇÃO: se o valor for maior que 1000, provavelmente está em centavos
       if (precoNum > 1000) {
         precoNum = precoNum / 100;
       }
@@ -359,7 +342,7 @@ export function renderProductsHTML(products) {
     const tituloEllipsis = (p.titulo || p.title || 'Produto sem título').length > 60 ? '...' : '';
     
     // Ícone da plataforma
-    const iconeHtml = getIconePlataforma(plataforma);
+    const iconeHtml = getIconeCard(plataforma);
     
     // Função inline para registrar clique e abrir link
     const onclickHandler = `(async () => { 
@@ -375,14 +358,12 @@ export function renderProductsHTML(products) {
     })()`;
     
     return `
-      <div class="product-card" style="cursor:pointer;" onclick="${onclickHandler.replace(/"/g, '&quot;')}">
+      <div class="product-card" style="position: relative; cursor:pointer;" onclick="${onclickHandler.replace(/"/g, '&quot;')}">
+        ${iconeHtml}
         <img src="${imagem}" alt="${titulo}" class="product-image" onerror="this.src='https://via.placeholder.com/200x200?text=Sem+Imagem'">
         <div class="product-info">
           <h3 class="product-title">${titulo}${tituloEllipsis}</h3>
           <div class="product-price">${precoFormatado}</div>
-          <div class="product-platform" style="display: flex; align-items: center; gap: 4px;">
-            ${iconeHtml}
-          </div>
         </div>
       </div>
     `;
@@ -409,7 +390,6 @@ export function formatPrice(preco) {
     precoNum = parseFloat(precoLimpo);
   }
   
-  // CORREÇÃO: se o valor for maior que 1000, provavelmente está em centavos
   if (precoNum > 1000) {
     precoNum = precoNum / 100;
   }
@@ -423,7 +403,7 @@ export function formatPrice(preco) {
 }
 
 /**
- * Gera estrelas baseado na nota (função global para uso em outros scripts)
+ * Gera estrelas baseado na nota
  * @param {number} rating - Nota de 0 a 5
  * @returns {string} HTML com estrelas
  */
