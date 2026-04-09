@@ -26,6 +26,57 @@ function getIconeCard(plataforma) {
 }
 
 // ============================================
+// FUNÇÃO PARA CARREGAR CATEGORIAS NO DROPDOWN
+// ============================================
+export async function carregarCategoriasDropdown() {
+    try {
+        const response = await fetch('https://yo0g0cg4c88w88osc4s04c0c.72.61.33.248.sslip.io/api/produtos/categorias/contagem');
+        const data = await response.json();
+        
+        const dropdown = document.getElementById('dropdown-categorias');
+        if (!dropdown) return;
+        
+        if (data.success && data.categorias && data.categorias.length > 0) {
+            const categoriasAtivas = data.categorias.filter(c => c.ativa);
+            
+            if (categoriasAtivas.length === 0) {
+                dropdown.innerHTML = '<a href="#" style="color: #999;">Nenhuma categoria disponível</a>';
+                return;
+            }
+            
+            dropdown.innerHTML = categoriasAtivas.map(cat => `
+                <a href="#" onclick="window.buscarPorCategoria('${cat.termo.replace(/'/g, "\\'")}'); return false;">
+                    <span>${cat.icone}</span> ${cat.nome}
+                </a>
+            `).join('');
+        } else {
+            // Fallback
+            const categoriasFallback = [
+                { nome: "Celulares e Dispositivos", icone: "📱", termo: "celulares" },
+                { nome: "Computadores e Acessórios", icone: "💻", termo: "computadores" },
+                { nome: "Jogos e Consoles", icone: "🎮", termo: "jogos e consoles" },
+                { nome: "Áudio", icone: "🎧", termo: "áudio" },
+                { nome: "Eletrodomésticos", icone: "🧺", termo: "eletrodomésticos" },
+                { nome: "Beleza", icone: "💄", termo: "beleza" },
+                { nome: "Saúde", icone: "💊", termo: "saúde" }
+            ];
+            dropdown.innerHTML = categoriasFallback.map(cat => `
+                <a href="#" onclick="window.buscarPorCategoria('${cat.termo}'); return false;">
+                    <span>${cat.icone}</span> ${cat.nome}
+                </a>
+            `).join('');
+        }
+        console.log('✅ Dropdown de categorias atualizado');
+    } catch (error) {
+        console.error('❌ Erro ao carregar dropdown de categorias:', error);
+        const dropdown = document.getElementById('dropdown-categorias');
+        if (dropdown) {
+            dropdown.innerHTML = '<a href="#" style="color: #999;">Erro ao carregar categorias</a>';
+        }
+    }
+}
+
+// ============================================
 // FUNÇÃO PARA OBTER PLATAFORMAS ATIVAS
 // ============================================
 export function getPlataformasAtivas() {
@@ -47,7 +98,6 @@ export function getPlataformasAtivas() {
 export function filtrarProdutosPorPlataforma(produtos) {
     const plataformasAtivas = getPlataformasAtivas();
     
-    // Mapeamento de nomes de plataforma para IDs
     const mapaPlataforma = {
         'Mercado Livre': 'mercadolivre',
         'Amazon': 'amazon',
@@ -64,7 +114,6 @@ export function filtrarProdutosPorPlataforma(produtos) {
         const plataformaId = mapaPlataforma[plataforma] || mapaPlataforma[plataforma.toLowerCase()];
         
         if (!plataformaId) {
-            // Se não conseguir identificar, mostra (fallback)
             return true;
         }
         
@@ -81,7 +130,6 @@ export function filtrarProdutosPorPlataforma(produtos) {
 // ============================================
 async function registrarClique(produtoId, plataforma, linkOriginal, pagina) {
     try {
-        // Se não tiver ID, não registra
         if (!produtoId) {
             console.warn('⚠️ Produto sem ID, clique NÃO registrado');
             return;
@@ -95,7 +143,6 @@ async function registrarClique(produtoId, plataforma, linkOriginal, pagina) {
         
         const sessaoIdAtual = localStorage.getItem('sessaoId');
         
-        // Mapeamento de nomes de plataforma
         const plataformaMap = {
             'Mercado Livre': 'mercadolivre',
             'Amazon': 'amazon',
@@ -135,15 +182,13 @@ async function registrarClique(produtoId, plataforma, linkOriginal, pagina) {
  * Renderiza produtos no container especificado
  * @param {HTMLElement} container - Elemento onde os produtos serão inseridos
  * @param {Array} products - Lista de produtos a serem renderizados
- * @param {boolean} isCarousel - Se true, substitui o conteúdo; se false, adiciona ao final (para scroll infinito)
+ * @param {boolean} isCarousel - Se true, substitui o conteúdo; se false, adiciona ao final
  */
 export function renderProducts(container, products, isCarousel = false) {
   if (!container) return;
   
-  // FILTRA PRODUTOS POR PLATAFORMA ATIVA
   const produtosFiltrados = filtrarProdutosPorPlataforma(products);
   
-  // Se for carrossel, limpa o container antes de adicionar
   if (isCarousel) {
     container.innerHTML = '';
   }
@@ -155,33 +200,28 @@ export function renderProducts(container, products, isCarousel = false) {
     return;
   }
 
-  // Para cada produto, cria o card
   produtosFiltrados.forEach(p => {
     const card = document.createElement('div');
     card.className = 'product-card';
     card.style.cursor = 'pointer';
-    card.style.position = 'relative'; // Necessário para o ícone absoluto
+    card.style.position = 'relative';
     
-    // Captura os dados do produto
     const produtoId = p.id;
     const plataforma = p.plataforma || 'Mercado Livre';
     const link = p.link_afiliado || p.link_original || '#';
     
-    // Adiciona registro de clique antes de abrir o link
     card.onclick = async (e) => {
       e.preventDefault();
       e.stopPropagation();
       
       console.log(`🖱️ Clique no produto: ${p.titulo || p.title} | ID: ${produtoId} | Plataforma: ${plataforma}`);
       
-      // Registra o clique no backend
       if (produtoId) {
         await registrarClique(produtoId, plataforma, link, window.location.pathname);
       } else {
         console.warn('⚠️ Produto sem ID, clique NÃO será registrado no backend');
       }
       
-      // Abre o link em nova aba
       if (link && link !== '#') {
         window.open(link, '_blank');
       } else {
@@ -189,7 +229,6 @@ export function renderProducts(container, products, isCarousel = false) {
       }
     };
 
-    // ===== FORMATA PREÇO =====
     let precoFormatado = 'R$ 0,00';
     if (p.preco) {
       let precoNum = 0;
@@ -212,20 +251,16 @@ export function renderProducts(container, products, isCarousel = false) {
       }
     }
 
-    // ===== DEFINE IMAGEM =====
     let imagem = p.imagem_principal || p.thumbnail;
     if (!imagem || imagem === '') {
       imagem = 'https://via.placeholder.com/200x200?text=Sem+Imagem';
     }
 
-    // ===== TÍTULO (limitado a 60 caracteres) =====
     const titulo = (p.titulo || p.title || 'Produto sem título').substring(0, 60);
     const tituloEllipsis = (p.titulo || p.title || 'Produto sem título').length > 60 ? '...' : '';
 
-    // ===== ÍCONE DA PLATAFORMA (canto superior direito) =====
     const iconeHtml = getIconeCard(plataforma);
 
-    // ===== CONSTRÓI O CARD (COM ÍCONE NO CANTO SUPERIOR DIREITO E SEM TEXTO) =====
     card.innerHTML = `
       ${iconeHtml}
       <img src="${imagem}" alt="${titulo}" 
@@ -249,7 +284,6 @@ export function renderProducts(container, products, isCarousel = false) {
 export function renderCarousel(container, products) {
     if (!container) return;
     
-    // FILTRA PRODUTOS POR PLATAFORMA ATIVA
     const produtosFiltrados = filtrarProdutosPorPlataforma(products);
     
     if (!produtosFiltrados || produtosFiltrados.length === 0) {
@@ -264,7 +298,6 @@ export function renderCarousel(container, products) {
         const imagem = p.imagem_principal || 'https://via.placeholder.com/150';
         const titulo = (p.titulo || '').substring(0, 50);
         
-        // Formata preço
         let precoFormatado = 'R$ 0,00';
         if (p.preco) {
             let precoNum = 0;
@@ -285,7 +318,6 @@ export function renderCarousel(container, products) {
             }
         }
         
-        // Ícone da plataforma (canto superior direito)
         const iconeHtml = getIconeCard(plataforma);
         
         return `<div class="carousel-card" style="position: relative;" onclick="window.registrarCliqueCarrossel(${produtoId}, '${plataforma}', '${link}'); window.open('${link}', '_blank');">
@@ -307,11 +339,9 @@ export function renderCarousel(container, products) {
 export function renderProductsHTML(products) {
   if (!products || products.length === 0) return '';
   
-  // FILTRA PRODUTOS POR PLATAFORMA ATIVA
   const produtosFiltrados = filtrarProdutosPorPlataforma(products);
   
   return produtosFiltrados.map(p => {
-    // Formata preço
     let precoFormatado = 'R$ 0,00';
     if (p.preco) {
       let precoNum = 0;
@@ -341,10 +371,8 @@ export function renderProductsHTML(products) {
     const titulo = (p.titulo || p.title || 'Produto sem título').substring(0, 60);
     const tituloEllipsis = (p.titulo || p.title || 'Produto sem título').length > 60 ? '...' : '';
     
-    // Ícone da plataforma
     const iconeHtml = getIconeCard(plataforma);
     
-    // Função inline para registrar clique e abrir link
     const onclickHandler = `(async () => { 
       try { 
         const sessaoId = localStorage.getItem('sessaoId') || 'anon_' + Date.now();
@@ -374,11 +402,6 @@ export function renderProductsHTML(products) {
 // FUNÇÕES AUXILIARES EXPORTADAS
 // ============================================
 
-/**
- * Formata preço para exibição
- * @param {number|string} preco - Preço a ser formatado
- * @returns {string} Preço formatado (ex: R$ 1.234,56)
- */
 export function formatPrice(preco) {
   if (!preco) return 'R$ 0,00';
   
@@ -402,11 +425,6 @@ export function formatPrice(preco) {
   });
 }
 
-/**
- * Gera estrelas baseado na nota
- * @param {number} rating - Nota de 0 a 5
- * @returns {string} HTML com estrelas
- */
 export function generateStars(rating) {
   if (!rating || rating === 'N/A') return '☆☆☆☆☆';
   const numRating = parseFloat(rating.replace(',', '.'));
