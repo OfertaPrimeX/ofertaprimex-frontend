@@ -174,17 +174,6 @@
     </div>
 </section>
 
-<!-- ================= SEÇÃO DE CATEGORIAS (escondida por padrão, usada pelo dropdown) ================= -->
-<section class="categories-section" id="categorias">
-    <div class="container">
-        <h2 class="section-title">📂 Categorias</h2>
-        <p class="section-subtitle">Navegue pelas categorias e encontre as melhores ofertas</p>
-        <div class="categories-grid" id="categories-grid">
-            <!-- As categorias serão inseridas via JavaScript -->
-        </div>
-    </div>
-</section>
-
 <!-- ================= CARROSSEL: 24 PRODUTOS MAIS VENDIDOS ================= -->
 <section class="mais-vendidos-section" id="mais-vendidos">
     <div class="container">
@@ -798,14 +787,6 @@
       });
   }
   
-  function mostrarCategorias(event) {
-      if (event) event.preventDefault();
-      ocultarTodasSecoes();
-      document.getElementById('categorias').classList.remove('hidden-section');
-      document.getElementById('resultado-busca').style.display = 'none';
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-  }
-  
   function mostrarMaisVendidos(event) {
       if (event) event.preventDefault();
       ocultarTodasSecoes();
@@ -875,7 +856,6 @@
       window.scrollTo({ top: 0, behavior: 'smooth' });
   }
   
-  window.mostrarCategorias = mostrarCategorias;
   window.mostrarMaisVendidos = mostrarMaisVendidos;
   window.mostrarSelecionados = mostrarSelecionados;
   window.voltarParaHome = voltarParaHome;
