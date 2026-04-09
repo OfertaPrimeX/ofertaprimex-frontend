@@ -73,17 +73,12 @@
     </div>
 </section>
 
-<!-- ================= SEÇÃO: PLATAFORMAS PARCEIRAS ================= -->
-<section class="plataformas-parceiras-section" id="plataformas-parceiras">
-    <div class="container">
-        <div style="display: flex; align-items: center; gap: 30px; flex-wrap: wrap;">
-            <h2 class="section-title" style="margin-bottom: 0; border-bottom: none; padding-bottom: 0;">🤝 Plataformas Parceiras</h2>
-            <div id="plataformas-logos-container" class="plataforma-logos-container" style="margin-top: 0;">
-                <div>Carregando...</div>
-            </div>
-        </div>
-    </div>
-</section>
+<!-- ================= BOTÃO: TODAS AS CATEGORIAS (ABAIXO DA FAIXA LARANJA) ================= -->
+<div style="text-align: center; margin: 20px 0;">
+    <button id="btnTodasCategorias" style="background-color: #ff6a00; color: white; border: none; padding: 12px 24px; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; transition: background-color 0.2s;">
+        📋 Ver Todas as Categorias
+    </button>
+</div>
 
 <!-- ================= SEÇÃO DE CATEGORIAS ================= -->
 <section class="categories-section" id="categorias">
@@ -411,33 +406,10 @@
         return ['mercadolivre', 'amazon', 'shopee', 'magalu'];
     }
 
-    // ATUALIZAR LOGOS
+    // ATUALIZAR LOGOS (AGORA OCULTO, MAS MANTIDO PARA NÃO QUEBRAR)
     async function atualizarLogos() {
-        const container = document.getElementById('plataformas-logos-container');
-        if (!container) return;
-        
-        const plataformasAtivas = await carregarConfiguracoesBackend();
-        
-        if (plataformasAtivas.length === 0) {
-            container.innerHTML = '<div>Nenhuma plataforma ativa no momento</div>';
-            return;
-        }
-        
-        const logosHtml = plataformasAtivas.map(id => {
-            const config = plataformasConfig[id];
-            return config ? `<img src="${config.logo}" alt="${config.nome}" class="plataforma-logo-img" title="${config.nome}" loading="lazy">` : '';
-        }).join('');
-        
-        container.innerHTML = logosHtml;
-        console.log('🖼️ Logos atualizados:', plataformasAtivas);
-        
-        if (ultimasConfiguracoes && JSON.stringify(ultimasConfiguracoes) !== JSON.stringify(plataformasAtivas)) {
-            console.log('🔄 Configurações mudaram, recarregando produtos e meta tags...');
-            if (typeof window.recarregarProdutos === 'function') {
-                window.recarregarProdutos();
-            }
-        }
-        ultimasConfiguracoes = plataformasAtivas;
+        // Função mantida para não quebrar referências, mas não faz nada visível
+        console.log('🖼️ Função atualizarLogos mantida para compatibilidade');
     }
 
     // INICIALIZAR
@@ -447,15 +419,6 @@
         
         setInterval(async () => {
             const novasConfigs = await carregarConfiguracoesBackend();
-            const container = document.getElementById('plataformas-logos-container');
-            if (container) {
-                const novosLogos = novasConfigs.map(id => {
-                    const config = plataformasConfig[id];
-                    return config ? `<img src="${config.logo}" alt="${config.nome}" class="plataforma-logo-img" title="${config.nome}" loading="lazy">` : '';
-                }).join('');
-                container.innerHTML = novosLogos;
-                console.log('🔄 Logos recarregados:', novasConfigs);
-            }
             
             if (ultimasConfiguracoes && JSON.stringify(ultimasConfiguracoes) !== JSON.stringify(novasConfigs)) {
                 console.log('🔄 Configurações detectadas, recarregando produtos e meta tags...');
@@ -735,6 +698,18 @@
       }
   }
 
+  // FUNÇÃO PARA O BOTÃO "TODAS AS CATEGORIAS"
+  function mostrarTodasCategorias() {
+      const categoriasSection = document.getElementById('categorias');
+      if (categoriasSection) {
+          // Esconder outras seções se necessário
+          ocultarTodasSecoes();
+          categoriasSection.classList.remove('hidden-section');
+          document.getElementById('resultado-busca').style.display = 'none';
+          window.scrollTo({ top: categoriasSection.offsetTop - 100, behavior: 'smooth' });
+      }
+  }
+
   // FUNÇÕES DE CONTROLE DAS SEÇÕES
   function ocultarTodasSecoes() {
       const secoes = ['categorias', 'mais-vendidos', 'selecionados'];
@@ -828,11 +803,18 @@
   window.mostrarQuemSomos = mostrarQuemSomos;
   window.mostrarTermos = mostrarTermos;
   window.mostrarPrivacidade = mostrarPrivacidade;
+  window.mostrarTodasCategorias = mostrarTodasCategorias;
 
   window.buscarPorCategoria = function(termo) {
       document.getElementById('busca').value = termo;
       realizarBusca();
   };
+
+  // ADICIONAR EVENTO AO BOTÃO
+  const btnTodasCategorias = document.getElementById('btnTodasCategorias');
+  if (btnTodasCategorias) {
+      btnTodasCategorias.addEventListener('click', mostrarTodasCategorias);
+  }
 
   // SCROLL INFINITO
   let allSearchResults = [];
