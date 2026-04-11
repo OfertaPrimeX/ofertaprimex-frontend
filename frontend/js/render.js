@@ -15,12 +15,99 @@ const plataformasIcones = {
 };
 
 // ============================================
-// FUNÇÃO PARA OBTER ÍCONE (canto superior direito) - PADRÃO PARA TODOS OS CARDS
+// FUNÇÃO PARA OBTER ÍCONE (canto superior direito)
 // ============================================
 function getIconeCard(plataforma) {
     const icone = plataformasIcones[plataforma];
     if (icone) {
         return `<img src="${icone}" alt="${plataforma}" class="platform-icon-card" style="width: 20px; height: 20px; position: absolute; top: 8px; right: 8px; z-index: 10; border-radius: 4px;">`;
+    }
+    return '';
+}
+
+// ============================================
+// FUNÇÃO PARA FORMATAR PREÇO (NOVO - MAIS ROBUSTO)
+// ============================================
+export function formatPrice(preco) {
+    if (!preco) return 'R$ 0,00';
+    
+    // Se já for string formatada, retorna
+    if (typeof preco === 'string' && preco.includes('R$')) {
+        return preco;
+    }
+    
+    let precoNum = 0;
+    if (typeof preco === 'number') {
+        precoNum = preco;
+    } else {
+        const precoLimpo = preco.toString().replace('R$', '').replace(/\./g, '').replace(',', '.').trim();
+        precoNum = parseFloat(precoLimpo);
+    }
+    
+    if (isNaN(precoNum)) return 'R$ 0,00';
+    
+    return precoNum.toLocaleString('pt-BR', {
+        style: 'currency',
+        currency: 'BRL'
+    });
+}
+
+// ============================================
+// FUNÇÃO PARA OBTER O MELHOR PREÇO (PRIORIZA PREÇO PIX)
+// ============================================
+function getMelhorPreco(produto) {
+    // Prioridade: preco_pix > preco > preco_original
+    if (produto.preco_pix && produto.preco_pix !== 'N/A') {
+        return formatPrice(produto.preco_pix);
+    }
+    if (produto.preco && produto.preco !== 'N/A') {
+        return formatPrice(produto.preco);
+    }
+    return 'R$ 0,00';
+}
+
+// ============================================
+// FUNÇÃO PARA OBTER PREÇO PARCELADO (SE DISPONÍVEL)
+// ============================================
+function getPrecoParcelado(produto) {
+    if (produto.preco_parcelado && produto.preco_parcelado !== 'N/A') {
+        return `<div class="product-installment">${produto.preco_parcelado}</div>`;
+    }
+    return '';
+}
+
+// ============================================
+// FUNÇÃO PARA OBTER ÍCONE DE FRETE GRÁTIS
+// ============================================
+function getFreteGratisIcon(freteGratis) {
+    if (freteGratis === true || freteGratis === 'Sim' || freteGratis === 'true') {
+        return '<span class="frete-gratis-badge" style="display: inline-block; background: #00a650; color: white; font-size: 11px; padding: 2px 6px; border-radius: 4px; margin-top: 5px;">🚚 Frete Grátis</span>';
+    }
+    return '';
+}
+
+// ============================================
+// FUNÇÃO PARA OBTER ÍCONE DE LOJA OFICIAL
+// ============================================
+function getLojaOficialIcon(lojaOficial) {
+    if (lojaOficial === true || lojaOficial === 'Sim' || lojaOficial === 'true') {
+        return '<span class="loja-oficial-badge" style="display: inline-block; background: #3483fa; color: white; font-size: 11px; padding: 2px 6px; border-radius: 4px; margin-top: 5px;">✅ Loja Oficial</span>';
+    }
+    return '';
+}
+
+// ============================================
+// FUNÇÃO PARA OBTER AVALIAÇÃO FORMATADA
+// ============================================
+function getAvaliacao(produto) {
+    if (produto.avaliacao && produto.avaliacao !== 'N/A') {
+        const nota = produto.avaliacao;
+        const estrelas = generateStars(nota);
+        const reviews = produto.reviews ? `(${produto.reviews})` : '';
+        return `<div class="product-rating" style="display: flex; align-items: center; gap: 5px; margin-top: 5px;">
+                    <span style="color: #ffb400;">${estrelas}</span>
+                    <span style="font-size: 12px; color: #666;">${nota} ${reviews}</span>
+                </div>`;
     }
     return '';
 }
@@ -229,27 +316,12 @@ export function renderProducts(container, products, isCarousel = false) {
       }
     };
 
-    let precoFormatado = 'R$ 0,00';
-    if (p.preco) {
-      let precoNum = 0;
-      if (typeof p.preco === 'number') {
-        precoNum = p.preco;
-      } else {
-        const precoLimpo = p.preco.toString().replace('R$', '').replace(/\./g, '').replace(',', '.').trim();
-        precoNum = parseFloat(precoLimpo);
-      }
-      
-      if (precoNum > 1000) {
-        precoNum = precoNum / 100;
-      }
-      
-      if (!isNaN(precoNum)) {
-        precoFormatado = precoNum.toLocaleString('pt-BR', {
-          style: 'currency',
-          currency: 'BRL'
-        });
-      }
-    }
+    // NOVO: Usa preco_pix prioritariamente
+    const precoFormatado = getMelhorPreco(p);
+    const precoParceladoHtml = getPrecoParcelado(p);
+    const freteGratisHtml = getFreteGratisIcon(p.frete_gratis);
+    const lojaOficialHtml = getLojaOficialIcon(p.loja_oficial);
+    const avaliacaoHtml = getAvaliacao(p);
 
     let imagem = p.imagem_principal || p.thumbnail;
     if (!imagem || imagem === '') {
@@ -269,6 +341,12 @@ export function renderProducts(container, products, isCarousel = false) {
       <div class="product-info">
         <h3 class="product-title">${titulo}${tituloEllipsis}</h3>
         <div class="product-price">${precoFormatado}</div>
+        ${precoParceladoHtml}
+        <div class="product-badges" style="display: flex; gap: 5px; flex-wrap: wrap; margin-top: 5px;">
+          ${freteGratisHtml}
+          ${lojaOficialHtml}
+        </div>
+        ${avaliacaoHtml}
       </div>
     `;
 
@@ -277,7 +355,7 @@ export function renderProducts(container, products, isCarousel = false) {
 }
 
 /**
- * Renderiza produtos no carrossel (formato específico com ícone no canto superior direito)
+ * Renderiza produtos no carrossel (formato específico)
  * @param {HTMLElement} container - Elemento onde os produtos serão inseridos
  * @param {Array} products - Lista de produtos a serem renderizados
  */
@@ -298,25 +376,9 @@ export function renderCarousel(container, products) {
         const imagem = p.imagem_principal || 'https://via.placeholder.com/150';
         const titulo = (p.titulo || '').substring(0, 50);
         
-        let precoFormatado = 'R$ 0,00';
-        if (p.preco) {
-            let precoNum = 0;
-            if (typeof p.preco === 'number') {
-                precoNum = p.preco;
-            } else {
-                const precoLimpo = p.preco.toString().replace('R$', '').replace(/\./g, '').replace(',', '.').trim();
-                precoNum = parseFloat(precoLimpo);
-            }
-            if (precoNum > 1000) {
-                precoNum = precoNum / 100;
-            }
-            if (!isNaN(precoNum)) {
-                precoFormatado = precoNum.toLocaleString('pt-BR', {
-                    style: 'currency',
-                    currency: 'BRL'
-                });
-            }
-        }
+        // Usa preco_pix prioritariamente
+        const precoFormatado = getMelhorPreco(p);
+        const freteGratisHtml = getFreteGratisIcon(p.frete_gratis);
         
         const iconeHtml = getIconeCard(plataforma);
         
@@ -325,6 +387,7 @@ export function renderCarousel(container, products) {
             <img src="${imagem}" alt="${titulo}" loading="lazy" onerror="this.src='https://via.placeholder.com/150'">
             <div class="product-title">${titulo}...</div>
             <div class="product-price">${precoFormatado}</div>
+            ${freteGratisHtml}
         </div>`;
     }).join('');
     
@@ -342,27 +405,11 @@ export function renderProductsHTML(products) {
   const produtosFiltrados = filtrarProdutosPorPlataforma(products);
   
   return produtosFiltrados.map(p => {
-    let precoFormatado = 'R$ 0,00';
-    if (p.preco) {
-      let precoNum = 0;
-      if (typeof p.preco === 'number') {
-        precoNum = p.preco;
-      } else {
-        const precoLimpo = p.preco.toString().replace('R$', '').replace(/\./g, '').replace(',', '.').trim();
-        precoNum = parseFloat(precoLimpo);
-      }
-      
-      if (precoNum > 1000) {
-        precoNum = precoNum / 100;
-      }
-      
-      if (!isNaN(precoNum)) {
-        precoFormatado = precoNum.toLocaleString('pt-BR', {
-          style: 'currency',
-          currency: 'BRL'
-        });
-      }
-    }
+    const precoFormatado = getMelhorPreco(p);
+    const precoParceladoHtml = getPrecoParcelado(p);
+    const freteGratisHtml = getFreteGratisIcon(p.frete_gratis);
+    const lojaOficialHtml = getLojaOficialIcon(p.loja_oficial);
+    const avaliacaoHtml = getAvaliacao(p);
     
     const produtoId = p.id;
     const plataforma = p.plataforma || 'Mercado Livre';
@@ -392,6 +439,12 @@ export function renderProductsHTML(products) {
         <div class="product-info">
           <h3 class="product-title">${titulo}${tituloEllipsis}</h3>
           <div class="product-price">${precoFormatado}</div>
+          ${precoParceladoHtml}
+          <div class="product-badges" style="display: flex; gap: 5px; flex-wrap: wrap; margin-top: 5px;">
+            ${freteGratisHtml}
+            ${lojaOficialHtml}
+          </div>
+          ${avaliacaoHtml}
         </div>
       </div>
     `;
@@ -399,35 +452,11 @@ export function renderProductsHTML(products) {
 }
 
 // ============================================
-// FUNÇÕES AUXILIARES EXPORTADAS
+// FUNÇÃO GERAR ESTRELAS
 // ============================================
-
-export function formatPrice(preco) {
-  if (!preco) return 'R$ 0,00';
-  
-  let precoNum = 0;
-  if (typeof preco === 'number') {
-    precoNum = preco;
-  } else {
-    const precoLimpo = preco.toString().replace('R$', '').replace(/\./g, '').replace(',', '.').trim();
-    precoNum = parseFloat(precoLimpo);
-  }
-  
-  if (precoNum > 1000) {
-    precoNum = precoNum / 100;
-  }
-  
-  if (isNaN(precoNum)) return 'R$ 0,00';
-  
-  return precoNum.toLocaleString('pt-BR', {
-    style: 'currency',
-    currency: 'BRL'
-  });
-}
-
 export function generateStars(rating) {
   if (!rating || rating === 'N/A') return '☆☆☆☆☆';
-  const numRating = parseFloat(rating.replace(',', '.'));
+  const numRating = parseFloat(rating.toString().replace(',', '.'));
   if (isNaN(numRating)) return '☆☆☆☆☆';
   
   const fullStars = Math.floor(numRating);
