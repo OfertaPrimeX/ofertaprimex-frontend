@@ -26,41 +26,42 @@ function getIconeCard(plataforma) {
 }
 
 // ============================================
-// FUNÇÃO PARA OBTER O PREÇO FORMATADO (USA DIRETAMENTE O QUE O BACKEND ENVIOU)
+// FUNÇÃO PARA OBTER O PREÇO FORMATADO (CORRIGIDA - SEM DIVISÃO)
 // ============================================
 function getPrecoFormatado(produto) {
     // Prioridade: preco_pix > preco
     let preco = null;
     
-    if (produto.preco_pix && produto.preco_pix !== 'N/A') {
+    if (produto.preco_pix && produto.preco_pix !== 'N/A' && produto.preco_pix !== null) {
         preco = produto.preco_pix;
-    } else if (produto.preco && produto.preco !== 'N/A') {
+    } else if (produto.preco && produto.preco !== 'N/A' && produto.preco !== null) {
         preco = produto.preco;
     }
     
-    // Se o preco já veio formatado do backend (com R$), retorna direto
-    if (preco && typeof preco === 'string' && preco.includes('R$')) {
-        return preco;
+    // Se não tem preço, retorna zero
+    if (!preco) return 'R$ 0,00';
+    
+    // Converte para número
+    let precoNum = 0;
+    if (typeof preco === 'number') {
+        precoNum = preco;
+    } else {
+        // Remove R$, espaços, troca vírgula por ponto
+        let precoLimpo = preco.toString().replace('R$', '').replace(/\./g, '').replace(',', '.').trim();
+        precoNum = parseFloat(precoLimpo);
     }
     
-    // Se for número ou string numérica, formata para Real
-    if (preco) {
-        let precoNum = 0;
-        if (typeof preco === 'number') {
-            precoNum = preco;
-        } else {
-            const precoLimpo = preco.toString().replace('R$', '').replace(/\./g, '').replace(',', '.').trim();
-            precoNum = parseFloat(precoLimpo);
-        }
-        if (!isNaN(precoNum) && precoNum > 0) {
-            return precoNum.toLocaleString('pt-BR', {
-                style: 'currency',
-                currency: 'BRL'
-            });
-        }
-    }
+    // Se não for número válido, retorna zero
+    if (isNaN(precoNum)) return 'R$ 0,00';
     
-    return 'R$ 0,00';
+    // IMPORTANTE: O backend já envia os preços em REAIS
+    // Ex: 4899 = R$ 4.899,00 (já está em reais, NÃO divide)
+    // Ex: 20 = R$ 20,00 (já está em reais, NÃO divide)
+    // Apenas formatamos como moeda brasileira
+    return precoNum.toLocaleString('pt-BR', {
+        style: 'currency',
+        currency: 'BRL'
+    });
 }
 
 // ============================================
