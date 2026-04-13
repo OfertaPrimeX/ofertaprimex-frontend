@@ -26,43 +26,40 @@ function getIconeCard(plataforma) {
 }
 
 // ============================================
-// FUNÇÃO PARA FORMATAR PREÇO (NOVO - MAIS ROBUSTO)
+// FUNÇÃO PARA OBTER O PREÇO FORMATADO (USA DIRETAMENTE O QUE O BACKEND ENVIOU)
 // ============================================
-export function formatPrice(preco) {
-    if (!preco) return 'R$ 0,00';
+function getPrecoFormatado(produto) {
+    // Prioridade: preco_pix > preco
+    let preco = null;
     
-    // Se já for string formatada, retorna
-    if (typeof preco === 'string' && preco.includes('R$')) {
+    if (produto.preco_pix && produto.preco_pix !== 'N/A') {
+        preco = produto.preco_pix;
+    } else if (produto.preco && produto.preco !== 'N/A') {
+        preco = produto.preco;
+    }
+    
+    // Se o preco já veio formatado do backend (com R$), retorna direto
+    if (preco && typeof preco === 'string' && preco.includes('R$')) {
         return preco;
     }
     
-    let precoNum = 0;
-    if (typeof preco === 'number') {
-        precoNum = preco;
-    } else {
-        const precoLimpo = preco.toString().replace('R$', '').replace(/\./g, '').replace(',', '.').trim();
-        precoNum = parseFloat(precoLimpo);
+    // Se for número ou string numérica, formata para Real
+    if (preco) {
+        let precoNum = 0;
+        if (typeof preco === 'number') {
+            precoNum = preco;
+        } else {
+            const precoLimpo = preco.toString().replace('R$', '').replace(/\./g, '').replace(',', '.').trim();
+            precoNum = parseFloat(precoLimpo);
+        }
+        if (!isNaN(precoNum) && precoNum > 0) {
+            return precoNum.toLocaleString('pt-BR', {
+                style: 'currency',
+                currency: 'BRL'
+            });
+        }
     }
     
-    if (isNaN(precoNum)) return 'R$ 0,00';
-    
-    return precoNum.toLocaleString('pt-BR', {
-        style: 'currency',
-        currency: 'BRL'
-    });
-}
-
-// ============================================
-// FUNÇÃO PARA OBTER O MELHOR PREÇO (PRIORIZA PREÇO PIX)
-// ============================================
-function getMelhorPreco(produto) {
-    // Prioridade: preco_pix > preco > preco_original
-    if (produto.preco_pix && produto.preco_pix !== 'N/A') {
-        return formatPrice(produto.preco_pix);
-    }
-    if (produto.preco && produto.preco !== 'N/A') {
-        return formatPrice(produto.preco);
-    }
     return 'R$ 0,00';
 }
 
@@ -71,7 +68,7 @@ function getMelhorPreco(produto) {
 // ============================================
 function getPrecoParcelado(produto) {
     if (produto.preco_parcelado && produto.preco_parcelado !== 'N/A') {
-        return `<div class="product-installment">${produto.preco_parcelado}</div>`;
+        return `<div class="product-installment" style="font-size: 12px; color: #666; margin-top: 2px;">${produto.preco_parcelado}</div>`;
     }
     return '';
 }
@@ -316,8 +313,8 @@ export function renderProducts(container, products, isCarousel = false) {
       }
     };
 
-    // NOVO: Usa preco_pix prioritariamente
-    const precoFormatado = getMelhorPreco(p);
+    // Usa preco_pix prioritariamente
+    const precoFormatado = getPrecoFormatado(p);
     const precoParceladoHtml = getPrecoParcelado(p);
     const freteGratisHtml = getFreteGratisIcon(p.frete_gratis);
     const lojaOficialHtml = getLojaOficialIcon(p.loja_oficial);
@@ -340,7 +337,7 @@ export function renderProducts(container, products, isCarousel = false) {
            onerror="this.src='https://via.placeholder.com/200x200?text=Sem+Imagem'">
       <div class="product-info">
         <h3 class="product-title">${titulo}${tituloEllipsis}</h3>
-        <div class="product-price">${precoFormatado}</div>
+        <div class="product-price" style="font-size: 18px; font-weight: bold; color: #ff6a00;">${precoFormatado}</div>
         ${precoParceladoHtml}
         <div class="product-badges" style="display: flex; gap: 5px; flex-wrap: wrap; margin-top: 5px;">
           ${freteGratisHtml}
@@ -377,7 +374,7 @@ export function renderCarousel(container, products) {
         const titulo = (p.titulo || '').substring(0, 50);
         
         // Usa preco_pix prioritariamente
-        const precoFormatado = getMelhorPreco(p);
+        const precoFormatado = getPrecoFormatado(p);
         const freteGratisHtml = getFreteGratisIcon(p.frete_gratis);
         
         const iconeHtml = getIconeCard(plataforma);
@@ -386,7 +383,7 @@ export function renderCarousel(container, products) {
             ${iconeHtml}
             <img src="${imagem}" alt="${titulo}" loading="lazy" onerror="this.src='https://via.placeholder.com/150'">
             <div class="product-title">${titulo}...</div>
-            <div class="product-price">${precoFormatado}</div>
+            <div class="product-price" style="font-size: 16px; font-weight: bold; color: #ff6a00;">${precoFormatado}</div>
             ${freteGratisHtml}
         </div>`;
     }).join('');
@@ -405,7 +402,7 @@ export function renderProductsHTML(products) {
   const produtosFiltrados = filtrarProdutosPorPlataforma(products);
   
   return produtosFiltrados.map(p => {
-    const precoFormatado = getMelhorPreco(p);
+    const precoFormatado = getPrecoFormatado(p);
     const precoParceladoHtml = getPrecoParcelado(p);
     const freteGratisHtml = getFreteGratisIcon(p.frete_gratis);
     const lojaOficialHtml = getLojaOficialIcon(p.loja_oficial);
@@ -438,7 +435,7 @@ export function renderProductsHTML(products) {
         <img src="${imagem}" alt="${titulo}" class="product-image" onerror="this.src='https://via.placeholder.com/200x200?text=Sem+Imagem'">
         <div class="product-info">
           <h3 class="product-title">${titulo}${tituloEllipsis}</h3>
-          <div class="product-price">${precoFormatado}</div>
+          <div class="product-price" style="font-size: 18px; font-weight: bold; color: #ff6a00;">${precoFormatado}</div>
           ${precoParceladoHtml}
           <div class="product-badges" style="display: flex; gap: 5px; flex-wrap: wrap; margin-top: 5px;">
             ${freteGratisHtml}
