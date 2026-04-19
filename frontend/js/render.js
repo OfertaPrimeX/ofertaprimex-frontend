@@ -66,6 +66,46 @@ function formatarPrecoCentralizado(valor) {
 }
 
 // ============================================
+// FUNÇÃO PARA FORMATAR PREÇO PIX (COM DESTAQUE)
+// ============================================
+function getPrecoPixFormatado(produto) {
+    if (produto.preco_pix && produto.preco_pix !== 'N/A' && produto.preco_pix !== null) {
+        const precoPix = formatarPrecoCentralizado(produto.preco_pix);
+        return `<div class="product-price-pix" style="font-size: 18px; font-weight: bold; color: #00a650;">${precoPix} <span style="font-size: 12px; font-weight: normal;">(PIX)</span></div>`;
+    }
+    return '';
+}
+
+// ============================================
+// FUNÇÃO PARA FORMATAR PREÇO NORMAL
+// ============================================
+function getPrecoNormalFormatado(produto) {
+    if (produto.preco && produto.preco !== 'N/A' && produto.preco !== null) {
+        const precoNormal = formatarPrecoCentralizado(produto.preco);
+        const temPix = produto.preco_pix && produto.preco_pix !== 'N/A' && produto.preco_pix !== null;
+        
+        if (temPix) {
+            // Tem PIX: mostra preço normal como opção secundária (riscado)
+            return `<div class="product-price-normal" style="font-size: 13px; color: #999; text-decoration: line-through;">${precoNormal}</div>`;
+        } else {
+            // Não tem PIX: mostra preço normal como principal
+            return `<div class="product-price" style="font-size: 18px; font-weight: bold; color: #ff6a00;">${precoNormal}</div>`;
+        }
+    }
+    return '';
+}
+
+// ============================================
+// FUNÇÃO PARA OBTER PREÇO PARCELADO (SE DISPONÍVEL)
+// ============================================
+function getPrecoParcelado(produto) {
+    if (produto.preco_parcelado && produto.preco_parcelado !== 'N/A') {
+        return `<div class="product-installment" style="font-size: 12px; color: #666; margin-top: 2px;">${produto.preco_parcelado}</div>`;
+    }
+    return '';
+}
+
+// ============================================
 // FUNÇÃO PARA OBTER O PREÇO FORMATADO (usa a função central)
 // ============================================
 function getPrecoFormatado(produto) {
@@ -80,16 +120,6 @@ function getPrecoFormatado(produto) {
     
     // Usa a função centralizada
     return formatarPrecoCentralizado(preco);
-}
-
-// ============================================
-// FUNÇÃO PARA OBTER PREÇO PARCELADO (SE DISPONÍVEL)
-// ============================================
-function getPrecoParcelado(produto) {
-    if (produto.preco_parcelado && produto.preco_parcelado !== 'N/A') {
-        return `<div class="product-installment" style="font-size: 12px; color: #666; margin-top: 2px;">${produto.preco_parcelado}</div>`;
-    }
-    return '';
 }
 
 // ============================================
@@ -332,8 +362,9 @@ export function renderProducts(container, products, isCarousel = false) {
       }
     };
 
-    // Usa preco_pix prioritariamente (usa função centralizada)
-    const precoFormatado = getPrecoFormatado(p);
+    // Preços formatados
+    const precoPixHtml = getPrecoPixFormatado(p);
+    const precoNormalHtml = getPrecoNormalFormatado(p);
     const precoParceladoHtml = getPrecoParcelado(p);
     const freteGratisHtml = getFreteGratisIcon(p.frete_gratis);
     const lojaOficialHtml = getLojaOficialIcon(p.loja_oficial);
@@ -348,6 +379,9 @@ export function renderProducts(container, products, isCarousel = false) {
     const tituloEllipsis = (p.titulo || p.title || 'Produto sem título').length > 60 ? '...' : '';
 
     const iconeHtml = getIconeCard(plataforma);
+    
+    // Se tem preco_pix, mostra ele como destaque, senão mostra preco normal
+    const precoDestaque = precoPixHtml || precoNormalHtml;
 
     card.innerHTML = `
       ${iconeHtml}
@@ -356,8 +390,9 @@ export function renderProducts(container, products, isCarousel = false) {
            onerror="this.src='https://via.placeholder.com/200x200?text=Sem+Imagem'">
       <div class="product-info">
         <h3 class="product-title">${titulo}${tituloEllipsis}</h3>
-        <div class="product-price" style="font-size: 18px; font-weight: bold; color: #ff6a00;">${precoFormatado}</div>
+        ${precoDestaque}
         ${precoParceladoHtml}
+        ${!precoPixHtml ? '' : precoNormalHtml}
         <div class="product-badges" style="display: flex; gap: 5px; flex-wrap: wrap; margin-top: 5px;">
           ${freteGratisHtml}
           ${lojaOficialHtml}
@@ -392,18 +427,24 @@ export function renderCarousel(container, products) {
         const imagem = p.imagem_principal || 'https://via.placeholder.com/150';
         const titulo = (p.titulo || '').substring(0, 50);
         
-        // Usa preco_pix prioritariamente (usa função centralizada)
-        const precoFormatado = getPrecoFormatado(p);
+        // Preços formatados
+        const precoPixHtml = getPrecoPixFormatado(p);
+        const precoNormalHtml = getPrecoNormalFormatado(p);
+        const precoParceladoHtml = getPrecoParcelado(p);
         const freteGratisHtml = getFreteGratisIcon(p.frete_gratis);
         
         const iconeHtml = getIconeCard(plataforma);
+        const precoDestaque = precoPixHtml || precoNormalHtml;
         
         return `<div class="carousel-card" style="position: relative;" onclick="window.registrarCliqueCarrossel(${produtoId}, '${plataforma}', '${link}'); window.open('${link}', '_blank');">
             ${iconeHtml}
             <img src="${imagem}" alt="${titulo}" loading="lazy" onerror="this.src='https://via.placeholder.com/150'">
             <div class="product-title">${titulo}...</div>
-            <div class="product-price" style="font-size: 16px; font-weight: bold; color: #ff6a00;">${precoFormatado}</div>
-            ${freteGratisHtml}
+            <div class="product-price-area" style="text-align: center; margin-top: 5px;">
+                ${precoDestaque}
+                ${precoParceladoHtml}
+                ${freteGratisHtml}
+            </div>
         </div>`;
     }).join('');
     
@@ -421,7 +462,8 @@ export function renderProductsHTML(products) {
   const produtosFiltrados = filtrarProdutosPorPlataforma(products);
   
   return produtosFiltrados.map(p => {
-    const precoFormatado = getPrecoFormatado(p);
+    const precoPixHtml = getPrecoPixFormatado(p);
+    const precoNormalHtml = getPrecoNormalFormatado(p);
     const precoParceladoHtml = getPrecoParcelado(p);
     const freteGratisHtml = getFreteGratisIcon(p.frete_gratis);
     const lojaOficialHtml = getLojaOficialIcon(p.loja_oficial);
@@ -435,6 +477,7 @@ export function renderProductsHTML(products) {
     const tituloEllipsis = (p.titulo || p.title || 'Produto sem título').length > 60 ? '...' : '';
     
     const iconeHtml = getIconeCard(plataforma);
+    const precoDestaque = precoPixHtml || precoNormalHtml;
     
     const onclickHandler = `(async () => { 
       try { 
@@ -454,8 +497,9 @@ export function renderProductsHTML(products) {
         <img src="${imagem}" alt="${titulo}" class="product-image" onerror="this.src='https://via.placeholder.com/200x200?text=Sem+Imagem'">
         <div class="product-info">
           <h3 class="product-title">${titulo}${tituloEllipsis}</h3>
-          <div class="product-price" style="font-size: 18px; font-weight: bold; color: #ff6a00;">${precoFormatado}</div>
+          ${precoDestaque}
           ${precoParceladoHtml}
+          ${!precoPixHtml ? '' : precoNormalHtml}
           <div class="product-badges" style="display: flex; gap: 5px; flex-wrap: wrap; margin-top: 5px;">
             ${freteGratisHtml}
             ${lojaOficialHtml}
