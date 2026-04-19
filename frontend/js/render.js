@@ -26,7 +26,47 @@ function getIconeCard(plataforma) {
 }
 
 // ============================================
-// FUNÇÃO PARA OBTER O PREÇO FORMATADO (CORRIGIDA - SEM DIVISÃO)
+// FUNÇÃO CENTRALIZADA PARA FORMATAR PREÇO (ÚNICA)
+// Aceita: número, string, centavos, reais, com ou sem R$
+// Retorna: string formatada (ex: "R$ 1.299,99")
+// ATENDE: Carrossel, Selecionados, Busca e TODOS os lugares
+// ============================================
+function formatarPrecoCentralizado(valor) {
+    // Caso 1: Valor vazio
+    if (valor === null || valor === undefined || valor === 'N/A') {
+        return 'R$ 0,00';
+    }
+    
+    // Converte para número de forma inteligente
+    let precoNum = 0;
+    
+    if (typeof valor === 'number') {
+        precoNum = valor;
+    } else {
+        // Remove R$, espaços, troca vírgula por ponto
+        let limpo = valor.toString().replace('R$', '').replace(/\./g, '').replace(',', '.').trim();
+        precoNum = parseFloat(limpo);
+    }
+    
+    // Se não for número válido
+    if (isNaN(precoNum)) {
+        return 'R$ 0,00';
+    }
+    
+    // REGRA: Se for maior que 10000, provavelmente veio em centavos (ex: 489900 = R$ 4.899,00)
+    if (precoNum > 10000) {
+        precoNum = precoNum / 100;
+    }
+    
+    // Formata como moeda brasileira
+    return precoNum.toLocaleString('pt-BR', {
+        style: 'currency',
+        currency: 'BRL'
+    });
+}
+
+// ============================================
+// FUNÇÃO PARA OBTER O PREÇO FORMATADO (usa a função central)
 // ============================================
 function getPrecoFormatado(produto) {
     // Prioridade: preco_pix > preco
@@ -38,30 +78,8 @@ function getPrecoFormatado(produto) {
         preco = produto.preco;
     }
     
-    // Se não tem preço, retorna zero
-    if (!preco) return 'R$ 0,00';
-    
-    // Converte para número
-    let precoNum = 0;
-    if (typeof preco === 'number') {
-        precoNum = preco;
-    } else {
-        // Remove R$, espaços, troca vírgula por ponto
-        let precoLimpo = preco.toString().replace('R$', '').replace(/\./g, '').replace(',', '.').trim();
-        precoNum = parseFloat(precoLimpo);
-    }
-    
-    // Se não for número válido, retorna zero
-    if (isNaN(precoNum)) return 'R$ 0,00';
-    
-    // IMPORTANTE: O backend já envia os preços em REAIS
-    // Ex: 4899 = R$ 4.899,00 (já está em reais, NÃO divide)
-    // Ex: 20 = R$ 20,00 (já está em reais, NÃO divide)
-    // Apenas formatamos como moeda brasileira
-    return precoNum.toLocaleString('pt-BR', {
-        style: 'currency',
-        currency: 'BRL'
-    });
+    // Usa a função centralizada
+    return formatarPrecoCentralizado(preco);
 }
 
 // ============================================
@@ -314,7 +332,7 @@ export function renderProducts(container, products, isCarousel = false) {
       }
     };
 
-    // Usa preco_pix prioritariamente
+    // Usa preco_pix prioritariamente (usa função centralizada)
     const precoFormatado = getPrecoFormatado(p);
     const precoParceladoHtml = getPrecoParcelado(p);
     const freteGratisHtml = getFreteGratisIcon(p.frete_gratis);
@@ -374,7 +392,7 @@ export function renderCarousel(container, products) {
         const imagem = p.imagem_principal || 'https://via.placeholder.com/150';
         const titulo = (p.titulo || '').substring(0, 50);
         
-        // Usa preco_pix prioritariamente
+        // Usa preco_pix prioritariamente (usa função centralizada)
         const precoFormatado = getPrecoFormatado(p);
         const freteGratisHtml = getFreteGratisIcon(p.frete_gratis);
         
