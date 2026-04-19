@@ -162,21 +162,36 @@ function getPrecoFormatado(produto) {
 }
 
 // ============================================
-// FUNÇÃO PARA OBTER ÍCONE DE FRETE GRÁTIS
+// FUNÇÃO PARA OBTER ÍCONE DE FRETE GRÁTIS (CORRIGIDA - RECEBE O PRODUTO INTEIRO)
 // ============================================
-function getFreteGratisIcon(freteGratis) {
-    // Verifica se é true (booleano) ou string "Sim"
-    if (freteGratis === true || freteGratis === 'Sim' || freteGratis === 'true' || freteGratis === 1) {
+function getFreteGratisIcon(produto) {
+    // Tenta obter o valor de frete_gratis de diferentes formas
+    let freteGratis = produto.frete_gratis;
+    
+    // Verifica se é true (booleano) ou string "Sim" ou "true" ou número 1
+    if (freteGratis === true || 
+        freteGratis === 'Sim' || 
+        freteGratis === 'sim' || 
+        freteGratis === 'true' || 
+        freteGratis === 1 ||
+        freteGratis === '1') {
         return '<span class="frete-gratis-badge" style="display: inline-block; background: #00a650; color: white; font-size: 11px; padding: 2px 6px; border-radius: 4px; margin-top: 5px;">🚚 Frete Grátis</span>';
     }
     return '';
 }
 
 // ============================================
-// FUNÇÃO PARA OBTER ÍCONE DE LOJA OFICIAL
+// FUNÇÃO PARA OBTER ÍCONE DE LOJA OFICIAL (CORRIGIDA - RECEBE O PRODUTO INTEIRO)
 // ============================================
-function getLojaOficialIcon(lojaOficial) {
-    if (lojaOficial === true || lojaOficial === 'Sim' || lojaOficial === 'true' || lojaOficial === 1) {
+function getLojaOficialIcon(produto) {
+    let lojaOficial = produto.loja_oficial;
+    
+    if (lojaOficial === true || 
+        lojaOficial === 'Sim' || 
+        lojaOficial === 'sim' || 
+        lojaOficial === 'true' || 
+        lojaOficial === 1 ||
+        lojaOficial === '1') {
         return '<span class="loja-oficial-badge" style="display: inline-block; background: #3483fa; color: white; font-size: 11px; padding: 2px 6px; border-radius: 4px; margin-top: 5px;">✅ Loja Oficial</span>';
     }
     return '';
@@ -402,12 +417,12 @@ export function renderProducts(container, products, isCarousel = false) {
       }
     };
 
-    // Preços formatados
+    // Preços formatados (passando o produto inteiro)
     const precoPrincipalHtml = getPrecoPrincipalFormatado(p);
     const precoNormalRiscadoHtml = getPrecoNormalRiscadoFormatado(p);
     const precoParceladoHtml = getPrecoParcelado(p);
-    const freteGratisHtml = getFreteGratisIcon(p.frete_gratis);
-    const lojaOficialHtml = getLojaOficialIcon(p.loja_oficial);
+    const freteGratisHtml = getFreteGratisIcon(p);
+    const lojaOficialHtml = getLojaOficialIcon(p);
     const avaliacaoHtml = getAvaliacao(p);
 
     let imagem = p.imagem_principal || p.thumbnail;
@@ -466,7 +481,7 @@ export function renderCarousel(container, products) {
         
         const precoPrincipalHtml = getPrecoPrincipalFormatado(p);
         const precoParceladoHtml = getPrecoParcelado(p);
-        const freteGratisHtml = getFreteGratisIcon(p.frete_gratis);
+        const freteGratisHtml = getFreteGratisIcon(p);
         
         const iconeHtml = getIconeCard(plataforma);
         
@@ -499,8 +514,8 @@ export function renderProductsHTML(products) {
     const precoPrincipalHtml = getPrecoPrincipalFormatado(p);
     const precoNormalRiscadoHtml = getPrecoNormalRiscadoFormatado(p);
     const precoParceladoHtml = getPrecoParcelado(p);
-    const freteGratisHtml = getFreteGratisIcon(p.frete_gratis);
-    const lojaOficialHtml = getLojaOficialIcon(p.loja_oficial);
+    const freteGratisHtml = getFreteGratisIcon(p);
+    const lojaOficialHtml = getLojaOficialIcon(p);
     const avaliacaoHtml = getAvaliacao(p);
     
     const produtoId = p.id;
