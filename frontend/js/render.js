@@ -66,6 +66,31 @@ function formatarPrecoCentralizado(valor) {
 }
 
 // ============================================
+// FUNÇÃO PARA EXTRAIR VALOR TOTAL DO PARCELADO
+// Exemplo: "10x R$ 129,90" -> R$ 1.299,00
+// ============================================
+function extrairValorTotalParcelado(parceladoStr) {
+    if (!parceladoStr) return null;
+    
+    // Procura padrão como "10x R$ 129,90" ou "10x de R$ 129,90"
+    const match = parceladoStr.match(/(\d+)x\s*(?:de\s*)?R?\$?\s*([\d\.,]+)/i);
+    if (match) {
+        const parcelas = parseInt(match[1]);
+        let valorParcela = match[2].replace(/\./g, '').replace(',', '.');
+        let valorParcelaNum = parseFloat(valorParcela);
+        
+        if (!isNaN(valorParcelaNum) && !isNaN(parcelas)) {
+            const total = valorParcelaNum * parcelas;
+            return total.toLocaleString('pt-BR', {
+                style: 'currency',
+                currency: 'BRL'
+            });
+        }
+    }
+    return null;
+}
+
+// ============================================
 // FUNÇÃO PARA FORMATAR PREÇO PRINCIPAL (PIX ou NORMAL)
 // Cor laranja padrão do site (#ff6a00)
 // ============================================
@@ -103,11 +128,20 @@ function getPrecoNormalRiscadoFormatado(produto) {
 
 // ============================================
 // FUNÇÃO PARA OBTER PREÇO PARCELADO (SE DISPONÍVEL)
+// Mostra: "10x R$ 129,90 (Total R$ 1.299,00)"
 // Cor cinza claro, fonte menor
 // ============================================
 function getPrecoParcelado(produto) {
     if (produto.preco_parcelado && produto.preco_parcelado !== 'N/A' && produto.preco_parcelado !== null) {
-        return `<div class="product-installment" style="font-size: 12px; color: #999; margin-top: 2px;">${produto.preco_parcelado}</div>`;
+        let parceladoHtml = produto.preco_parcelado;
+        
+        // Extrai o valor total e adiciona ao lado
+        const valorTotal = extrairValorTotalParcelado(produto.preco_parcelado);
+        if (valorTotal) {
+            parceladoHtml = `${produto.preco_parcelado} <span style="font-size: 11px;">(Total ${valorTotal})</span>`;
+        }
+        
+        return `<div class="product-installment" style="font-size: 12px; color: #999; margin-top: 2px;">${parceladoHtml}</div>`;
     }
     return '';
 }
@@ -128,7 +162,7 @@ function getPrecoFormatado(produto) {
 }
 
 // ============================================
-// FUNÇÃO PARA OBTER ÍCONE DE FRETE GRÁTIS (CORRIGIDA)
+// FUNÇÃO PARA OBTER ÍCONE DE FRETE GRÁTIS
 // ============================================
 function getFreteGratisIcon(freteGratis) {
     // Verifica se é true (booleano) ou string "Sim"
