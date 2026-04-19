@@ -144,7 +144,7 @@ function renderizarControlesPlataformas() {
 }
 
 // ============================================
-// FUNÇÃO PARA FORÇAR ATUALIZAÇÃO DO CARROSSEL (CORRIGIDA)
+// FUNÇÃO PARA FORÇAR ATUALIZAÇÃO DO CARROSSEL (COM URL CORRETA)
 // ============================================
 window.atualizarCarrossel = async function() {
     if (!confirm('Deseja forçar a atualização do carrossel agora? Isso irá gerar novos produtos para hoje.')) return;
@@ -159,7 +159,8 @@ window.atualizarCarrossel = async function() {
         const pass = localStorage.getItem('adminPass');
         const basicAuth = 'Basic ' + btoa(user + ':' + pass);
         
-        const response = await fetch(`${API_URL}/api/admin/carrossel/atualizar`, {
+        // URL CORRETA: /api/produtos/carrossel/atualizar (sem /admin)
+        const response = await fetch(`${API_URL}/api/produtos/carrossel/atualizar`, {
             method: 'POST',
             headers: { 'Authorization': basicAuth }
         });
@@ -254,7 +255,7 @@ window.carregarCategoriasAdmin = async function() {
     
     if (!tbody) return;
     
-    tbody.innerHTML = '<td><td colspan="8" style="text-align: center; padding: 40px;">Carregando categorias...<\/td><\/tr>';
+    tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 40px;">Carregando categorias...<\/td><\/tr>';
     
     try {
         const user = localStorage.getItem('adminUser');
@@ -549,7 +550,7 @@ async function carregarLogs() {
 
 function atualizarDashboard() {
     document.getElementById('total-produtos').textContent = produtos.length;
-    const totalCliques = produits.reduce((acc, p) => acc + (p.cliques || 0), 0);
+    const totalCliques = produtos.reduce((acc, p) => acc + (p.cliques || 0), 0);
     document.getElementById('total-cliques').textContent = totalCliques;
 }
 
@@ -717,7 +718,7 @@ async function carregarEstatisticasPesquisas() {
             const tbody = document.getElementById('tabela-estatisticas-plataformas');
             if (tbody && data.data.por_plataforma) {
                 if (data.data.por_plataforma.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="5" style="text-align: center;">Nenhum dado disponível<\/td><\/tr>';
+                    tbody.innerHTML = '<td><td colspan="5" style="text-align: center;">Nenhum dado disponível<\/td><\/tr>';
                 } else {
                     tbody.innerHTML = data.data.por_plataforma.map(p => `
                         <tr>
