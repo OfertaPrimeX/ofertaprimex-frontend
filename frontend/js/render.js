@@ -27,38 +27,29 @@ function getIconeCard(plataforma) {
 
 // ============================================
 // FUNÇÃO CENTRALIZADA PARA FORMATAR PREÇO (ÚNICA)
-// Aceita: número, string, centavos, reais, com ou sem R$
-// Retorna: string formatada (ex: "R$ 1.299,99")
-// ATENDE: Carrossel, Selecionados, Busca e TODOS os lugares
 // ============================================
 function formatarPrecoCentralizado(valor) {
-    // Caso 1: Valor vazio
     if (valor === null || valor === undefined || valor === 'N/A') {
         return 'R$ 0,00';
     }
     
-    // Converte para número de forma inteligente
     let precoNum = 0;
     
     if (typeof valor === 'number') {
         precoNum = valor;
     } else {
-        // Remove R$, espaços, troca vírgula por ponto
         let limpo = valor.toString().replace('R$', '').replace(/\./g, '').replace(',', '.').trim();
         precoNum = parseFloat(limpo);
     }
     
-    // Se não for número válido
     if (isNaN(precoNum)) {
         return 'R$ 0,00';
     }
     
-    // REGRA: Se for maior que 10000, provavelmente veio em centavos (ex: 489900 = R$ 4.899,00)
     if (precoNum > 10000) {
         precoNum = precoNum / 100;
     }
     
-    // Formata como moeda brasileira
     return precoNum.toLocaleString('pt-BR', {
         style: 'currency',
         currency: 'BRL'
@@ -66,13 +57,43 @@ function formatarPrecoCentralizado(valor) {
 }
 
 // ============================================
+// FUNÇÃO PARA FORMATAR PREÇO PRINCIPAL (PIX ou NORMAL) - COR LARANJA
+// ============================================
+function getPrecoPrincipalFormatado(produto) {
+    let preco = null;
+    
+    if (produto.preco_pix && produto.preco_pix !== 'N/A' && produto.preco_pix !== null) {
+        preco = produto.preco_pix;
+    } else if (produto.preco && produto.preco !== 'N/A' && produto.preco !== null) {
+        preco = produto.preco;
+    }
+    
+    if (preco) {
+        const precoFormatado = formatarPrecoCentralizado(preco);
+        return `<div class="product-price" style="font-size: 18px; font-weight: bold; color: #ff6a00;">${precoFormatado}</div>`;
+    }
+    return '';
+}
+
+// ============================================
+// FUNÇÃO PARA FORMATAR PREÇO NORMAL (quando tem PIX) - RISCADO
+// ============================================
+function getPrecoNormalRiscadoFormatado(produto) {
+    if (produto.preco_pix && produto.preco_pix !== 'N/A' && produto.preco_pix !== null) {
+        if (produto.preco && produto.preco !== 'N/A' && produto.preco !== null) {
+            const precoNormal = formatarPrecoCentralizado(produto.preco);
+            return `<div class="product-price-old" style="font-size: 13px; color: #999; text-decoration: line-through; margin-top: 2px;">${precoNormal}</div>`;
+        }
+    }
+    return '';
+}
+
+// ============================================
 // FUNÇÃO PARA EXTRAIR VALOR TOTAL DO PARCELADO
-// Exemplo: "10x R$ 129,90" -> R$ 1.299,00
 // ============================================
 function extrairValorTotalParcelado(parceladoStr) {
     if (!parceladoStr) return null;
     
-    // Procura padrão como "10x R$ 129,90" ou "10x de R$ 129,90"
     const match = parceladoStr.match(/(\d+)x\s*(?:de\s*)?R?\$?\s*([\d\.,]+)/i);
     if (match) {
         const parcelas = parseInt(match[1]);
@@ -91,51 +112,12 @@ function extrairValorTotalParcelado(parceladoStr) {
 }
 
 // ============================================
-// FUNÇÃO PARA FORMATAR PREÇO PRINCIPAL (PIX ou NORMAL)
-// Cor laranja padrão do site (#ff6a00)
-// ============================================
-function getPrecoPrincipalFormatado(produto) {
-    // Prioridade: preco_pix > preco
-    let preco = null;
-    
-    if (produto.preco_pix && produto.preco_pix !== 'N/A' && produto.preco_pix !== null) {
-        preco = produto.preco_pix;
-    } else if (produto.preco && produto.preco !== 'N/A' && produto.preco !== null) {
-        preco = produto.preco;
-    }
-    
-    if (preco) {
-        const precoFormatado = formatarPrecoCentralizado(preco);
-        return `<div class="product-price" style="font-size: 18px; font-weight: bold; color: #ff6a00;">${precoFormatado}</div>`;
-    }
-    return '';
-}
-
-// ============================================
-// FUNÇÃO PARA FORMATAR PREÇO NORMAL (quando tem PIX)
-// Mostra o preço normal riscado, cinza claro, fonte menor
-// ============================================
-function getPrecoNormalRiscadoFormatado(produto) {
-    // Só mostra se tiver preco_pix E preco normal
-    if (produto.preco_pix && produto.preco_pix !== 'N/A' && produto.preco_pix !== null) {
-        if (produto.preco && produto.preco !== 'N/A' && produto.preco !== null) {
-            const precoNormal = formatarPrecoCentralizado(produto.preco);
-            return `<div class="product-price-old" style="font-size: 13px; color: #999; text-decoration: line-through;">${precoNormal}</div>`;
-        }
-    }
-    return '';
-}
-
-// ============================================
 // FUNÇÃO PARA OBTER PREÇO PARCELADO (SE DISPONÍVEL)
-// Mostra: "10x R$ 129,90 (Total R$ 1.299,00)"
-// Cor cinza claro, fonte menor
 // ============================================
 function getPrecoParcelado(produto) {
     if (produto.preco_parcelado && produto.preco_parcelado !== 'N/A' && produto.preco_parcelado !== null) {
         let parceladoHtml = produto.preco_parcelado;
         
-        // Extrai o valor total e adiciona ao lado
         const valorTotal = extrairValorTotalParcelado(produto.preco_parcelado);
         if (valorTotal) {
             parceladoHtml = `${produto.preco_parcelado} <span style="font-size: 11px;">(Total ${valorTotal})</span>`;
@@ -162,36 +144,20 @@ function getPrecoFormatado(produto) {
 }
 
 // ============================================
-// FUNÇÃO PARA OBTER ÍCONE DE FRETE GRÁTIS (CORRIGIDA - RECEBE O PRODUTO INTEIRO)
+// FUNÇÃO PARA OBTER ÍCONE DE FRETE GRÁTIS (MANTIDA ORIGINAL - FUNCIONAVA)
 // ============================================
-function getFreteGratisIcon(produto) {
-    // Tenta obter o valor de frete_gratis de diferentes formas
-    let freteGratis = produto.frete_gratis;
-    
-    // Verifica se é true (booleano) ou string "Sim" ou "true" ou número 1
-    if (freteGratis === true || 
-        freteGratis === 'Sim' || 
-        freteGratis === 'sim' || 
-        freteGratis === 'true' || 
-        freteGratis === 1 ||
-        freteGratis === '1') {
+function getFreteGratisIcon(freteGratis) {
+    if (freteGratis === true || freteGratis === 'Sim' || freteGratis === 'true') {
         return '<span class="frete-gratis-badge" style="display: inline-block; background: #00a650; color: white; font-size: 11px; padding: 2px 6px; border-radius: 4px; margin-top: 5px;">🚚 Frete Grátis</span>';
     }
     return '';
 }
 
 // ============================================
-// FUNÇÃO PARA OBTER ÍCONE DE LOJA OFICIAL (CORRIGIDA - RECEBE O PRODUTO INTEIRO)
+// FUNÇÃO PARA OBTER ÍCONE DE LOJA OFICIAL (MANTIDA ORIGINAL)
 // ============================================
-function getLojaOficialIcon(produto) {
-    let lojaOficial = produto.loja_oficial;
-    
-    if (lojaOficial === true || 
-        lojaOficial === 'Sim' || 
-        lojaOficial === 'sim' || 
-        lojaOficial === 'true' || 
-        lojaOficial === 1 ||
-        lojaOficial === '1') {
+function getLojaOficialIcon(lojaOficial) {
+    if (lojaOficial === true || lojaOficial === 'Sim' || lojaOficial === 'true') {
         return '<span class="loja-oficial-badge" style="display: inline-block; background: #3483fa; color: white; font-size: 11px; padding: 2px 6px; border-radius: 4px; margin-top: 5px;">✅ Loja Oficial</span>';
     }
     return '';
@@ -238,7 +204,6 @@ export async function carregarCategoriasDropdown() {
                 </a>
             `).join('');
         } else {
-            // Fallback
             const categoriasFallback = [
                 { nome: "Celulares e Dispositivos", icone: "📱", termo: "celulares" },
                 { nome: "Computadores e Acessórios", icone: "💻", termo: "computadores" },
@@ -276,7 +241,6 @@ export function getPlataformasAtivas() {
             console.log('Erro ao parsear plataformas ativas');
         }
     }
-    // Padrão: todas ativas
     return ['mercadolivre', 'amazon', 'shopee', 'magalu'];
 }
 
@@ -366,12 +330,10 @@ async function registrarClique(produtoId, plataforma, linkOriginal, pagina) {
     }
 }
 
-/**
- * Renderiza produtos no container especificado
- * @param {HTMLElement} container - Elemento onde os produtos serão inseridos
- * @param {Array} products - Lista de produtos a serem renderizados
- * @param {boolean} isCarousel - Se true, substitui o conteúdo; se false, adiciona ao final
- */
+// ============================================
+// RENDERIZAÇÃO DE PRODUTOS
+// ============================================
+
 export function renderProducts(container, products, isCarousel = false) {
   if (!container) return;
   
@@ -417,12 +379,12 @@ export function renderProducts(container, products, isCarousel = false) {
       }
     };
 
-    // Preços formatados (passando o produto inteiro)
+    // Preços formatados (mantendo a chamada original do frete grátis)
     const precoPrincipalHtml = getPrecoPrincipalFormatado(p);
     const precoNormalRiscadoHtml = getPrecoNormalRiscadoFormatado(p);
     const precoParceladoHtml = getPrecoParcelado(p);
-    const freteGratisHtml = getFreteGratisIcon(p);
-    const lojaOficialHtml = getLojaOficialIcon(p);
+    const freteGratisHtml = getFreteGratisIcon(p.frete_gratis);
+    const lojaOficialHtml = getLojaOficialIcon(p.loja_oficial);
     const avaliacaoHtml = getAvaliacao(p);
 
     let imagem = p.imagem_principal || p.thumbnail;
@@ -457,11 +419,6 @@ export function renderProducts(container, products, isCarousel = false) {
   });
 }
 
-/**
- * Renderiza produtos no carrossel (formato específico)
- * @param {HTMLElement} container - Elemento onde os produtos serão inseridos
- * @param {Array} products - Lista de produtos a serem renderizados
- */
 export function renderCarousel(container, products) {
     if (!container) return;
     
@@ -481,7 +438,7 @@ export function renderCarousel(container, products) {
         
         const precoPrincipalHtml = getPrecoPrincipalFormatado(p);
         const precoParceladoHtml = getPrecoParcelado(p);
-        const freteGratisHtml = getFreteGratisIcon(p);
+        const freteGratisHtml = getFreteGratisIcon(p.frete_gratis);
         
         const iconeHtml = getIconeCard(plataforma);
         
@@ -500,11 +457,6 @@ export function renderCarousel(container, products) {
     console.log(`✅ Carrossel renderizado com ${produtosFiltrados.length} produtos`);
 }
 
-/**
- * Renderiza apenas os cards HTML (útil para scroll infinito)
- * @param {Array} products - Lista de produtos
- * @returns {string} HTML dos cards
- */
 export function renderProductsHTML(products) {
   if (!products || products.length === 0) return '';
   
@@ -514,8 +466,8 @@ export function renderProductsHTML(products) {
     const precoPrincipalHtml = getPrecoPrincipalFormatado(p);
     const precoNormalRiscadoHtml = getPrecoNormalRiscadoFormatado(p);
     const precoParceladoHtml = getPrecoParcelado(p);
-    const freteGratisHtml = getFreteGratisIcon(p);
-    const lojaOficialHtml = getLojaOficialIcon(p);
+    const freteGratisHtml = getFreteGratisIcon(p.frete_gratis);
+    const lojaOficialHtml = getLojaOficialIcon(p.loja_oficial);
     const avaliacaoHtml = getAvaliacao(p);
     
     const produtoId = p.id;
