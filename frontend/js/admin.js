@@ -143,7 +143,9 @@ function renderizarControlesPlataformas() {
     `;
 }
 
-// Função para forçar atualização do carrossel
+// ============================================
+// FUNÇÃO PARA FORÇAR ATUALIZAÇÃO DO CARROSSEL (CORRIGIDA)
+// ============================================
 window.atualizarCarrossel = async function() {
     if (!confirm('Deseja forçar a atualização do carrossel agora? Isso irá gerar novos produtos para hoje.')) return;
     
@@ -165,25 +167,34 @@ window.atualizarCarrossel = async function() {
         const data = await response.json();
         
         if (data.success) {
+            const quantidade = data.products?.length || 0;
             if (statusDiv) {
-                statusDiv.innerHTML = `<span style="color: #2e7d32;">✅ Carrossel atualizado com ${data.products?.length || 0} produtos!</span>`;
-                setTimeout(() => { statusDiv.innerHTML = ''; }, 3000);
+                if (quantidade === 0) {
+                    statusDiv.innerHTML = '<span style="color: #ff6a00;">⚠️ Carrossel atualizado, mas NENHUM produto foi encontrado. O carrossel ficará vazio até que produtos sejam importados.</span>';
+                } else {
+                    statusDiv.innerHTML = `<span style="color: #2e7d32;">✅ Carrossel atualizado com ${quantidade} produtos!</span>`;
+                }
+                setTimeout(() => { statusDiv.innerHTML = ''; }, 5000);
             }
-            alert(`✅ Carrossel atualizado com ${data.products?.length || 0} produtos!`);
+            if (quantidade === 0) {
+                alert('⚠️ Carrossel atualizado, mas nenhum produto foi encontrado!\n\nO carrossel ficará vazio até que você importe produtos.');
+            } else {
+                alert(`✅ Carrossel atualizado com ${quantidade} produtos!`);
+            }
         } else {
             if (statusDiv) {
                 statusDiv.innerHTML = `<span style="color: #c62828;">❌ Erro: ${data.error || 'Falha ao atualizar'}</span>`;
                 setTimeout(() => { statusDiv.innerHTML = ''; }, 3000);
             }
-            alert('❌ Erro ao atualizar carrossel');
+            alert(`❌ Erro ao atualizar carrossel: ${data.error || 'Falha desconhecida'}`);
         }
     } catch (error) {
         console.error('Erro:', error);
         if (statusDiv) {
-            statusDiv.innerHTML = '<span style="color: #c62828;">❌ Erro de conexão</span>';
+            statusDiv.innerHTML = '<span style="color: #c62828;">❌ Erro de conexão ao atualizar carrossel</span>';
             setTimeout(() => { statusDiv.innerHTML = ''; }, 3000);
         }
-        alert('❌ Erro ao atualizar carrossel');
+        alert('❌ Erro de conexão ao atualizar carrossel');
     }
 };
 
@@ -538,7 +549,7 @@ async function carregarLogs() {
 
 function atualizarDashboard() {
     document.getElementById('total-produtos').textContent = produtos.length;
-    const totalCliques = produtos.reduce((acc, p) => acc + (p.cliques || 0), 0);
+    const totalCliques = produits.reduce((acc, p) => acc + (p.cliques || 0), 0);
     document.getElementById('total-cliques').textContent = totalCliques;
 }
 
@@ -547,7 +558,7 @@ function atualizarTabela() {
     if (!tbody) return;
     
     if (produtos.length === 0) {
-        tbody.innerHTML = '<td><td colspan="6" style="text-align: center;">Nenhum produto encontrado<\/td><\/tr>';
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align: center;">Nenhum produto encontrado<\/td><\/tr>';
         return;
     }
     
