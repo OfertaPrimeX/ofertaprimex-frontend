@@ -46,7 +46,8 @@ function formatarPrecoCentralizado(valor) {
         return 'R$ 0,00';
     }
     
-    if (precoNum > 10000) {
+    // Corrige valores muito altos (caso venham em centavos sem vírgula)
+    if (precoNum > 100000) {
         precoNum = precoNum / 100;
     }
     
@@ -75,42 +76,52 @@ function getPrecoFormatado(produto) {
 }
 
 // ============================================
-// 🆕 FUNÇÃO PARA OBTER PARCELAMENTO FORMATADO
+// 🆕 FUNÇÃO PARA OBTER PARCELAMENTO FORMATADO (CORRIGIDA - REMOVE QUEBRAS DE LINHA)
 // ============================================
 function getParcelamentoHtml(produto) {
-    // Verifica se tem parcelamento
-    if (!produto.parcelas_qtd || produto.parcelas_qtd === 0) {
+    // Verifica se tem parcelamento pelos campos separados
+    if (!produto.parcelas_texto && !produto.preco_parcelado) {
+        // Tenta montar com campos separados
+        if (produto.parcelas_qtd && produto.parcelas_qtd > 0) {
+            const qtd = produto.parcelas_qtd;
+            const semJuros = produto.parcelas_sem_juros === true || produto.parcelas_sem_juros === 'true';
+            const valorFormatado = produto.parcelas_valor_formatado;
+            
+            if (valorFormatado && valorFormatado !== 'N/A') {
+                const classeJuros = semJuros ? 'parcelas-sem-juros' : 'parcelas-com-juros';
+                return `
+                    <div class="product-parcelamento ${classeJuros}" style="font-size: 13px; color: ${semJuros ? '#00a650' : '#666'}; margin-top: 4px; text-align: center;">
+                        ${qtd}x ${valorFormatado}
+                        ${semJuros ? ' <span style="background: #00a650; color: white; font-size: 10px; padding: 1px 4px; border-radius: 3px; margin-left: 5px;">SEM JUROS</span>' : ''}
+                    </div>
+                `;
+            }
+        }
         return '';
     }
     
-    const qtd = produto.parcelas_qtd;
-    const semJuros = produto.parcelas_sem_juros === true || produto.parcelas_sem_juros === 'true';
-    const valorFormatado = produto.parcelas_valor_formatado || null;
-    const textoCompleto = produto.parcelas_texto || produto.preco_parcelado || null;
+    // 🔥 CORREÇÃO PRINCIPAL: Pega o texto e remove TODAS as quebras de linha, carriage returns e espaços extras
+    let texto = produto.parcelas_texto || produto.preco_parcelado || '';
     
-    // Se tem texto completo, usa ele (mais confiável)
-    if (textoCompleto && textoCompleto !== 'N/A') {
-        const classeJuros = semJuros ? 'parcelas-sem-juros' : 'parcelas-com-juros';
-        return `
-            <div class="product-parcelamento ${classeJuros}" style="font-size: 13px; color: ${semJuros ? '#00a650' : '#666'}; margin-top: 4px;">
-                ${textoCompleto}
-                ${semJuros ? ' <span style="background: #00a650; color: white; font-size: 10px; padding: 1px 4px; border-radius: 3px; margin-left: 5px;">SEM JUROS</span>' : ''}
-            </div>
-        `;
-    }
+    // Remove quebras de linha (\n), carriage returns (\r) e múltiplos espaços
+    texto = texto.replace(/[\n\r]+/g, ' ').replace(/\s+/g, ' ').trim();
     
-    // Fallback: monta com os campos separados
-    if (valorFormatado && valorFormatado !== 'N/A') {
-        const classeJuros = semJuros ? 'parcelas-sem-juros' : 'parcelas-com-juros';
-        return `
-            <div class="product-parcelamento ${classeJuros}" style="font-size: 13px; color: ${semJuros ? '#00a650' : '#666'}; margin-top: 4px;">
-                ${qtd}x ${valorFormatado}
-                ${semJuros ? ' <span style="background: #00a650; color: white; font-size: 10px; padding: 1px 4px; border-radius: 3px; margin-left: 5px;">SEM JUROS</span>' : ''}
-            </div>
-        `;
-    }
+    // Se ficou vazio ou N/A, não mostra nada
+    if (!texto || texto === 'N/A' || texto === 'N/A sem juros') return '';
     
-    return '';
+    // Verifica se é sem juros (pelo campo booleano ou pelo texto)
+    const semJuros = produto.parcelas_sem_juros === true || 
+                     produto.parcelas_sem_juros === 'true' ||
+                     texto.toLowerCase().includes('sem juros');
+    
+    const classeJuros = semJuros ? 'parcelas-sem-juros' : 'parcelas-com-juros';
+    
+    return `
+        <div class="product-parcelamento ${classeJuros}" style="font-size: 13px; color: ${semJuros ? '#00a650' : '#666'}; margin-top: 4px; text-align: center;">
+            ${texto}
+            ${semJuros ? ' <span style="background: #00a650; color: white; font-size: 10px; padding: 1px 4px; border-radius: 3px; margin-left: 5px;">SEM JUROS</span>' : ''}
+        </div>
+    `;
 }
 
 // ============================================
@@ -141,7 +152,7 @@ function getAvaliacao(produto) {
         const nota = produto.avaliacao;
         const estrelas = generateStars(nota);
         const reviews = produto.reviews ? `(${produto.reviews})` : '';
-        return `<div class="product-rating" style="display: flex; align-items: center; gap: 5px; margin-top: 5px;">
+        return `<div class="product-rating" style="display: flex; align-items: center; justify-content: center; gap: 5px; margin-top: 5px;">
                     <span style="color: #ffb400;">${estrelas}</span>
                     <span style="font-size: 12px; color: #666;">${nota} ${reviews}</span>
                 </div>`;
@@ -423,12 +434,15 @@ export function renderCarousel(container, products) {
         
         const iconeHtml = getIconeCard(plataforma);
         
+        // Para o carrossel, limpa o preço da tag div
+        const precoLimpo = precoHtml.replace(/<div[^>]*>/g, '').replace(/<\/div>/g, '');
+        
         return `<div class="carousel-card" style="position: relative;" onclick="window.registrarCliqueCarrossel(${produtoId}, '${plataforma}', '${link}'); window.open('${link}', '_blank');">
             ${iconeHtml}
             <img src="${imagem}" alt="${titulo}" loading="lazy" onerror="this.src='https://via.placeholder.com/150'">
             <div class="product-title">${titulo}...</div>
-            <div class="product-price" style="font-size: 16px; font-weight: bold; color: #ff6a00; text-align: center; margin-top: 5px;">${precoHtml.replace(/<div[^>]*>/g, '').replace(/<\/div>/g, '')}</div>
-            ${parcelamentoHtml.replace(/<div/g, '<span').replace(/<\/div>/g, '</span>')}
+            <div class="product-price" style="font-size: 16px; font-weight: bold; color: #ff6a00; text-align: center; margin-top: 5px;">${precoLimpo}</div>
+            ${parcelamentoHtml}
             ${freteGratisHtml}
         </div>`;
     }).join('');
