@@ -75,10 +75,48 @@ function getPrecoFormatado(produto) {
 }
 
 // ============================================
-// FUNÇÃO PARA OBTER ÍCONE DE FRETE GRÁTIS (BASEADO EM "Sim" ou "Não")
+// 🆕 FUNÇÃO PARA OBTER PARCELAMENTO FORMATADO
+// ============================================
+function getParcelamentoHtml(produto) {
+    // Verifica se tem parcelamento
+    if (!produto.parcelas_qtd || produto.parcelas_qtd === 0) {
+        return '';
+    }
+    
+    const qtd = produto.parcelas_qtd;
+    const semJuros = produto.parcelas_sem_juros === true || produto.parcelas_sem_juros === 'true';
+    const valorFormatado = produto.parcelas_valor_formatado || null;
+    const textoCompleto = produto.parcelas_texto || produto.preco_parcelado || null;
+    
+    // Se tem texto completo, usa ele (mais confiável)
+    if (textoCompleto && textoCompleto !== 'N/A') {
+        const classeJuros = semJuros ? 'parcelas-sem-juros' : 'parcelas-com-juros';
+        return `
+            <div class="product-parcelamento ${classeJuros}" style="font-size: 13px; color: ${semJuros ? '#00a650' : '#666'}; margin-top: 4px;">
+                ${textoCompleto}
+                ${semJuros ? ' <span style="background: #00a650; color: white; font-size: 10px; padding: 1px 4px; border-radius: 3px; margin-left: 5px;">SEM JUROS</span>' : ''}
+            </div>
+        `;
+    }
+    
+    // Fallback: monta com os campos separados
+    if (valorFormatado && valorFormatado !== 'N/A') {
+        const classeJuros = semJuros ? 'parcelas-sem-juros' : 'parcelas-com-juros';
+        return `
+            <div class="product-parcelamento ${classeJuros}" style="font-size: 13px; color: ${semJuros ? '#00a650' : '#666'}; margin-top: 4px;">
+                ${qtd}x ${valorFormatado}
+                ${semJuros ? ' <span style="background: #00a650; color: white; font-size: 10px; padding: 1px 4px; border-radius: 3px; margin-left: 5px;">SEM JUROS</span>' : ''}
+            </div>
+        `;
+    }
+    
+    return '';
+}
+
+// ============================================
+// FUNÇÃO PARA OBTER ÍCONE DE FRETE GRÁTIS
 // ============================================
 function getFreteGratisIcon(freteGratis) {
-    // Verifica se o valor é "Sim" (string) ou true (booleano)
     if (freteGratis === 'Sim' || freteGratis === true || freteGratis === 'true') {
         return '<span class="frete-gratis-badge" style="display: inline-block; background: #00a650; color: white; font-size: 11px; padding: 2px 6px; border-radius: 4px; margin-top: 5px;">🚚 Frete Grátis</span>';
     }
@@ -109,6 +147,21 @@ function getAvaliacao(produto) {
                 </div>`;
     }
     return '';
+}
+
+// ============================================
+// FUNÇÃO GERAR ESTRELAS
+// ============================================
+export function generateStars(rating) {
+    if (!rating || rating === 'N/A') return '☆☆☆☆☆';
+    const numRating = parseFloat(rating.toString().replace(',', '.'));
+    if (isNaN(numRating)) return '☆☆☆☆☆';
+    
+    const fullStars = Math.floor(numRating);
+    const halfStar = numRating % 1 >= 0.5;
+    const emptyStars = 5 - fullStars - (halfStar ? 1 : 0);
+    
+    return '★'.repeat(fullStars) + (halfStar ? '½' : '') + '☆'.repeat(emptyStars);
 }
 
 // ============================================
@@ -265,85 +318,86 @@ async function registrarClique(produtoId, plataforma, linkOriginal, pagina) {
 // ============================================
 // RENDERIZAÇÃO DE PRODUTOS
 // ============================================
-
 export function renderProducts(container, products, isCarousel = false) {
-  if (!container) return;
-  
-  const produtosFiltrados = filtrarProdutosPorPlataforma(products);
-  
-  if (isCarousel) {
-    container.innerHTML = '';
-  }
-
-  if (!produtosFiltrados || produtosFiltrados.length === 0) {
+    if (!container) return;
+    
+    const produtosFiltrados = filtrarProdutosPorPlataforma(products);
+    
     if (isCarousel) {
-      container.innerHTML = '<p style="text-align: center; grid-column: 1/-1;">Nenhum produto encontrado</p>';
+        container.innerHTML = '';
     }
-    return;
-  }
-
-  produtosFiltrados.forEach(p => {
-    const card = document.createElement('div');
-    card.className = 'product-card';
-    card.style.cursor = 'pointer';
-    card.style.position = 'relative';
     
-    const produtoId = p.id;
-    const plataforma = p.plataforma || 'Mercado Livre';
-    const link = p.link_afiliado || p.link_original || '#';
-    
-    card.onclick = async (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      
-      console.log(`🖱️ Clique no produto: ${p.titulo || p.title} | ID: ${produtoId} | Plataforma: ${plataforma}`);
-      
-      if (produtoId) {
-        await registrarClique(produtoId, plataforma, link, window.location.pathname);
-      } else {
-        console.warn('⚠️ Produto sem ID, clique NÃO será registrado no backend');
-      }
-      
-      if (link && link !== '#') {
-        window.open(link, '_blank');
-      } else {
-        console.warn('Link não disponível para este produto');
-      }
-    };
-
-    const precoHtml = getPrecoFormatado(p);
-    const freteGratisHtml = getFreteGratisIcon(p.frete_gratis);
-    const lojaOficialHtml = getLojaOficialIcon(p.loja_oficial);
-    const avaliacaoHtml = getAvaliacao(p);
-
-    let imagem = p.imagem_principal || p.thumbnail;
-    if (!imagem || imagem === '') {
-      imagem = 'https://via.placeholder.com/200x200?text=Sem+Imagem';
+    if (!produtosFiltrados || produtosFiltrados.length === 0) {
+        if (isCarousel) {
+            container.innerHTML = '<p style="text-align: center; grid-column: 1/-1;">Nenhum produto encontrado</p>';
+        }
+        return;
     }
-
-    const titulo = (p.titulo || p.title || 'Produto sem título').substring(0, 60);
-    const tituloEllipsis = (p.titulo || p.title || 'Produto sem título').length > 60 ? '...' : '';
-
-    const iconeHtml = getIconeCard(plataforma);
-
-    card.innerHTML = `
-      ${iconeHtml}
-      <img src="${imagem}" alt="${titulo}" 
-           class="product-image"
-           onerror="this.src='https://via.placeholder.com/200x200?text=Sem+Imagem'">
-      <div class="product-info">
-        <h3 class="product-title">${titulo}${tituloEllipsis}</h3>
-        ${precoHtml}
-        <div class="product-badges" style="display: flex; gap: 5px; flex-wrap: wrap; margin-top: 5px;">
-          ${freteGratisHtml}
-          ${lojaOficialHtml}
-        </div>
-        ${avaliacaoHtml}
-      </div>
-    `;
-
-    container.appendChild(card);
-  });
+    
+    produtosFiltrados.forEach(p => {
+        const card = document.createElement('div');
+        card.className = 'product-card';
+        card.style.cursor = 'pointer';
+        card.style.position = 'relative';
+        
+        const produtoId = p.id;
+        const plataforma = p.plataforma || 'Mercado Livre';
+        const link = p.link_afiliado || p.link_original || '#';
+        
+        card.onclick = async (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            console.log(`🖱️ Clique no produto: ${p.titulo || p.title} | ID: ${produtoId} | Plataforma: ${plataforma}`);
+            
+            if (produtoId) {
+                await registrarClique(produtoId, plataforma, link, window.location.pathname);
+            } else {
+                console.warn('⚠️ Produto sem ID, clique NÃO será registrado no backend');
+            }
+            
+            if (link && link !== '#') {
+                window.open(link, '_blank');
+            } else {
+                console.warn('Link não disponível para este produto');
+            }
+        };
+        
+        const precoHtml = getPrecoFormatado(p);
+        const parcelamentoHtml = getParcelamentoHtml(p);
+        const freteGratisHtml = getFreteGratisIcon(p.frete_gratis);
+        const lojaOficialHtml = getLojaOficialIcon(p.loja_oficial);
+        const avaliacaoHtml = getAvaliacao(p);
+        
+        let imagem = p.imagem_principal || p.thumbnail;
+        if (!imagem || imagem === '') {
+            imagem = 'https://via.placeholder.com/200x200?text=Sem+Imagem';
+        }
+        
+        const titulo = (p.titulo || p.title || 'Produto sem título').substring(0, 60);
+        const tituloEllipsis = (p.titulo || p.title || 'Produto sem título').length > 60 ? '...' : '';
+        
+        const iconeHtml = getIconeCard(plataforma);
+        
+        card.innerHTML = `
+            ${iconeHtml}
+            <img src="${imagem}" alt="${titulo}" 
+                 class="product-image"
+                 onerror="this.src='https://via.placeholder.com/200x200?text=Sem+Imagem'">
+            <div class="product-info">
+                <h3 class="product-title">${titulo}${tituloEllipsis}</h3>
+                ${precoHtml}
+                ${parcelamentoHtml}
+                <div class="product-badges" style="display: flex; gap: 5px; flex-wrap: wrap; margin-top: 5px;">
+                    ${freteGratisHtml}
+                    ${lojaOficialHtml}
+                </div>
+                ${avaliacaoHtml}
+            </div>
+        `;
+        
+        container.appendChild(card);
+    });
 }
 
 export function renderCarousel(container, products) {
@@ -364,6 +418,7 @@ export function renderCarousel(container, products) {
         const titulo = (p.titulo || '').substring(0, 50);
         
         const precoHtml = getPrecoFormatado(p);
+        const parcelamentoHtml = getParcelamentoHtml(p);
         const freteGratisHtml = getFreteGratisIcon(p.frete_gratis);
         
         const iconeHtml = getIconeCard(plataforma);
@@ -373,6 +428,7 @@ export function renderCarousel(container, products) {
             <img src="${imagem}" alt="${titulo}" loading="lazy" onerror="this.src='https://via.placeholder.com/150'">
             <div class="product-title">${titulo}...</div>
             <div class="product-price" style="font-size: 16px; font-weight: bold; color: #ff6a00; text-align: center; margin-top: 5px;">${precoHtml.replace(/<div[^>]*>/g, '').replace(/<\/div>/g, '')}</div>
+            ${parcelamentoHtml.replace(/<div/g, '<span').replace(/<\/div>/g, '</span>')}
             ${freteGratisHtml}
         </div>`;
     }).join('');
@@ -381,66 +437,62 @@ export function renderCarousel(container, products) {
 }
 
 export function renderProductsHTML(products) {
-  if (!products || products.length === 0) return '';
-  
-  const produtosFiltrados = filtrarProdutosPorPlataforma(products);
-  
-  return produtosFiltrados.map(p => {
-    const precoHtml = getPrecoFormatado(p);
-    const freteGratisHtml = getFreteGratisIcon(p.frete_gratis);
-    const lojaOficialHtml = getLojaOficialIcon(p.loja_oficial);
-    const avaliacaoHtml = getAvaliacao(p);
+    if (!products || products.length === 0) return '';
     
-    const produtoId = p.id;
-    const plataforma = p.plataforma || 'Mercado Livre';
-    const link = p.link_afiliado || p.link_original || '#';
-    const imagem = p.imagem_principal || p.thumbnail || 'https://via.placeholder.com/200x200?text=Sem+Imagem';
-    const titulo = (p.titulo || p.title || 'Produto sem título').substring(0, 60);
-    const tituloEllipsis = (p.titulo || p.title || 'Produto sem título').length > 60 ? '...' : '';
+    const produtosFiltrados = filtrarProdutosPorPlataforma(products);
     
-    const iconeHtml = getIconeCard(plataforma);
-    
-    const onclickHandler = `(async () => { 
-      try { 
-        const sessaoId = localStorage.getItem('sessaoId') || 'anon_' + Date.now();
-        await fetch('https://yo0g0cg4c88w88osc4s04c0c.72.61.33.248.sslip.io/api/cliques/registrar', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ produto_id: ${produtoId || 'null'}, plataforma: '${plataforma === 'Mercado Livre' ? 'mercadolivre' : plataforma.toLowerCase()}', link_original: '${link}', sessao_id: sessaoId, pagina: window.location.pathname })
-        });
-      } catch(e) { console.error(e); }
-      window.open('${link}', '_blank');
-    })()`;
-    
-    return `
-      <div class="product-card" style="position: relative; cursor:pointer;" onclick="${onclickHandler.replace(/"/g, '&quot;')}">
-        ${iconeHtml}
-        <img src="${imagem}" alt="${titulo}" class="product-image" onerror="this.src='https://via.placeholder.com/200x200?text=Sem+Imagem'">
-        <div class="product-info">
-          <h3 class="product-title">${titulo}${tituloEllipsis}</h3>
-          ${precoHtml}
-          <div class="product-badges" style="display: flex; gap: 5px; flex-wrap: wrap; margin-top: 5px;">
-            ${freteGratisHtml}
-            ${lojaOficialHtml}
-          </div>
-          ${avaliacaoHtml}
-        </div>
-      </div>
-    `;
-  }).join('');
+    return produtosFiltrados.map(p => {
+        const precoHtml = getPrecoFormatado(p);
+        const parcelamentoHtml = getParcelamentoHtml(p);
+        const freteGratisHtml = getFreteGratisIcon(p.frete_gratis);
+        const lojaOficialHtml = getLojaOficialIcon(p.loja_oficial);
+        const avaliacaoHtml = getAvaliacao(p);
+        
+        const produtoId = p.id;
+        const plataforma = p.plataforma || 'Mercado Livre';
+        const link = p.link_afiliado || p.link_original || '#';
+        const imagem = p.imagem_principal || p.thumbnail || 'https://via.placeholder.com/200x200?text=Sem+Imagem';
+        const titulo = (p.titulo || p.title || 'Produto sem título').substring(0, 60);
+        const tituloEllipsis = (p.titulo || p.title || 'Produto sem título').length > 60 ? '...' : '';
+        
+        const iconeHtml = getIconeCard(plataforma);
+        
+        const onclickHandler = `(async () => { 
+            try { 
+                const sessaoId = localStorage.getItem('sessaoId') || 'anon_' + Date.now();
+                await fetch('https://yo0g0cg4c88w88osc4s04c0c.72.61.33.248.sslip.io/api/cliques/registrar', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ produto_id: ${produtoId || 'null'}, plataforma: '${plataforma === 'Mercado Livre' ? 'mercadolivre' : plataforma.toLowerCase()}', link_original: '${link}', sessao_id: sessaoId, pagina: window.location.pathname })
+                });
+            } catch(e) { console.error(e); }
+            window.open('${link}', '_blank');
+        })()`;
+        
+        return `
+            <div class="product-card" style="position: relative; cursor:pointer;" onclick="${onclickHandler.replace(/"/g, '&quot;')}">
+                ${iconeHtml}
+                <img src="${imagem}" alt="${titulo}" class="product-image" onerror="this.src='https://via.placeholder.com/200x200?text=Sem+Imagem'">
+                <div class="product-info">
+                    <h3 class="product-title">${titulo}${tituloEllipsis}</h3>
+                    ${precoHtml}
+                    ${parcelamentoHtml}
+                    <div class="product-badges" style="display: flex; gap: 5px; flex-wrap: wrap; margin-top: 5px;">
+                        ${freteGratisHtml}
+                        ${lojaOficialHtml}
+                    </div>
+                    ${avaliacaoHtml}
+                </div>
+            </div>
+        `;
+    }).join('');
 }
 
 // ============================================
-// FUNÇÃO GERAR ESTRELAS
+// EXPORTAÇÕES PARA USO GLOBAL
 // ============================================
-export function generateStars(rating) {
-  if (!rating || rating === 'N/A') return '☆☆☆☆☆';
-  const numRating = parseFloat(rating.toString().replace(',', '.'));
-  if (isNaN(numRating)) return '☆☆☆☆☆';
-  
-  const fullStars = Math.floor(numRating);
-  const halfStar = numRating % 1 >= 0.5;
-  const emptyStars = 5 - fullStars - (halfStar ? 1 : 0);
-  
-  return '★'.repeat(fullStars) + (halfStar ? '½' : '') + '☆'.repeat(emptyStars);
-}
+window.getParcelamentoHtml = getParcelamentoHtml;
+window.getFreteGratisIcon = getFreteGratisIcon;
+window.getLojaOficialIcon = getLojaOficialIcon;
+window.getAvaliacao = getAvaliacao;
+window.generateStars = generateStars;

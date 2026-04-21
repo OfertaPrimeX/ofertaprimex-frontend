@@ -144,7 +144,7 @@ function renderizarControlesPlataformas() {
 }
 
 // ============================================
-// FUNÇÃO PARA FORÇAR ATUALIZAÇÃO DO CARROSSEL (COM URL CORRETA)
+// FUNÇÃO PARA FORÇAR ATUALIZAÇÃO DO CARROSSEL
 // ============================================
 window.atualizarCarrossel = async function() {
     if (!confirm('Deseja forçar a atualização do carrossel agora? Isso irá gerar novos produtos para hoje.')) return;
@@ -159,7 +159,6 @@ window.atualizarCarrossel = async function() {
         const pass = localStorage.getItem('adminPass');
         const basicAuth = 'Basic ' + btoa(user + ':' + pass);
         
-        // URL CORRETA: /api/produtos/carrossel/atualizar (sem /admin)
         const response = await fetch(`${API_URL}/api/produtos/carrossel/atualizar`, {
             method: 'POST',
             headers: { 'Authorization': basicAuth }
@@ -255,7 +254,7 @@ window.carregarCategoriasAdmin = async function() {
     
     if (!tbody) return;
     
-    tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 40px;">Carregando categorias...<\/td><\/tr>';
+    tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 40px;">Carregando categorias...</td></tr>';
     
     try {
         const user = localStorage.getItem('adminUser');
@@ -275,22 +274,22 @@ window.carregarCategoriasAdmin = async function() {
             
             tbody.innerHTML = categorias.map(cat => `
                 <tr style="opacity: ${cat.ativa ? '1' : '0.6'}">
-                    <td><strong>${cat.nome}<\/strong><\/td>
-                    <td style="font-size: 20px;">${cat.icone}<\/td>
-                    <td class="categoria-total">${cat.plataformas?.ml_produtos || 0}<\/td>
-                    <td class="categoria-total">${cat.plataformas?.amazon_produtos || 0}<\/td>
-                    <td class="categoria-total">${cat.plataformas?.shopee_produtos || 0}<\/td>
-                    <td class="categoria-total">${cat.plataformas?.magalu_produtos || 0}<\/td>
-                    <td class="categoria-total"><strong>${cat.total}<\/strong><\/td>
+                    <td><strong>${cat.nome}</strong></td>
+                    <td style="font-size: 20px;">${cat.icone}</td>
+                    <td class="categoria-total">${cat.plataformas?.ml_produtos || 0}</td>
+                    <td class="categoria-total">${cat.plataformas?.amazon_produtos || 0}</td>
+                    <td class="categoria-total">${cat.plataformas?.shopee_produtos || 0}</td>
+                    <td class="categoria-total">${cat.plataformas?.magalu_produtos || 0}</td>
+                    <td class="categoria-total"><strong>${cat.total}</strong></td>
                     <td class="${cat.ativa ? 'categoria-status-ativa' : 'categoria-status-inativa'}">
                         ${cat.ativa ? '✅ Ativa' : '❌ Inativa'}
-                    <\/td>
-                <\/tr>
+                    </td>
+                </tr>
             `).join('');
             
             if (resumoDiv) {
                 resumoDiv.innerHTML = `
-                    <strong>📊 Resumo das Categorias:<\/strong><br>
+                    <strong>📊 Resumo das Categorias:</strong><br>
                     ✅ <span style="color: #2e7d32;">Ativas:</span> ${ativas.length} categorias com produtos<br>
                     ❌ <span style="color: #c62828;">Inativas:</span> ${inativas.length} categorias sem produtos<br>
                     📦 <strong>Total de categorias:</strong> ${categorias.length}
@@ -299,12 +298,12 @@ window.carregarCategoriasAdmin = async function() {
             
             console.log(`📊 Categorias carregadas: ${ativas.length} ativas, ${inativas.length} inativas`);
         } else {
-            tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: #c62828;">❌ Erro ao carregar categorias<\/td><\/tr>';
+            tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: #c62828;">❌ Erro ao carregar categorias</td></tr>';
             if (resumoDiv) resumoDiv.innerHTML = '❌ Erro ao carregar dados das categorias';
         }
     } catch (error) {
         console.error('Erro ao carregar categorias:', error);
-        tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: #c62828;">❌ Erro de conexão<\/td><\/tr>';
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: #c62828;">❌ Erro de conexão</td></tr>';
         if (resumoDiv) resumoDiv.innerHTML = '❌ Erro de conexão ao carregar categorias';
     }
 };
@@ -392,7 +391,6 @@ document.getElementById('btn-login')?.addEventListener('click', async () => {
             carregarTotalCliques();
             atualizarContadorPlataformasAtivas();
             
-            // Carregar categorias se a aba estiver ativa
             const tabCategorias = document.getElementById('tab-categorias');
             if (tabCategorias && tabCategorias.classList.contains('active')) {
                 setTimeout(() => window.carregarCategoriasAdmin(), 500);
@@ -462,7 +460,17 @@ async function carregarDadosReais() {
                 id: p.id,
                 titulo: p.titulo,
                 plataforma: p.plataforma || 'Mercado Livre',
-                preco: p.preco,
+                preco: p.preco_pix || p.preco,
+                preco_parcelado: p.preco_parcelado || null,
+                parcelas_qtd: p.parcelas_qtd || 0,
+                parcelas_valor_formatado: p.parcelas_valor_formatado || null,
+                parcelas_sem_juros: p.parcelas_sem_juros || false,
+                parcelas_texto: p.parcelas_texto || null,
+                frete_gratis: p.frete_gratis || false,
+                loja_oficial: p.loja_oficial || false,
+                avaliacao: p.avaliacao || 'N/A',
+                reviews: p.reviews || 0,
+                vendedor: p.vendedor || 'N/A',
                 cliques: p.cliques || 0,
                 ativo: true
             }));
@@ -519,10 +527,10 @@ async function carregarContadores() {
 
 function carregarDadosSimulados() {
     produtos = [
-        { id: 1, titulo: "PlayStation 5 Slim 1TB", plataforma: "Mercado Livre", preco: "3.599", cliques: 45, ativo: true },
-        { id: 2, titulo: "iPhone 17 Pro Max 256GB", plataforma: "Amazon", preco: "8.999", cliques: 32, ativo: true },
-        { id: 3, titulo: "Samsung Galaxy S25 Ultra", plataforma: "Shopee", preco: "7.499", cliques: 28, ativo: true },
-        { id: 4, titulo: "Notebook Gamer Dell G15", plataforma: "Magalu", preco: "5.299", cliques: 15, ativo: false }
+        { id: 1, titulo: "PlayStation 5 Slim 1TB", plataforma: "Mercado Livre", preco: "3.599", parcelas_texto: "10x R$ 359,90 sem juros", parcelas_sem_juros: true, frete_gratis: true, cliques: 45, ativo: true },
+        { id: 2, titulo: "iPhone 17 Pro Max 256GB", plataforma: "Amazon", preco: "8.999", parcelas_texto: "12x R$ 749,92", parcelas_sem_juros: false, frete_gratis: true, cliques: 32, ativo: true },
+        { id: 3, titulo: "Samsung Galaxy S25 Ultra", plataforma: "Shopee", preco: "7.499", parcelas_texto: "10x R$ 749,90 sem juros", parcelas_sem_juros: true, frete_gratis: false, cliques: 28, ativo: true },
+        { id: 4, titulo: "Notebook Gamer Dell G15", plataforma: "Magalu", preco: "5.299", parcelas_texto: "12x R$ 441,58", parcelas_sem_juros: false, frete_gratis: true, cliques: 15, ativo: false }
     ];
     
     document.getElementById('ml-contador').textContent = "1";
@@ -559,20 +567,41 @@ function atualizarTabela() {
     if (!tbody) return;
     
     if (produtos.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="6" style="text-align: center;">Nenhum produto encontrado<\/td><\/tr>';
+        tbody.innerHTML = '<tr><td colspan="9" style="text-align: center;">Nenhum produto encontrado</td></tr>';
         return;
     }
     
-    tbody.innerHTML = produtos.slice(0, 20).map(p => `
-        <tr>
-            <td>#${p.id}<\/td>
-            <td>${p.plataforma || '-'}<\/td>
-            <td>${p.titulo.substring(0, 50)}...<\/td>
-            <td>R$ ${p.preco}<\/td>
-            <td>${p.cliques || 0}<\/td>
-            <td>${p.ativo ? '✅' : '❌'}<\/td>
-        〈/tr>
-    `).join('');
+    tbody.innerHTML = produtos.slice(0, 20).map(p => {
+        const freteBadge = p.frete_gratis ? '<span style="background: #00a650; color: white; font-size: 10px; padding: 2px 5px; border-radius: 3px;">🚚</span>' : '';
+        const parcelasBadge = p.parcelas_sem_juros ? '<span style="background: #00a650; color: white; font-size: 10px; padding: 2px 5px; border-radius: 3px; margin-left: 3px;">S/J</span>' : '';
+        const lojaBadge = p.loja_oficial ? '<span style="background: #3483fa; color: white; font-size: 10px; padding: 2px 5px; border-radius: 3px; margin-left: 3px;">✅</span>' : '';
+        
+        let precoFormatado = 'R$ 0,00';
+        if (p.preco) {
+            const precoNum = typeof p.preco === 'number' ? p.preco : parseFloat(p.preco);
+            if (!isNaN(precoNum)) {
+                precoFormatado = precoNum.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+            }
+        }
+        
+        let parcelasInfo = p.parcelas_texto || '';
+        if (!parcelasInfo && p.parcelas_qtd && p.parcelas_valor_formatado) {
+            parcelasInfo = `${p.parcelas_qtd}x ${p.parcelas_valor_formatado}`;
+        }
+        
+        return `
+            <tr>
+                <td>#${p.id}</td>
+                <td>${p.plataforma || '-'}</td>
+                <td>${p.titulo?.substring(0, 40) || '-'}...</td>
+                <td>${precoFormatado}</td>
+                <td style="font-size: 11px;">${parcelasInfo || '-'} ${parcelasBadge}</td>
+                <td>${freteBadge}${lojaBadge}</td>
+                <td>${p.cliques || 0}</td>
+                <td>${p.ativo ? '✅' : '❌'}</td>
+            </tr>
+        `;
+    }).join('');
 }
 
 async function importarPlataforma(plataforma) {
@@ -591,7 +620,7 @@ async function importarPlataforma(plataforma) {
         
         const statusDiv = document.getElementById(`${plataforma}-status`);
         if (statusDiv) {
-            statusDiv.innerHTML = '<div class="import-status info">⏳ Enviando arquivo e importando...<\/div>';
+            statusDiv.innerHTML = '<div class="import-status info">⏳ Enviando arquivo e importando...</div>';
         }
         
         const formData = new FormData();
@@ -616,7 +645,7 @@ async function importarPlataforma(plataforma) {
             
             if (response.ok) {
                 if (statusDiv) {
-                    statusDiv.innerHTML = `<div class="import-status success">✅ ${data.message || 'Importação concluída!'}<\/div>`;
+                    statusDiv.innerHTML = `<div class="import-status success">✅ ${data.message || 'Importação concluída!'}</div>`;
                 }
                 setTimeout(() => {
                     carregarDadosReais();
@@ -627,13 +656,13 @@ async function importarPlataforma(plataforma) {
                 }, 2000);
             } else {
                 if (statusDiv) {
-                    statusDiv.innerHTML = `<div class="import-status error">❌ Erro: ${data.error || 'Falha na importação'}<\/div>`;
+                    statusDiv.innerHTML = `<div class="import-status error">❌ Erro: ${data.error || 'Falha na importação'}</div>`;
                 }
             }
         } catch (error) {
             console.error('❌ Erro no upload:', error);
             if (statusDiv) {
-                statusDiv.innerHTML = `<div class="import-status error">❌ Erro de conexão: ${error.message}<\/div>`;
+                statusDiv.innerHTML = `<div class="import-status error">❌ Erro de conexão: ${error.message}</div>`;
             }
         }
         
@@ -718,16 +747,16 @@ async function carregarEstatisticasPesquisas() {
             const tbody = document.getElementById('tabela-estatisticas-plataformas');
             if (tbody && data.data.por_plataforma) {
                 if (data.data.por_plataforma.length === 0) {
-                    tbody.innerHTML = '<td><td colspan="5" style="text-align: center;">Nenhum dado disponível<\/td><\/tr>';
+                    tbody.innerHTML = '<tr><td colspan="5" style="text-align: center;">Nenhum dado disponível</td></tr>';
                 } else {
                     tbody.innerHTML = data.data.por_plataforma.map(p => `
                         <tr>
-                            <td>${p.plataforma}<\/td>
-                            <td>${p.total}<\/td>
-                            <td>${p.encontradas}<\/td>
-                            <td>${p.nao_encontradas}<\/td>
-                            <td>${p.tempo_medio_ms}ms<\/td>
-                        〈/tr>
+                            <td>${p.plataforma}</td>
+                            <td>${p.total}</td>
+                            <td>${p.encontradas}</td>
+                            <td>${p.nao_encontradas}</td>
+                            <td>${p.tempo_medio_ms}ms</td>
+                        </tr>
                     `).join('');
                 }
             }
@@ -735,14 +764,14 @@ async function carregarEstatisticasPesquisas() {
             const termosTbody = document.getElementById('tabela-termos-nao-encontrados');
             if (termosTbody && data.data.top_nao_encontrados) {
                 if (data.data.top_nao_encontrados.length === 0) {
-                    termosTbody.innerHTML = '<td><td colspan="3" style="text-align: center;">Nenhum termo não encontrado<\/td><\/tr>';
+                    termosTbody.innerHTML = '<tr><td colspan="3" style="text-align: center;">Nenhum termo não encontrado</td></tr>';
                 } else {
                     termosTbody.innerHTML = data.data.top_nao_encontrados.map(t => `
                         <tr>
-                            <td>${t.termo}<\/td>
-                            <td>${t.tentativas}<\/td>
-                            <td>${t.plataformas}<\/td>
-                        〈/tr>
+                            <td>${t.termo}</td>
+                            <td>${t.tentativas}</td>
+                            <td>${t.plataformas}</td>
+                        </tr>
                     `).join('');
                 }
             }
@@ -802,3 +831,14 @@ if (window.location.pathname.includes('admin.html')) {
         mostrarLogin();
     }
 }
+
+// ============================================
+// EXPORTAÇÕES GLOBAIS
+// ============================================
+window.importarPlataforma = importarPlataforma;
+window.exportarPlataforma = exportarPlataforma;
+window.importarTodas = importarTodas;
+window.exportarTodas = exportarTodas;
+window.exportarPesquisas = exportarPesquisas;
+window.limparPesquisas = limparPesquisas;
+window.carregarEstatisticasPesquisas = carregarEstatisticasPesquisas;
