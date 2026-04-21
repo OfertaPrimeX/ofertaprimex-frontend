@@ -320,6 +320,25 @@ body {
     white-space: nowrap;
 }
 
+/* ================= CORREÇÃO: FRETE GRÁTIS CENTRALIZADO EM TODAS AS SEÇÕES ================= */
+.product-card .frete-gratis-badge,
+.carousel-card .frete-gratis-badge,
+.selecionados-grid .frete-gratis-badge {
+    display: inline-block !important;
+    margin: 5px auto !important;
+    text-align: center !important;
+}
+
+.product-card .product-badges,
+.carousel-card .product-badges,
+.selecionados-grid .product-badges {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 100% !important;
+}
+
 /* ================= AVALIAÇÃO COM ESTRELAS ================= */
 .product-rating {
     display: flex;
@@ -581,6 +600,7 @@ body {
     font-weight: bold;
     color: #ff6a00;
     margin: 8px 0;
+    text-align: center;
 }
 
 .carousel-card .product-parcelamento {
@@ -592,6 +612,7 @@ body {
 .carousel-card .loja-oficial-badge {
     font-size: 9px;
     padding: 2px 5px;
+    margin: 2px auto !important;
 }
 
 .carousel-btn {
@@ -641,6 +662,10 @@ body {
 
 .selecionados-grid .product-card {
     height: 100%;
+}
+
+.selecionados-grid .frete-gratis-badge {
+    margin: 5px auto !important;
 }
 
 /* ================= ESTILOS ADMIN ================= */
