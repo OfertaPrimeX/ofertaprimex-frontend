@@ -76,7 +76,7 @@ function getPrecoFormatado(produto) {
 }
 
 // ============================================
-// 🆕 FUNÇÃO PARA OBTER PARCELAMENTO FORMATADO (CORRIGIDA - REMOVE QUEBRAS DE LINHA)
+// 🆕 FUNÇÃO PARA OBTER PARCELAMENTO FORMATADO (CORRIGIDA - SEM BADGE DUPLICADA E SEM ESPAÇOS)
 // ============================================
 function getParcelamentoHtml(produto) {
     // Verifica se tem parcelamento pelos campos separados
@@ -88,11 +88,11 @@ function getParcelamentoHtml(produto) {
             const valorFormatado = produto.parcelas_valor_formatado;
             
             if (valorFormatado && valorFormatado !== 'N/A') {
-                const classeJuros = semJuros ? 'parcelas-sem-juros' : 'parcelas-com-juros';
+                // Monta o texto completo
+                const textoMontado = `${qtd}x ${valorFormatado}${semJuros ? ' sem juros' : ''}`;
                 return `
-                    <div class="product-parcelamento ${classeJuros}" style="font-size: 13px; color: ${semJuros ? '#00a650' : '#666'}; margin-top: 4px; text-align: center;">
-                        ${qtd}x ${valorFormatado}
-                        ${semJuros ? ' <span style="background: #00a650; color: white; font-size: 10px; padding: 1px 4px; border-radius: 3px; margin-left: 5px;">SEM JUROS</span>' : ''}
+                    <div class="product-parcelamento" style="font-size: 13px; color: ${semJuros ? '#00a650' : '#666'}; margin-top: 4px; text-align: center;">
+                        ${textoMontado}
                     </div>
                 `;
             }
@@ -100,11 +100,18 @@ function getParcelamentoHtml(produto) {
         return '';
     }
     
-    // 🔥 CORREÇÃO PRINCIPAL: Pega o texto e remove TODAS as quebras de linha, carriage returns e espaços extras
+    // 🔥 CORREÇÃO: Pega o texto e remove TODAS as quebras de linha, carriage returns
     let texto = produto.parcelas_texto || produto.preco_parcelado || '';
     
-    // Remove quebras de linha (\n), carriage returns (\r) e múltiplos espaços
-    texto = texto.replace(/[\n\r]+/g, ' ').replace(/\s+/g, ' ').trim();
+    // Remove quebras de linha (\n), carriage returns (\r)
+    texto = texto.replace(/[\n\r]+/g, ' ');
+    
+    // 🔥 CORREÇÃO PRINCIPAL: Remove espaços antes e depois de vírgulas
+    // Ex: "R$ 31 , 65" -> "R$ 31,65"
+    texto = texto.replace(/\s*,\s*/g, ',');
+    
+    // Remove múltiplos espaços (substitui por um único espaço)
+    texto = texto.replace(/\s+/g, ' ').trim();
     
     // Se ficou vazio ou N/A, não mostra nada
     if (!texto || texto === 'N/A' || texto === 'N/A sem juros') return '';
@@ -114,12 +121,10 @@ function getParcelamentoHtml(produto) {
                      produto.parcelas_sem_juros === 'true' ||
                      texto.toLowerCase().includes('sem juros');
     
-    const classeJuros = semJuros ? 'parcelas-sem-juros' : 'parcelas-com-juros';
-    
+    // 🔥 CORREÇÃO: NÃO adiciona badge extra! O texto já contém "sem juros"
     return `
-        <div class="product-parcelamento ${classeJuros}" style="font-size: 13px; color: ${semJuros ? '#00a650' : '#666'}; margin-top: 4px; text-align: center;">
+        <div class="product-parcelamento" style="font-size: 13px; color: ${semJuros ? '#00a650' : '#666'}; margin-top: 4px; text-align: center;">
             ${texto}
-            ${semJuros ? ' <span style="background: #00a650; color: white; font-size: 10px; padding: 1px 4px; border-radius: 3px; margin-left: 5px;">SEM JUROS</span>' : ''}
         </div>
     `;
 }
