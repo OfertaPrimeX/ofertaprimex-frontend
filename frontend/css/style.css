@@ -484,7 +484,7 @@ body {
     height: 21px;
 }
 
-/* 🔥 PARCELAMENTO DO CARROSSEL (2 LINHAS) */
+/* PARCELAMENTO DO CARROSSEL (2 LINHAS) */
 .carousel-card .product-parcelamento {
     font-size: 11px;
     text-align: center;
@@ -942,6 +942,7 @@ body {
     }
 }
 
+/* 🔥 CORREÇÃO MOBILE - TABLET (768px) */
 @media (max-width: 768px) {
     .header-content {
         flex-direction: column;
@@ -993,20 +994,74 @@ body {
         gap: 12px;
     }
     
+    /* 🔥 CARDS MENORES NO TABLET */
+    .product-card {
+        height: 320px;
+        padding: 10px;
+    }
+    
+    .product-card .product-image {
+        height: 120px;
+    }
+    
+    .product-card .product-title {
+        font-size: 13px;
+        height: 54px;
+    }
+    
+    .product-card .product-price {
+        font-size: 15px;
+        height: 23px;
+    }
+    
+    .product-parcelamento {
+        font-size: 11px;
+        height: 28px;
+    }
+    
+    .product-badges {
+        padding-top: 4px;
+    }
+    
+    .frete-gratis-badge {
+        font-size: 9px;
+        padding: 2px 5px;
+    }
+    
+    .product-rating {
+        font-size: 10px;
+        height: 18px;
+    }
+    
+    .product-rating span:first-child {
+        font-size: 12px;
+    }
+    
+    /* 🔥 CARROSSEL MENOR NO TABLET */
     .carousel-card {
         flex: 0 0 calc(50% - 10px);
         min-width: calc(50% - 10px);
         padding: 10px;
-        height: 314px;
+        height: 280px;
+    }
+    
+    .carousel-card img {
+        height: 100px;
     }
     
     .carousel-card .product-title {
         font-size: 11px;
-        height: 45px;
+        height: 42px;
     }
     
     .carousel-card .product-price {
         font-size: 13px;
+        height: 19px;
+    }
+    
+    .carousel-card .product-parcelamento {
+        font-size: 10px;
+        height: 26px;
     }
     
     .carousel-btn {
@@ -1046,23 +1101,6 @@ body {
         opacity: 0.7;
     }
     
-    .product-parcelamento {
-        font-size: 11px;
-    }
-    
-    .frete-gratis-badge {
-        font-size: 9px;
-        padding: 2px 5px;
-    }
-    
-    .product-rating {
-        font-size: 10px;
-    }
-    
-    .product-rating span:first-child {
-        font-size: 12px;
-    }
-    
     .dropdown-content {
         position: fixed;
         left: 50%;
@@ -1072,20 +1110,12 @@ body {
         max-height: 250px;
     }
     
-    .product-card {
-        height: 356px;
-    }
-    
-    .product-card .product-image {
-        height: 140px;
-    }
-    
-    .product-card .product-title {
-        font-size: 13px;
-        height: 54px;
+    .selecionados-grid .product-card {
+        height: 320px;
     }
 }
 
+/* 🔥 CORREÇÃO MOBILE - CELULAR (480px) */
 @media (max-width: 480px) {
     .menu {
         gap: 8px;
@@ -1101,13 +1131,75 @@ body {
 
     .selecionados-grid {
         grid-template-columns: repeat(2, 1fr);
-        gap: 10px;
+        gap: 8px;
     }
     
+    /* 🔥 CARDS AINDA MENORES NO CELULAR */
+    .product-card {
+        height: 290px;
+        padding: 8px;
+    }
+    
+    .product-card .product-image {
+        height: 100px;
+    }
+    
+    .product-card .product-title {
+        font-size: 11px;
+        height: 44px;
+        -webkit-line-clamp: 2;
+    }
+    
+    .product-card .product-price {
+        font-size: 13px;
+        height: 20px;
+    }
+    
+    .product-parcelamento {
+        font-size: 10px;
+        height: 24px;
+    }
+    
+    .frete-gratis-badge {
+        font-size: 8px;
+        padding: 2px 4px;
+    }
+    
+    .product-rating {
+        font-size: 9px;
+        height: 16px;
+    }
+    
+    .product-rating span:first-child {
+        font-size: 10px;
+    }
+    
+    /* 🔥 CARROSSEL MENOR NO CELULAR */
     .carousel-card {
         flex: 0 0 calc(50% - 8px);
         min-width: calc(50% - 8px);
-        height: 294px;
+        padding: 8px;
+        height: 250px;
+    }
+    
+    .carousel-card img {
+        height: 80px;
+    }
+    
+    .carousel-card .product-title {
+        font-size: 10px;
+        height: 36px;
+        -webkit-line-clamp: 2;
+    }
+    
+    .carousel-card .product-price {
+        font-size: 12px;
+        height: 18px;
+    }
+    
+    .carousel-card .product-parcelamento {
+        font-size: 9px;
+        height: 22px;
     }
     
     .section-title {
@@ -1126,27 +1218,13 @@ body {
         font-size: 13px;
     }
     
-    .product-parcelamento span {
-        font-size: 8px;
-        padding: 1px 3px;
-    }
-    
     .menu-btn {
         padding: 6px 10px;
         font-size: 12px;
     }
     
-    .product-card {
-        height: 336px;
-    }
-    
-    .product-card .product-image {
-        height: 120px;
-    }
-    
-    .product-card .product-title {
-        font-size: 12px;
-        height: 50px;
+    .selecionados-grid .product-card {
+        height: 290px;
     }
 }
 
