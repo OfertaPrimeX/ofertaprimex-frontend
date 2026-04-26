@@ -140,13 +140,12 @@ function getFreteGratisIcon(freteGratis) {
 }
 
 // ============================================
-// FUNÇÃO PARA OBTER ÍCONE DE LOJA OFICIAL
+// 🔥 REMOVIDO: Função getLojaOficialIcon (não é mais exibida)
 // ============================================
+// O badge "Loja Oficial" foi removido por ser uma informação irrelevante.
+// A função ainda existe para compatibilidade, mas retorna vazio.
 function getLojaOficialIcon(lojaOficial) {
-    if (lojaOficial === 'Sim' || lojaOficial === true || lojaOficial === 'true') {
-        return '<span class="loja-oficial-badge" style="display: inline-block; background: #3483fa; color: white; font-size: 11px; padding: 2px 6px; border-radius: 4px; margin-top: 5px;">✅ Loja Oficial</span>';
-    }
-    return '';
+    return ''; // Sempre retorna vazio
 }
 
 // ============================================
@@ -382,7 +381,6 @@ export function renderProducts(container, products, isCarousel = false) {
         const precoHtml = getPrecoFormatado(p);
         const parcelamentoHtml = getParcelamentoHtml(p);
         const freteGratisHtml = getFreteGratisIcon(p.frete_gratis);
-        const lojaOficialHtml = getLojaOficialIcon(p.loja_oficial);
         const avaliacaoHtml = getAvaliacao(p);
         
         let imagem = p.imagem_principal || p.thumbnail;
@@ -395,6 +393,7 @@ export function renderProducts(container, products, isCarousel = false) {
         
         const iconeHtml = getIconeCard(plataforma);
         
+        // 🔥 REMOVIDO o lojaOficialHtml do card
         card.innerHTML = `
             ${iconeHtml}
             <img src="${imagem}" alt="${titulo}" 
@@ -406,7 +405,6 @@ export function renderProducts(container, products, isCarousel = false) {
                 ${parcelamentoHtml}
                 <div class="product-badges" style="display: flex; gap: 5px; flex-wrap: wrap; margin-top: 5px;">
                     ${freteGratisHtml}
-                    ${lojaOficialHtml}
                 </div>
                 ${avaliacaoHtml}
             </div>
@@ -442,6 +440,7 @@ export function renderCarousel(container, products) {
         // Para o carrossel, limpa o preço da tag div
         const precoLimpo = precoHtml.replace(/<div[^>]*>/g, '').replace(/<\/div>/g, '');
         
+        // 🔥 REMOVIDO o lojaOficialHtml do carrossel
         return `<div class="carousel-card" style="position: relative;" onclick="window.registrarCliqueCarrossel(${produtoId}, '${plataforma}', '${link}'); window.open('${link}', '_blank');">
             ${iconeHtml}
             <img src="${imagem}" alt="${titulo}" loading="lazy" onerror="this.src='https://via.placeholder.com/150'">
@@ -464,7 +463,6 @@ export function renderProductsHTML(products) {
         const precoHtml = getPrecoFormatado(p);
         const parcelamentoHtml = getParcelamentoHtml(p);
         const freteGratisHtml = getFreteGratisIcon(p.frete_gratis);
-        const lojaOficialHtml = getLojaOficialIcon(p.loja_oficial);
         const avaliacaoHtml = getAvaliacao(p);
         
         const produtoId = p.id;
@@ -488,6 +486,7 @@ export function renderProductsHTML(products) {
             window.open('${link}', '_blank');
         })()`;
         
+        // 🔥 REMOVIDO o lojaOficialHtml do card HTML
         return `
             <div class="product-card" style="position: relative; cursor:pointer;" onclick="${onclickHandler.replace(/"/g, '&quot;')}">
                 ${iconeHtml}
@@ -498,7 +497,6 @@ export function renderProductsHTML(products) {
                     ${parcelamentoHtml}
                     <div class="product-badges" style="display: flex; gap: 5px; flex-wrap: wrap; margin-top: 5px;">
                         ${freteGratisHtml}
-                        ${lojaOficialHtml}
                     </div>
                     ${avaliacaoHtml}
                 </div>
