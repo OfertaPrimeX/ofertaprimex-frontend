@@ -273,11 +273,11 @@ body {
     flex-direction: column;
     align-items: center;
     justify-content: flex-end;
-    gap: 4px;
+    gap: 0;
     width: 100%;
     flex-shrink: 0;
     margin-top: auto;
-    padding-top: 0px;
+    padding-top: 2px;
 }
 
 .frete-gratis-badge {
@@ -316,7 +316,7 @@ body {
     font-size: 11px;
 }
 
-/* ================= ÍCONE DA PLATAFORMA ================= */
+/* ================= ÍCONE DA PLATAFORMA (CARD) ================= */
 .platform-icon-card {
     position: absolute;
     top: 8px;
@@ -369,7 +369,7 @@ body {
     color: #666;
 }
 
-/* ===== SCROLL INFINITO ===== */
+/* ===== ESTILOS PARA SCROLL INFINITO ===== */
 .loading-spinner {
     text-align: center;
     padding: 30px;
@@ -402,11 +402,12 @@ body {
     text-align: center;
 }
 
+/* ===== CLASSE PARA OCULTAR SEÇÕES ===== */
 .hidden-section {
     display: none !important;
 }
 
-/* ===== CARROSSEL (MAIS VENDIDOS) - TAMANHO FIXO ===== */
+/* ===== ESTILOS DO CARROSSEL (MAIS VENDIDOS) ===== */
 .mais-vendidos-section {
     padding: 40px 0;
     background: #ffffff;
@@ -478,7 +479,7 @@ body {
     font-size: 14px;
     font-weight: bold;
     color: #ff6a00;
-    margin: 4px 0;
+    margin-bottom: 4px;
     text-align: center;
     flex-shrink: 0;
     height: 21px;
@@ -497,13 +498,11 @@ body {
 
 .carousel-card .product-badges {
     margin-top: auto;
-    padding-top: 0px;
 }
 
 .carousel-card .frete-gratis-badge {
     font-size: 9px;
     padding: 2px 5px;
-    margin: 2px auto !important;
 }
 
 .carousel-btn {
@@ -538,7 +537,7 @@ body {
     right: -10px;
 }
 
-/* ===== SEÇÃO DE PRODUTOS SELECIONADOS ===== */
+/* ===== ESTILOS DA SEÇÃO DE PRODUTOS SELECIONADOS ===== */
 .selecionados-section {
     padding: 40px 0;
     background: #f9f9f9;
@@ -941,7 +940,7 @@ body {
     }
 }
 
-/* 🔥 TABLET (768px) - SEM ESPAÇO EXTRA */
+/* 🔥 TABLET (768px) */
 @media (max-width: 768px) {
     .header-content {
         flex-direction: column;
@@ -1015,12 +1014,6 @@ body {
     .product-parcelamento {
         font-size: 12px;
         height: 32px;
-        margin-bottom: 2px;
-    }
-    
-    .product-badges {
-        padding-top: 0px;
-        margin-top: auto;
     }
     
     .frete-gratis-badge {
@@ -1031,7 +1024,6 @@ body {
     .product-rating {
         font-size: 10px;
         height: 16px;
-        margin-top: 2px;
     }
     
     .product-rating span:first-child {
@@ -1042,7 +1034,7 @@ body {
         flex: 0 0 calc(50% - 10px);
         min-width: calc(50% - 10px);
         padding: 10px;
-        height: 300px;
+        height: 310px;
     }
     
     .carousel-card img {
@@ -1061,17 +1053,11 @@ body {
     
     .carousel-card .product-parcelamento {
         font-size: 11px;
-        height: 28px;
-    }
-    
-    .carousel-card .product-badges {
-        padding-top: 0px;
-        margin-top: auto;
+        height: 32px;
     }
     
     .carousel-card .product-rating {
         height: 14px;
-        margin-top: 2px;
     }
     
     .carousel-btn {
@@ -1125,7 +1111,7 @@ body {
     }
 }
 
-/* 🔥 CELULAR (480px) - SEM ESPAÇO EXTRA */
+/* 🔥 CELULAR (480px) */
 @media (max-width: 480px) {
     .menu {
         gap: 8px;
@@ -1167,7 +1153,6 @@ body {
     .product-parcelamento {
         font-size: 11px;
         height: 28px;
-        margin-bottom: 1px;
     }
     
     .frete-gratis-badge {
@@ -1178,7 +1163,6 @@ body {
     .product-rating {
         font-size: 9px;
         height: 14px;
-        margin-top: 1px;
     }
     
     .product-rating span:first-child {
@@ -1189,7 +1173,7 @@ body {
         flex: 0 0 calc(50% - 8px);
         min-width: calc(50% - 8px);
         padding: 8px;
-        height: 270px;
+        height: 280px;
     }
     
     .carousel-card img {
@@ -1209,12 +1193,11 @@ body {
     
     .carousel-card .product-parcelamento {
         font-size: 10px;
-        height: 24px;
+        height: 28px;
     }
     
     .carousel-card .product-rating {
         height: 12px;
-        margin-top: 1px;
     }
     
     .section-title {
