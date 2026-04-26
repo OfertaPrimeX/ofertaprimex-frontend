@@ -75,30 +75,40 @@ function getPrecoFormatado(produto) {
 }
 
 // ============================================
-// FUNÇÃO PARA OBTER PARCELAMENTO FORMATADO
+// 🔥 FUNÇÃO PARA OBTER PARCELAMENTO FORMATADO (CORRIGIDA - BUSCA TODAS AS FONTES)
 // ============================================
 function getParcelamentoHtml(produto) {
-    if (!produto.parcelas_texto && !produto.preco_parcelado) {
+    // 🔥 Tenta obter o texto de parcelamento de TODAS as fontes possíveis
+    let texto = produto.parcelas_texto || 
+                produto.parcelas_texto_completo || 
+                produto.preco_parcelado || 
+                '';
+    
+    // Se não tem texto, tenta montar com campos separados
+    if (!texto || texto === 'N/A') {
         if (produto.parcelas_qtd && produto.parcelas_qtd > 0) {
             const qtd = produto.parcelas_qtd;
             const semJuros = produto.parcelas_sem_juros === true || produto.parcelas_sem_juros === 'true';
             const valorFormatado = produto.parcelas_valor_formatado;
             
             if (valorFormatado && valorFormatado !== 'N/A') {
-                const textoMontado = `${qtd}x ${valorFormatado}${semJuros ? ' sem juros' : ''}`;
-                return `<div class="product-parcelamento" style="color: ${semJuros ? '#00a650' : '#666'};">${textoMontado}</div>`;
+                texto = `${qtd}x ${valorFormatado}${semJuros ? ' sem juros' : ''}`;
             }
         }
-        return '';
     }
     
-    let texto = produto.parcelas_texto || produto.preco_parcelado || '';
+    // Se ainda não tem texto, retorna vazio
+    if (!texto || texto === 'N/A' || texto === 'N/A sem juros') return '';
+    
+    // Limpa o texto: remove quebras de linha, espaços extras, etc.
     texto = texto.replace(/[\n\r]+/g, ' ');
     texto = texto.replace(/\s*,\s*/g, ',');
     texto = texto.replace(/\s+/g, ' ').trim();
     
+    // Se ficou vazio após limpeza, retorna vazio
     if (!texto || texto === 'N/A' || texto === 'N/A sem juros') return '';
     
+    // Verifica se é sem juros
     const semJuros = produto.parcelas_sem_juros === true || 
                      produto.parcelas_sem_juros === 'true' ||
                      texto.toLowerCase().includes('sem juros');
