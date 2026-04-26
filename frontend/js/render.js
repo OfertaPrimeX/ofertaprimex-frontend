@@ -46,7 +46,6 @@ function formatarPrecoCentralizado(valor) {
         return 'R$ 0,00';
     }
     
-    // Corrige valores muito altos (caso venham em centavos sem vírgula)
     if (precoNum > 100000) {
         precoNum = precoNum / 100;
     }
@@ -76,19 +75,16 @@ function getPrecoFormatado(produto) {
 }
 
 // ============================================
-// 🆕 FUNÇÃO PARA OBTER PARCELAMENTO FORMATADO (CORRIGIDA - SEM BADGE DUPLICADA E SEM ESPAÇOS)
+// FUNÇÃO PARA OBTER PARCELAMENTO FORMATADO
 // ============================================
 function getParcelamentoHtml(produto) {
-    // Verifica se tem parcelamento pelos campos separados
     if (!produto.parcelas_texto && !produto.preco_parcelado) {
-        // Tenta montar com campos separados
         if (produto.parcelas_qtd && produto.parcelas_qtd > 0) {
             const qtd = produto.parcelas_qtd;
             const semJuros = produto.parcelas_sem_juros === true || produto.parcelas_sem_juros === 'true';
             const valorFormatado = produto.parcelas_valor_formatado;
             
             if (valorFormatado && valorFormatado !== 'N/A') {
-                // Monta o texto completo
                 const textoMontado = `${qtd}x ${valorFormatado}${semJuros ? ' sem juros' : ''}`;
                 return `
                     <div class="product-parcelamento" style="font-size: 13px; color: ${semJuros ? '#00a650' : '#666'}; margin-top: 4px; text-align: center;">
@@ -100,28 +96,17 @@ function getParcelamentoHtml(produto) {
         return '';
     }
     
-    // 🔥 CORREÇÃO: Pega o texto e remove TODAS as quebras de linha, carriage returns
     let texto = produto.parcelas_texto || produto.preco_parcelado || '';
-    
-    // Remove quebras de linha (\n), carriage returns (\r)
     texto = texto.replace(/[\n\r]+/g, ' ');
-    
-    // 🔥 CORREÇÃO PRINCIPAL: Remove espaços antes e depois de vírgulas
-    // Ex: "R$ 31 , 65" -> "R$ 31,65"
     texto = texto.replace(/\s*,\s*/g, ',');
-    
-    // Remove múltiplos espaços (substitui por um único espaço)
     texto = texto.replace(/\s+/g, ' ').trim();
     
-    // Se ficou vazio ou N/A, não mostra nada
     if (!texto || texto === 'N/A' || texto === 'N/A sem juros') return '';
     
-    // Verifica se é sem juros (pelo campo booleano ou pelo texto)
     const semJuros = produto.parcelas_sem_juros === true || 
                      produto.parcelas_sem_juros === 'true' ||
                      texto.toLowerCase().includes('sem juros');
     
-    // 🔥 CORREÇÃO: NÃO adiciona badge extra! O texto já contém "sem juros"
     return `
         <div class="product-parcelamento" style="font-size: 13px; color: ${semJuros ? '#00a650' : '#666'}; margin-top: 4px; text-align: center;">
             ${texto}
@@ -140,12 +125,10 @@ function getFreteGratisIcon(freteGratis) {
 }
 
 // ============================================
-// 🔥 REMOVIDO: Função getLojaOficialIcon (não é mais exibida)
+// FUNÇÃO PARA OBTER ÍCONE DE LOJA OFICIAL (REMOVIDO)
 // ============================================
-// O badge "Loja Oficial" foi removido por ser uma informação irrelevante.
-// A função ainda existe para compatibilidade, mas retorna vazio.
 function getLojaOficialIcon(lojaOficial) {
-    return ''; // Sempre retorna vazio
+    return '';
 }
 
 // ============================================
@@ -331,7 +314,7 @@ async function registrarClique(produtoId, plataforma, linkOriginal, pagina) {
 }
 
 // ============================================
-// RENDERIZAÇÃO DE PRODUTOS
+// RENDERIZAÇÃO DE PRODUTOS (CARDS NORMAIS)
 // ============================================
 export function renderProducts(container, products, isCarousel = false) {
     if (!container) return;
@@ -393,7 +376,6 @@ export function renderProducts(container, products, isCarousel = false) {
         
         const iconeHtml = getIconeCard(plataforma);
         
-        // 🔥 REMOVIDO o lojaOficialHtml do card
         card.innerHTML = `
             ${iconeHtml}
             <img src="${imagem}" alt="${titulo}" 
@@ -414,6 +396,9 @@ export function renderProducts(container, products, isCarousel = false) {
     });
 }
 
+// ============================================
+// 🔥 RENDERIZAÇÃO DO CARROSSEL (COM ESTRELAS ADICIONADAS)
+// ============================================
 export function renderCarousel(container, products) {
     if (!container) return;
     
@@ -434,20 +419,22 @@ export function renderCarousel(container, products) {
         const precoHtml = getPrecoFormatado(p);
         const parcelamentoHtml = getParcelamentoHtml(p);
         const freteGratisHtml = getFreteGratisIcon(p.frete_gratis);
+        const avaliacaoHtml = getAvaliacao(p);
         
         const iconeHtml = getIconeCard(plataforma);
         
-        // Para o carrossel, limpa o preço da tag div
         const precoLimpo = precoHtml.replace(/<div[^>]*>/g, '').replace(/<\/div>/g, '');
         
-        // 🔥 REMOVIDO o lojaOficialHtml do carrossel
         return `<div class="carousel-card" style="position: relative;" onclick="window.registrarCliqueCarrossel(${produtoId}, '${plataforma}', '${link}'); window.open('${link}', '_blank');">
             ${iconeHtml}
             <img src="${imagem}" alt="${titulo}" loading="lazy" onerror="this.src='https://via.placeholder.com/150'">
             <div class="product-title">${titulo}...</div>
             <div class="product-price" style="font-size: 16px; font-weight: bold; color: #ff6a00; text-align: center; margin-top: 5px;">${precoLimpo}</div>
             ${parcelamentoHtml}
-            ${freteGratisHtml}
+            <div class="product-badges" style="display: flex; gap: 5px; flex-wrap: wrap; margin-top: 5px;">
+                ${freteGratisHtml}
+            </div>
+            ${avaliacaoHtml}
         </div>`;
     }).join('');
     
@@ -486,7 +473,6 @@ export function renderProductsHTML(products) {
             window.open('${link}', '_blank');
         })()`;
         
-        // 🔥 REMOVIDO o lojaOficialHtml do card HTML
         return `
             <div class="product-card" style="position: relative; cursor:pointer;" onclick="${onclickHandler.replace(/"/g, '&quot;')}">
                 ${iconeHtml}
