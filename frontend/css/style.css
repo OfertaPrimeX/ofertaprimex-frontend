@@ -484,7 +484,6 @@ body {
     height: 21px;
 }
 
-/* PARCELAMENTO DO CARROSSEL (2 LINHAS) */
 .carousel-card .product-parcelamento {
     font-size: 11px;
     text-align: center;
@@ -991,17 +990,17 @@ body {
 
     .selecionados-grid {
         grid-template-columns: repeat(3, 1fr);
-        gap: 12px;
+        gap: 10px;
     }
     
-    /* 🔥 CARDS MENORES NO TABLET */
+    /* 🔥 CARDS TABLET - ALTURA REDUZIDA */
     .product-card {
-        height: 320px;
+        height: 340px;
         padding: 10px;
     }
     
     .product-card .product-image {
-        height: 120px;
+        height: 130px;
     }
     
     .product-card .product-title {
@@ -1014,13 +1013,14 @@ body {
         height: 23px;
     }
     
+    /* 🔥 PARCELAMENTO COM MAIS ESPAÇO */
     .product-parcelamento {
-        font-size: 11px;
-        height: 28px;
+        font-size: 12px;
+        height: 32px;
     }
     
     .product-badges {
-        padding-top: 4px;
+        padding-top: 0px;
     }
     
     .frete-gratis-badge {
@@ -1037,21 +1037,21 @@ body {
         font-size: 12px;
     }
     
-    /* 🔥 CARROSSEL MENOR NO TABLET */
+    /* 🔥 CARROSSEL TABLET - ALTURA REDUZIDA */
     .carousel-card {
         flex: 0 0 calc(50% - 10px);
         min-width: calc(50% - 10px);
         padding: 10px;
-        height: 280px;
+        height: 300px;
     }
     
     .carousel-card img {
-        height: 100px;
+        height: 110px;
     }
     
     .carousel-card .product-title {
-        font-size: 11px;
-        height: 42px;
+        font-size: 12px;
+        height: 44px;
     }
     
     .carousel-card .product-price {
@@ -1060,8 +1060,8 @@ body {
     }
     
     .carousel-card .product-parcelamento {
-        font-size: 10px;
-        height: 26px;
+        font-size: 11px;
+        height: 28px;
     }
     
     .carousel-btn {
@@ -1111,7 +1111,7 @@ body {
     }
     
     .selecionados-grid .product-card {
-        height: 320px;
+        height: 340px;
     }
 }
 
@@ -1134,30 +1134,31 @@ body {
         gap: 8px;
     }
     
-    /* 🔥 CARDS AINDA MENORES NO CELULAR */
+    /* 🔥 CARDS CELULAR - ALTURA REDUZIDA */
     .product-card {
-        height: 290px;
+        height: 310px;
         padding: 8px;
     }
     
     .product-card .product-image {
-        height: 100px;
+        height: 110px;
     }
     
     .product-card .product-title {
-        font-size: 11px;
-        height: 44px;
+        font-size: 12px;
+        height: 46px;
         -webkit-line-clamp: 2;
     }
     
     .product-card .product-price {
-        font-size: 13px;
-        height: 20px;
+        font-size: 14px;
+        height: 21px;
     }
     
+    /* 🔥 PARCELAMENTO COM MAIS ESPAÇO NO CELULAR */
     .product-parcelamento {
-        font-size: 10px;
-        height: 24px;
+        font-size: 11px;
+        height: 28px;
     }
     
     .frete-gratis-badge {
@@ -1174,21 +1175,21 @@ body {
         font-size: 10px;
     }
     
-    /* 🔥 CARROSSEL MENOR NO CELULAR */
+    /* 🔥 CARROSSEL CELULAR - ALTURA REDUZIDA */
     .carousel-card {
         flex: 0 0 calc(50% - 8px);
         min-width: calc(50% - 8px);
         padding: 8px;
-        height: 250px;
+        height: 270px;
     }
     
     .carousel-card img {
-        height: 80px;
+        height: 90px;
     }
     
     .carousel-card .product-title {
-        font-size: 10px;
-        height: 36px;
+        font-size: 11px;
+        height: 38px;
         -webkit-line-clamp: 2;
     }
     
@@ -1198,8 +1199,8 @@ body {
     }
     
     .carousel-card .product-parcelamento {
-        font-size: 9px;
-        height: 22px;
+        font-size: 10px;
+        height: 24px;
     }
     
     .section-title {
@@ -1224,7 +1225,7 @@ body {
     }
     
     .selecionados-grid .product-card {
-        height: 290px;
+        height: 310px;
     }
 }
 
