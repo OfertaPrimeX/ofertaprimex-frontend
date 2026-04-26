@@ -183,7 +183,7 @@ body {
     gap: 16px;
 }
 
-/* ================= CARD PRODUTO (TAMANHO FIXO - REVISADO) ================= */
+/* ================= CARD PRODUTO (TAMANHO FIXO) ================= */
 .product-card {
     background-color: #ffffff;
     border-radius: 8px;
@@ -195,8 +195,7 @@ body {
     cursor: pointer;
     display: flex;
     flex-direction: column;
-    /* 🔥 ALTURA FIXA OBRIGATÓRIA */
-    height: 380px;
+    height: 396px;
     overflow: hidden;
 }
 
@@ -205,7 +204,6 @@ body {
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
 }
 
-/* 🔥 IMAGEM COM TAMANHO FIXO */
 .product-card .product-image {
     width: 100%;
     height: 160px;
@@ -214,7 +212,6 @@ body {
     flex-shrink: 0;
 }
 
-/* 🔥 TÍTULO MAIOR - 3 LINHAS */
 .product-card .product-title {
     font-size: 15px;
     font-weight: bold;
@@ -230,7 +227,6 @@ body {
     height: 63px;
 }
 
-/* 🔥 PREÇO COM TAMANHO FIXO */
 .product-card .product-price {
     font-size: 18px;
     font-weight: bold;
@@ -241,7 +237,6 @@ body {
     height: 27px;
 }
 
-/* 🔥 CONTAINER DE INFORMAÇÕES */
 .product-card .product-info {
     display: flex;
     flex-direction: column;
@@ -249,15 +244,18 @@ body {
     min-height: 0;
 }
 
-/* ================= PARCELAMENTO (TAMANHO FIXO) ================= */
+/* ================= PARCELAMENTO (2 LINHAS) ================= */
 .product-parcelamento {
     font-size: 13px;
     margin-bottom: 4px;
     text-align: center;
     line-height: 1.3;
     flex-shrink: 0;
-    height: 20px;
+    height: 36px;
     overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
 }
 
 .parcelas-sem-juros {
@@ -278,7 +276,6 @@ body {
     gap: 4px;
     width: 100%;
     flex-shrink: 0;
-    /* 🔥 EMPURRA PARA O FINAL DO CARD */
     margin-top: auto;
     padding-top: 6px;
 }
@@ -295,7 +292,7 @@ body {
     white-space: nowrap;
 }
 
-/* ================= AVALIAÇÃO COM ESTRELAS (TAMANHO FIXO) ================= */
+/* ================= AVALIAÇÃO COM ESTRELAS ================= */
 .product-rating {
     display: flex;
     align-items: center;
@@ -409,7 +406,7 @@ body {
     display: none !important;
 }
 
-/* ===== CARROSSEL (MAIS VENDIDOS) - TAMANHO FIXO REVISADO ===== */
+/* ===== CARROSSEL (MAIS VENDIDOS) - TAMANHO FIXO ===== */
 .mais-vendidos-section {
     padding: 40px 0;
     background: #ffffff;
@@ -446,8 +443,7 @@ body {
     display: flex;
     flex-direction: column;
     position: relative;
-    /* 🔥 ALTURA FIXA OBRIGATÓRIA */
-    height: 340px;
+    height: 354px;
     overflow: hidden;
 }
 
@@ -456,7 +452,6 @@ body {
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
 }
 
-/* 🔥 IMAGEM DO CARROSSEL COM TAMANHO FIXO */
 .carousel-card img {
     width: 100%;
     height: 140px;
@@ -465,7 +460,6 @@ body {
     flex-shrink: 0;
 }
 
-/* 🔥 TÍTULO DO CARROSSEL - 3 LINHAS */
 .carousel-card .product-title {
     font-size: 13px;
     font-weight: bold;
@@ -480,7 +474,6 @@ body {
     height: 55px;
 }
 
-/* 🔥 PREÇO DO CARROSSEL COM TAMANHO FIXO */
 .carousel-card .product-price {
     font-size: 14px;
     font-weight: bold;
@@ -491,16 +484,18 @@ body {
     height: 21px;
 }
 
-/* 🔥 PARCELAMENTO DO CARROSSEL */
+/* 🔥 PARCELAMENTO DO CARROSSEL (2 LINHAS) */
 .carousel-card .product-parcelamento {
     font-size: 11px;
     text-align: center;
     flex-shrink: 0;
-    height: 18px;
+    height: 32px;
     overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
 }
 
-/* 🔥 BADGES DO CARROSSEL NO FINAL */
 .carousel-card .product-badges {
     margin-top: auto;
     padding-top: 4px;
@@ -558,10 +553,10 @@ body {
 }
 
 .selecionados-grid .product-card {
-    height: 380px;
+    height: 396px;
 }
 
-/* ================= ESTILOS ADMIN (MANTIDOS) ================= */
+/* ================= ESTILOS ADMIN ================= */
 .admin-card {
     background-color: #ffffff;
     border-radius: 6px;
@@ -672,21 +667,10 @@ body {
     transform: translateY(-1px);
 }
 
-.plataforma-btn.export {
-    background-color: #2e7d32;
-}
-
-.plataforma-btn.export:hover {
-    background-color: #1f5a23;
-}
-
-.plataforma-btn.delete {
-    background-color: #c62828;
-}
-
-.plataforma-btn.delete:hover {
-    background-color: #b71c1c;
-}
+.plataforma-btn.export { background-color: #2e7d32; }
+.plataforma-btn.export:hover { background-color: #1f5a23; }
+.plataforma-btn.delete { background-color: #c62828; }
+.plataforma-btn.delete:hover { background-color: #b71c1c; }
 
 .acoes-globais {
     display: flex;
@@ -1013,7 +997,7 @@ body {
         flex: 0 0 calc(50% - 10px);
         min-width: calc(50% - 10px);
         padding: 10px;
-        height: 300px;
+        height: 314px;
     }
     
     .carousel-card .product-title {
@@ -1089,7 +1073,7 @@ body {
     }
     
     .product-card {
-        height: 340px;
+        height: 356px;
     }
     
     .product-card .product-image {
@@ -1123,7 +1107,7 @@ body {
     .carousel-card {
         flex: 0 0 calc(50% - 8px);
         min-width: calc(50% - 8px);
-        height: 280px;
+        height: 294px;
     }
     
     .section-title {
@@ -1153,7 +1137,7 @@ body {
     }
     
     .product-card {
-        height: 320px;
+        height: 336px;
     }
     
     .product-card .product-image {
