@@ -564,10 +564,18 @@
           const tempoResposta = Math.round(fim - inicio);
           allSearchResults = res.products || [];
           if (allSearchResults.length === 0) {
-              gridBusca.innerHTML = '<p style="text-align: center;">😔 Nenhum produto encontrado</p>';
-              resultadoInfo.textContent = `Nenhum resultado para "${termo}"`;
-              return;
-          }
+				gridBusca.innerHTML = '<p style="text-align: center;">😔 Nenhum produto encontrado</p>';
+				resultadoInfo.textContent = `Nenhum resultado para "${termo}"`;
+				// Registra pesquisa sem resultados
+				try {
+					await fetch('https://yo0g0cg4c88w88osc4s04c0c.72.61.33.248.sslip.io/api/pesquisas/registrar', {
+						method: 'POST',
+						headers: { 'Content-Type': 'application/json' },
+						body: JSON.stringify({ termo: termo, origem: 'nao_encontrado', quantidade_resultados: 0 })
+					});
+				} catch(e) {}
+				return;
+			}
           resultadoInfo.textContent = `🔎 ${allSearchResults.length} produtos para "${termo}" | ⏱️ ${tempoResposta}ms`;
           gridBusca.innerHTML = '';
           const firstBatch = allSearchResults.slice(0, BATCH_SIZE);

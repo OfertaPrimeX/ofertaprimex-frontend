@@ -673,6 +673,9 @@ async function importarPlataforma(plataforma) {
     fileInput.click();
 }
 
+// ============================================
+// EXPORTAR PESQUISAS (CSV)
+// ============================================
 async function exportarPesquisas() {
     try {
         console.log('📊 Exportando dados de pesquisas...');
@@ -702,6 +705,9 @@ async function exportarPesquisas() {
     }
 }
 
+// ============================================
+// LIMPAR PESQUISAS
+// ============================================
 async function limparPesquisas() {
     const confirmar = confirm('⚠️ ATENÇÃO: Esta ação irá LIMPAR TODOS OS DADOS da tabela de pesquisas detalhadas. Esta operação é irreversível. Deseja continuar?');
     
@@ -733,6 +739,9 @@ async function limparPesquisas() {
     }
 }
 
+// ============================================
+// 🔥 CARREGAR ESTATÍSTICAS DE PESQUISAS (MELHORADO)
+// ============================================
 async function carregarEstatisticasPesquisas() {
     try {
         const response = await apiRequest('/api/admin/pesquisas/estatisticas');
@@ -744,6 +753,7 @@ async function carregarEstatisticasPesquisas() {
                 totalElement.textContent = data.data.total;
             }
             
+            // Estatísticas por plataforma
             const tbody = document.getElementById('tabela-estatisticas-plataformas');
             if (tbody && data.data.por_plataforma) {
                 if (data.data.por_plataforma.length === 0) {
@@ -761,18 +771,47 @@ async function carregarEstatisticasPesquisas() {
                 }
             }
             
+            // 🔥 Termos não encontrados (com data)
             const termosTbody = document.getElementById('tabela-termos-nao-encontrados');
             if (termosTbody && data.data.top_nao_encontrados) {
                 if (data.data.top_nao_encontrados.length === 0) {
-                    termosTbody.innerHTML = '<tr><td colspan="3" style="text-align: center;">Nenhum termo não encontrado</td></tr>';
+                    termosTbody.innerHTML = '<tr><td colspan="4" style="text-align: center;">Nenhum termo não encontrado</td></tr>';
                 } else {
                     termosTbody.innerHTML = data.data.top_nao_encontrados.map(t => `
                         <tr>
                             <td>${t.termo}</td>
                             <td>${t.tentativas}</td>
+                            <td>${t.ultima_busca || '-'}</td>
                             <td>${t.plataformas}</td>
                         </tr>
                     `).join('');
+                }
+            }
+            
+            // 🔥 Últimas pesquisas sem resultados (nova tabela)
+            const semResultadosTbody = document.getElementById('tabela-pesquisas-sem-resultados');
+            if (semResultadosTbody) {
+                try {
+                    const response2 = await apiRequest('/api/admin/pesquisas/exportar?format=json');
+                    const data2 = await response2.json();
+                    
+                    if (data2.success && data2.data) {
+                        const semResultados = data2.data.filter(p => p.quantidade_resultados === 0).slice(0, 20);
+                        
+                        if (semResultados.length === 0) {
+                            semResultadosTbody.innerHTML = '<tr><td colspan="3" style="text-align: center;">Nenhuma pesquisa sem resultados</td></tr>';
+                        } else {
+                            semResultadosTbody.innerHTML = semResultados.map(p => `
+                                <tr>
+                                    <td>${new Date(p.data_pesquisa).toLocaleString('pt-BR')}</td>
+                                    <td>${p.termo}</td>
+                                    <td>${p.origem || '-'}</td>
+                                </tr>
+                            `).join('');
+                        }
+                    }
+                } catch (err) {
+                    semResultadosTbody.innerHTML = '<tr><td colspan="3" style="text-align: center;">Erro ao carregar</td></tr>';
                 }
             }
         }
