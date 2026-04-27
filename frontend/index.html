@@ -224,14 +224,17 @@
 
   window.mostrarQuemSomos = function(event) {
       if (event) event.preventDefault();
+      // Mostra todas as seções principais
       document.getElementById('mais-vendidos').classList.remove('hidden-section');
       document.getElementById('selecionados').classList.remove('hidden-section');
       document.getElementById('sobre').style.display = 'block';
       document.getElementById('termos-section').style.display = 'none';
       document.getElementById('privacidade-section').style.display = 'none';
       document.getElementById('resultado-busca').style.display = 'none';
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      // 🔥 Rola até o Quem Somos
+      document.getElementById('sobre').scrollIntoView({ behavior: 'smooth' });
   };
+
 
   window.mostrarTermos = function(event) {
       if (event) event.preventDefault();
