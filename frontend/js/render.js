@@ -123,9 +123,9 @@ function getFreteGratisIcon(freteGratis) {
 // ============================================
 // FUNÇÃO PARA OBTER ÍCONE DE LOJA OFICIAL (REMOVIDO)
 // ============================================
-function getLojaOficialIcon(lojaOficial) {
-    return '';
-}
+// function getLojaOficialIcon(lojaOficial) {
+//    return '';
+//}
 
 // ============================================
 // FUNÇÃO PARA OBTER AVALIAÇÃO FORMATADA
