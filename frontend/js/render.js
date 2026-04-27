@@ -78,13 +78,11 @@ function getPrecoFormatado(produto) {
 // 🔥 FUNÇÃO PARA OBTER PARCELAMENTO FORMATADO (CORRIGIDA - BUSCA TODAS AS FONTES)
 // ============================================
 function getParcelamentoHtml(produto) {
-    // 🔥 Tenta obter o texto de parcelamento de TODAS as fontes possíveis
     let texto = produto.parcelas_texto || 
                 produto.parcelas_texto_completo || 
                 produto.preco_parcelado || 
                 '';
     
-    // Se não tem texto, tenta montar com campos separados
     if (!texto || texto === 'N/A') {
         if (produto.parcelas_qtd && produto.parcelas_qtd > 0) {
             const qtd = produto.parcelas_qtd;
@@ -97,18 +95,14 @@ function getParcelamentoHtml(produto) {
         }
     }
     
-    // Se ainda não tem texto, retorna vazio
     if (!texto || texto === 'N/A' || texto === 'N/A sem juros') return '';
     
-    // Limpa o texto: remove quebras de linha, espaços extras, etc.
     texto = texto.replace(/[\n\r]+/g, ' ');
     texto = texto.replace(/\s*,\s*/g, ',');
     texto = texto.replace(/\s+/g, ' ').trim();
     
-    // Se ficou vazio após limpeza, retorna vazio
     if (!texto || texto === 'N/A' || texto === 'N/A sem juros') return '';
     
-    // Verifica se é sem juros
     const semJuros = produto.parcelas_sem_juros === true || 
                      produto.parcelas_sem_juros === 'true' ||
                      texto.toLowerCase().includes('sem juros');
@@ -263,60 +257,42 @@ export function filtrarProdutosPorPlataforma(produtos) {
 }
 
 // ============================================
-// FUNÇÃO PARA REGISTRAR CLIQUE NO BACKEND
+// FUNÇÃO PARA REGISTRAR CLIQUE NO BACKEND (fire-and-forget)
 // ============================================
-async function registrarClique(produtoId, plataforma, linkOriginal, pagina) {
-    try {
-        if (!produtoId) {
-            console.warn('⚠️ Produto sem ID, clique NÃO registrado');
-            return;
-        }
-        
-        const sessaoId = localStorage.getItem('sessaoId');
-        if (!sessaoId) {
-            const novaSessao = 'sess_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-            localStorage.setItem('sessaoId', novaSessao);
-        }
-        
-        const sessaoIdAtual = localStorage.getItem('sessaoId');
-        
-        const plataformaMap = {
-            'Mercado Livre': 'mercadolivre',
-            'Amazon': 'amazon',
-            'Shopee': 'shopee',
-            'Magalu': 'magalu'
-        };
-        
-        const plataformaKey = plataformaMap[plataforma] || plataforma.toLowerCase();
-        
-        console.log(`📤 Enviando clique: Produto ID=${produtoId}, Plataforma=${plataformaKey}`);
-        
-        const response = await fetch('https://yo0g0cg4c88w88osc4s04c0c.72.61.33.248.sslip.io/api/cliques/registrar', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                produto_id: parseInt(produtoId) || produtoId,
-                plataforma: plataformaKey,
-                link_original: linkOriginal,
-                sessao_id: sessaoIdAtual,
-                pagina: pagina || window.location.pathname
-            })
-        });
-        
-        const data = await response.json();
-        
-        if (response.ok) {
-            console.log(`✅ Clique registrado: ${plataforma} - Produto: ${produtoId}`, data);
-        } else {
-            console.warn(`⚠️ Falha ao registrar clique: ${response.status}`, data);
-        }
-    } catch (error) {
-        console.error('❌ Erro ao registrar clique:', error);
+function registrarCliqueFireAndForget(produtoId, plataforma, linkOriginal, pagina) {
+    if (!produtoId) return;
+    
+    // Usa fetch sem await - não bloqueia o window.open
+    const sessaoId = localStorage.getItem('sessaoId') || ('sess_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9));
+    if (!localStorage.getItem('sessaoId')) {
+        localStorage.setItem('sessaoId', sessaoId);
     }
+    
+    const plataformaMap = {
+        'Mercado Livre': 'mercadolivre',
+        'Amazon': 'amazon',
+        'Shopee': 'shopee',
+        'Magalu': 'magalu'
+    };
+    const plataformaKey = plataformaMap[plataforma] || plataforma.toLowerCase();
+    
+    fetch('https://yo0g0cg4c88w88osc4s04c0c.72.61.33.248.sslip.io/api/cliques/registrar', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            produto_id: parseInt(produtoId) || produtoId,
+            plataforma: plataformaKey,
+            link_original: linkOriginal,
+            sessao_id: sessaoId,
+            pagina: pagina || window.location.pathname
+        })
+    }).then(res => res.json())
+      .then(data => console.log(`✅ Clique registrado: ${plataforma} - Produto: ${produtoId}`))
+      .catch(err => console.error('❌ Erro ao registrar clique:', err));
 }
 
 // ============================================
-// RENDERIZAÇÃO DE PRODUTOS (CARDS NORMAIS)
+// RENDERIZAÇÃO DE PRODUTOS (CARDS NORMAIS) - CORRIGIDO PARA SAFARI
 // ============================================
 export function renderProducts(container, products, isCarousel = false) {
     if (!container) return;
@@ -344,16 +320,19 @@ export function renderProducts(container, products, isCarousel = false) {
         const plataforma = p.plataforma || 'Mercado Livre';
         const link = p.link_afiliado || p.link_original || '#';
         
-        card.onclick = async (e) => {
+        // 🔥 CORRIGIDO: abre o link PRIMEIRO, registra clique DEPOIS (sem await)
+        card.onclick = (e) => {
             e.preventDefault();
             e.stopPropagation();
             
-            if (produtoId) {
-                await registrarClique(produtoId, plataforma, link, window.location.pathname);
-            }
-            
+            // Abre o link imediatamente (antes de qualquer await)
             if (link && link !== '#') {
                 window.open(link, '_blank');
+            }
+            
+            // Registra o clique em segundo plano (fire-and-forget)
+            if (produtoId) {
+                registrarCliqueFireAndForget(produtoId, plataforma, link, window.location.pathname);
             }
         };
         
@@ -430,6 +409,9 @@ export function renderCarousel(container, products) {
     console.log(`✅ Carrossel renderizado com ${produtosFiltrados.length} produtos`);
 }
 
+// ============================================
+// RENDERPRODUCTSHTML - CORRIGIDO PARA SAFARI
+// ============================================
 export function renderProductsHTML(products) {
     if (!products || products.length === 0) return '';
     
@@ -449,21 +431,24 @@ export function renderProductsHTML(products) {
         const tituloEllipsis = (p.titulo || p.title || 'Produto sem título').length > 60 ? '...' : '';
         
         const iconeHtml = getIconeCard(plataforma);
+        const plataformaKey = plataforma === 'Mercado Livre' ? 'mercadolivre' : plataforma.toLowerCase();
         
-        const onclickHandler = `(async () => { 
-            try { 
-                const sessaoId = localStorage.getItem('sessaoId') || 'anon_' + Date.now();
-                await fetch('https://yo0g0cg4c88w88osc4s04c0c.72.61.33.248.sslip.io/api/cliques/registrar', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ produto_id: ${produtoId || 'null'}, plataforma: '${plataforma === 'Mercado Livre' ? 'mercadolivre' : plataforma.toLowerCase()}', link_original: '${link}', sessao_id: sessaoId, pagina: window.location.pathname })
-                });
-            } catch(e) { console.error(e); }
-            window.open('${link}', '_blank');
-        })()`;
-        
+        // 🔥 CORRIGIDO: window.open PRIMEIRO, fetch DEPOIS (sem await bloqueando)
         return `
-            <div class="product-card" style="position: relative; cursor:pointer;" onclick="${onclickHandler.replace(/"/g, '&quot;')}">
+            <div class="product-card" style="position: relative; cursor:pointer;" onclick="
+                (function(){
+                    var link = '${link.replace(/'/g, "\\'")}';
+                    if(link && link !== '#') window.open(link, '_blank');
+                    try {
+                        var sessaoId = localStorage.getItem('sessaoId') || 'anon_' + Date.now();
+                        fetch('https://yo0g0cg4c88w88osc4s04c0c.72.61.33.248.sslip.io/api/cliques/registrar', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ produto_id: ${produtoId || 'null'}, plataforma: '${plataformaKey}', link_original: '${link.replace(/'/g, "\\'")}', sessao_id: sessaoId, pagina: window.location.pathname })
+                        });
+                    } catch(e) { console.error(e); }
+                })();
+            ">
                 ${iconeHtml}
                 <img src="${imagem}" alt="${titulo}" class="product-image" onerror="this.src='https://via.placeholder.com/200x200?text=Sem+Imagem'">
                 <div class="product-info">
