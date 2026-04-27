@@ -662,12 +662,13 @@
   buscaInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') realizarBusca(); });
 
   // ============================================
-  // 🔧 CARROSSEL - CORRIGIDO (GAP DINÂMICO)
+  // 🔧 CARROSSEL - CORRIGIDO (24 CARDS, NAVEGAÇÃO EXATA)
   // ============================================
   let currentPage = 0;
   let itemsPerView = 6;
   let totalPages = 0;
   let cardWidth = 0;
+  const TOTAL_CARDS = 24;
 
   function updateItemsPerView() {
       const width = window.innerWidth;
@@ -689,9 +690,9 @@
   }
 
   function updateTotalPages() {
-      const track = document.getElementById('carousel-track');
-      if (!track) return;
-      totalPages = Math.ceil(track.children.length / itemsPerView);
+      updateItemsPerView();
+      const totalCards = TOTAL_CARDS;
+      totalPages = Math.ceil(totalCards / itemsPerView);
       if (currentPage >= totalPages) currentPage = Math.max(0, totalPages - 1);
   }
 
