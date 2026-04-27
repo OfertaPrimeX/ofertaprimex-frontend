@@ -464,7 +464,10 @@
       }
   }
 
-  // FUNÇÕES DE CONTROLE DAS SEÇÕES
+  // ============================================
+  // 🔧 FUNÇÕES DE NAVEGAÇÃO (CORRIGIDAS)
+  // ============================================
+  
   function ocultarTodasSecoes() {
       const secoes = ['categorias', 'mais-vendidos', 'selecionados'];
       secoes.forEach(id => {
@@ -478,6 +481,9 @@
       ocultarTodasSecoes();
       document.getElementById('mais-vendidos').classList.remove('hidden-section');
       document.getElementById('resultado-busca').style.display = 'none';
+      document.getElementById('sobre').style.display = 'block';
+      document.getElementById('termos-section').style.display = 'none';
+      document.getElementById('privacidade-section').style.display = 'none';
       window.scrollTo({ top: 0, behavior: 'smooth' });
   }
   
@@ -486,6 +492,9 @@
       ocultarTodasSecoes();
       document.getElementById('selecionados').classList.remove('hidden-section');
       document.getElementById('resultado-busca').style.display = 'none';
+      document.getElementById('sobre').style.display = 'block';
+      document.getElementById('termos-section').style.display = 'none';
+      document.getElementById('privacidade-section').style.display = 'none';
       window.scrollTo({ top: 0, behavior: 'smooth' });
   }
   
@@ -505,23 +514,20 @@
 
   function mostrarQuemSomos(event) {
       if (event) event.preventDefault();
-      document.getElementById('termos-section').style.display = 'none';
-      document.getElementById('privacidade-section').style.display = 'none';
-      document.getElementById('resultado-busca').style.display = 'none';
       const secoes = ['categorias', 'mais-vendidos', 'selecionados'];
       secoes.forEach(id => {
           document.getElementById(id).classList.remove('hidden-section');
       });
+      document.getElementById('termos-section').style.display = 'none';
+      document.getElementById('privacidade-section').style.display = 'none';
+      document.getElementById('resultado-busca').style.display = 'none';
       document.getElementById('sobre').style.display = 'block';
       window.scrollTo({ top: 0, behavior: 'smooth' });
   }
   
   function mostrarTermos(event) {
       if (event) event.preventDefault();
-      const secoes = ['categorias', 'mais-vendidos', 'selecionados'];
-      secoes.forEach(id => {
-          document.getElementById(id).classList.add('hidden-section');
-      });
+      ocultarTodasSecoes();
       document.getElementById('sobre').style.display = 'none';
       document.getElementById('resultado-busca').style.display = 'none';
       document.getElementById('privacidade-section').style.display = 'none';
@@ -531,10 +537,7 @@
   
   function mostrarPrivacidade(event) {
       if (event) event.preventDefault();
-      const secoes = ['categorias', 'mais-vendidos', 'selecionados'];
-      secoes.forEach(id => {
-          document.getElementById(id).classList.add('hidden-section');
-      });
+      ocultarTodasSecoes();
       document.getElementById('sobre').style.display = 'none';
       document.getElementById('resultado-busca').style.display = 'none';
       document.getElementById('termos-section').style.display = 'none';
@@ -667,7 +670,6 @@
   let currentPage = 0;
   let itemsPerView = 6;
   let totalPages = 0;
-  const TOTAL_CARDS = 24;
 
   function updateItemsPerView() {
       const width = window.innerWidth;
