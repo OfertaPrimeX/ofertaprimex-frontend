@@ -662,12 +662,11 @@
   buscaInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') realizarBusca(); });
 
   // ============================================
-  // 🔧 CARROSSEL - CORRIGIDO (24 CARDS, NAVEGAÇÃO EXATA)
+  // 🔧 CARROSSEL - CORRIGIDO (24 CARDS, MOBILE 3 POR VEZ)
   // ============================================
   let currentPage = 0;
   let itemsPerView = 6;
   let totalPages = 0;
-  let cardWidth = 0;
   const TOTAL_CARDS = 24;
 
   function updateItemsPerView() {
@@ -676,37 +675,39 @@
       else itemsPerView = 6;
   }
 
-  function getGap() {
-      const width = window.innerWidth;
-      if (width <= 768) return 4;
-      if (width <= 1024) return 6;
-      return 8;
-  }
-
-  function updateCardWidth() {
+  function getPageWidth() {
       const track = document.getElementById('carousel-track');
-      if (!track || track.children.length === 0) return;
-      cardWidth = track.children[0].offsetWidth + getGap();
-  }
-
-  function updateTotalPages() {
+      const container = document.querySelector('.carousel-track-container');
+      if (!track || !container || track.children.length === 0) return 0;
+      
+      const trackWidth = track.scrollWidth;
+      const totalCards = track.children.length;
+      
       updateItemsPerView();
-      const totalCards = TOTAL_CARDS;
       totalPages = Math.ceil(totalCards / itemsPerView);
-      if (currentPage >= totalPages) currentPage = Math.max(0, totalPages - 1);
+      
+      return trackWidth / totalPages;
   }
 
   function updateCarousel() {
       const track = document.getElementById('carousel-track');
       if (!track || track.children.length === 0) return;
-      updateCardWidth();
-      updateTotalPages();
-      track.style.transform = `translateX(-${currentPage * itemsPerView * cardWidth}px)`;
+      
+      updateItemsPerView();
+      totalPages = Math.ceil(track.children.length / itemsPerView);
+      if (currentPage >= totalPages) currentPage = Math.max(0, totalPages - 1);
+      
+      const pageWidth = getPageWidth();
+      track.style.transform = `translateX(-${currentPage * pageWidth}px)`;
   }
 
   function nextSlide() {
-      updateCardWidth();
-      updateTotalPages();
+      const track = document.getElementById('carousel-track');
+      if (!track || track.children.length === 0) return;
+      
+      updateItemsPerView();
+      totalPages = Math.ceil(track.children.length / itemsPerView);
+      
       if (currentPage < totalPages - 1) {
           currentPage++;
           updateCarousel();
@@ -714,7 +715,6 @@
   }
 
   function prevSlide() {
-      updateCardWidth();
       if (currentPage > 0) {
           currentPage--;
           updateCarousel();
@@ -723,7 +723,7 @@
 
   document.getElementById('carousel-prev')?.addEventListener('click', prevSlide);
   document.getElementById('carousel-next')?.addEventListener('click', nextSlide);
-  window.addEventListener('resize', () => { updateItemsPerView(); updateTotalPages(); updateCarousel(); });
+  window.addEventListener('resize', () => { updateItemsPerView(); updateCarousel(); });
 
   // INICIALIZAR
   (async function() {
@@ -731,7 +731,7 @@
       await carregarMaisVendidos();
       await carregarSelecionados();
       updateItemsPerView();
-      setTimeout(() => { updateCardWidth(); updateTotalPages(); updateCarousel(); }, 200);
+      setTimeout(() => { updateCarousel(); }, 200);
   })();
 </script>
 
