@@ -948,7 +948,7 @@ body {
     color: #333;
 }
 
-/* ================= RESPONSIVO - APENAS GRID E CARROSSEL ================= */
+/* ================= RESPONSIVO ================= */
 @media (max-width: 1200px) {
     .selecionados-grid {
         grid-template-columns: repeat(5, 1fr);
@@ -1022,7 +1022,6 @@ body {
         gap: 10px;
     }
     
-    /* CARD - MESMO TAMANHO DO DESKTOP */
     .product-card {
         height: 340px;
         padding: 10px;
@@ -1062,10 +1061,10 @@ body {
         font-size: 12px;
     }
     
-    /* CARROSSEL - MESMO TAMANHO */
+    /* CARROSSEL TABLET - 3 cards */
     .carousel-card {
-        flex: 0 0 calc(50% - 8px);
-        min-width: calc(50% - 8px);
+        flex: 0 0 calc(33.333% - 8px);
+        min-width: calc(33.333% - 8px);
         padding: 10px;
         height: 310px;
     }
@@ -1143,7 +1142,6 @@ body {
         gap: 8px;
     }
     
-    /* CARD - MESMO TAMANHO */
     .product-card {
         height: 340px;
         padding: 8px;
@@ -1183,11 +1181,11 @@ body {
         font-size: 12px;
     }
     
-    /* CARROSSEL - MESMO TAMANHO */
+    /* CARROSSEL CELULAR - 🔥 3 CARDS */
     .carousel-card {
-        flex: 0 0 calc(50% - 6px);
-        min-width: calc(50% - 6px);
-        padding: 8px;
+        flex: 0 0 calc(33.333% - 6px);
+        min-width: calc(33.333% - 6px);
+        padding: 6px;
         height: 310px;
     }
     
