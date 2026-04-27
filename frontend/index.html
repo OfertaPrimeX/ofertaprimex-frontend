@@ -126,7 +126,7 @@
     </div>
 </section>
 
-<!-- ================= SEÇÃO: TERMOS DE USO (ADAPTADO) ================= -->
+<!-- ================= SEÇÃO: TERMOS DE USO ================= -->
 <section class="section" id="termos-section" style="display: none;">
     <div class="container">
         <div style="background: white; border-radius: 12px; padding: 30px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
@@ -165,7 +165,7 @@
     </div>
 </section>
 
-<!-- ================= SEÇÃO: POLÍTICA DE PRIVACIDADE (ADAPTADA) ================= -->
+<!-- ================= SEÇÃO: POLÍTICA DE PRIVACIDADE ================= -->
 <section class="section" id="privacidade-section" style="display: none;">
     <div class="container">
         <div style="background: white; border-radius: 12px; padding: 30px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
@@ -668,7 +668,8 @@
   
   function updateItemsPerView() {
       const width = window.innerWidth;
-      if (width <= 768) itemsPerView = 2;
+      if (width <= 480) itemsPerView = 3;
+      else if (width <= 768) itemsPerView = 3;
       else if (width <= 1024) itemsPerView = 3;
       else itemsPerView = 6;
   }
