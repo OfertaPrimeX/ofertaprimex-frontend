@@ -411,18 +411,13 @@
         }
     }
 
-    // 🔥 FUNÇÃO ATUALIZADA - PREENCHE TODAS AS TABELAS
+    // 🔥 FUNÇÃO CORRIGIDA - USA apiRequest DO ADMIN.JS
     async function carregarEstatisticasPesquisas() {
         try {
             const response = await apiRequest('/api/admin/pesquisas/estatisticas');
             const data = await response.json();
             
             if (data.success && data.data) {
-                const totalElement = document.getElementById('total-pesquisas');
-                if (totalElement) {
-                    totalElement.textContent = data.data.total;
-                }
-                
                 // Estatísticas por plataforma
                 const tbody = document.getElementById('tabela-estatisticas-plataformas');
                 if (tbody && data.data.por_plataforma) {
@@ -441,7 +436,7 @@
                     }
                 }
                 
-                // 🔥 Termos não encontrados (com Última Busca)
+                // Termos não encontrados (com Última Busca)
                 const termosTbody = document.getElementById('tabela-termos-nao-encontrados');
                 if (termosTbody && data.data.top_nao_encontrados) {
                     if (data.data.top_nao_encontrados.length === 0) {
@@ -458,7 +453,7 @@
                     }
                 }
                 
-                // 🔥 Últimas pesquisas sem resultados
+                // Últimas pesquisas sem resultados
                 const semResultadosTbody = document.getElementById('tabela-pesquisas-sem-resultados');
                 if (semResultadosTbody) {
                     try {
@@ -473,9 +468,7 @@
                             } else {
                                 semResultadosTbody.innerHTML = semResultados.map(p => {
                                     let dataFormatada = '-';
-                                    try {
-                                        dataFormatada = new Date(p.data_pesquisa).toLocaleString('pt-BR');
-                                    } catch(e) {}
+                                    try { dataFormatada = new Date(p.data_pesquisa).toLocaleString('pt-BR'); } catch(e) {}
                                     return `
                                         <tr>
                                             <td>${dataFormatada}</td>
@@ -496,15 +489,14 @@
         }
     }
 
+    // 🔥 FUNÇÃO CORRIGIDA - USA apiRequest DO ADMIN.JS
     async function exportarPesquisas() {
         try {
             console.log('📊 Exportando dados de pesquisas...');
             
             const response = await apiRequest('/api/admin/pesquisas/exportar?format=csv');
             
-            if (!response.ok) {
-                throw new Error(`HTTP ${response.status}`);
-            }
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
             
             const blob = await response.blob();
             const url = window.URL.createObjectURL(blob);
@@ -525,6 +517,7 @@
         }
     }
 
+    // 🔥 FUNÇÃO CORRIGIDA - USA apiRequest DO ADMIN.JS
     async function limparPesquisas() {
         const confirmar = confirm('⚠️ ATENÇÃO: Esta ação irá LIMPAR TODOS OS DADOS da tabela de pesquisas detalhadas. Esta operação é irreversível. Deseja continuar?');
         
@@ -533,10 +526,7 @@
         try {
             console.log('🗑️ Limpando tabela pesquisas_detalhadas...');
             
-            const response = await apiRequest('/api/admin/pesquisas/limpar?confirm=true', {
-                method: 'DELETE'
-            });
-            
+            const response = await apiRequest('/api/admin/pesquisas/limpar?confirm=true', { method: 'DELETE' });
             const data = await response.json();
             
             if (response.ok) {
@@ -573,89 +563,55 @@
 
     async function limparBancoPlataforma(plataforma) {
         const confirmar = confirm(`⚠️ ATENÇÃO: Isso irá remover TODOS OS PRODUTOS da plataforma ${plataforma.toUpperCase()}. Esta ação não pode ser desfeita. Deseja continuar?`);
-        
         if (!confirmar) return;
         
         const statusDiv = document.getElementById(`${plataforma}-status`);
-        if (statusDiv) {
-            statusDiv.innerHTML = '<div class="import-status info">⏳ Limpando banco de dados...</div>';
-        }
+        if (statusDiv) statusDiv.innerHTML = '<div class="import-status info">⏳ Limpando banco de dados...</div>';
         
         try {
-            const response = await apiRequest(`/api/produtos/limpar?plataforma=${plataforma}`, {
-                method: 'DELETE'
-            });
-            
+            const response = await apiRequest(`/api/produtos/limpar?plataforma=${plataforma}`, { method: 'DELETE' });
             const data = await response.json();
             
             if (response.ok) {
-                if (statusDiv) {
-                    statusDiv.innerHTML = `<div class="import-status success">✅ ${data.message || 'Banco limpo com sucesso!'}</div>`;
-                }
+                if (statusDiv) statusDiv.innerHTML = `<div class="import-status success">✅ ${data.message || 'Banco limpo com sucesso!'}</div>`;
                 setTimeout(() => {
                     if (typeof carregarContadores === 'function') carregarContadores();
                     if (typeof carregarDadosReais === 'function') carregarDadosReais();
-                    if (statusDiv) {
-                        setTimeout(() => { statusDiv.innerHTML = ''; }, 3000);
-                    }
+                    if (statusDiv) setTimeout(() => { statusDiv.innerHTML = ''; }, 3000);
                 }, 1500);
             } else {
-                if (statusDiv) {
-                    statusDiv.innerHTML = `<div class="import-status error">❌ Erro: ${data.error || 'Falha ao limpar banco'}</div>`;
-                }
+                if (statusDiv) statusDiv.innerHTML = `<div class="import-status error">❌ Erro: ${data.error || 'Falha ao limpar banco'}</div>`;
             }
         } catch (error) {
-            console.error('❌ Erro ao limpar banco:', error);
-            if (statusDiv) {
-                statusDiv.innerHTML = `<div class="import-status error">❌ Erro de conexão: ${error.message}</div>`;
-            }
+            if (statusDiv) statusDiv.innerHTML = `<div class="import-status error">❌ Erro de conexão: ${error.message}</div>`;
         }
     }
 
     async function limparTodosBancos() {
         const confirmar = confirm('⚠️ ATENÇÃO: Isso irá remover TODOS OS PRODUTOS de TODAS AS PLATAFORMAS. Esta ação não pode ser desfeita. Deseja continuar?');
-        
         if (!confirmar) return;
         
         const plataformas = ['mercadolivre', 'amazon', 'shopee', 'magalu'];
-        
         for (const plataforma of plataformas) {
             const statusDiv = document.getElementById(`${plataforma}-status`);
-            if (statusDiv) {
-                statusDiv.innerHTML = '<div class="import-status info">⏳ Limpando...</div>';
-            }
-            
+            if (statusDiv) statusDiv.innerHTML = '<div class="import-status info">⏳ Limpando...</div>';
             try {
-                const response = await apiRequest(`/api/produtos/limpar?plataforma=${plataforma}`, {
-                    method: 'DELETE'
-                });
-                
-                if (response.ok) {
-                    if (statusDiv) {
-                        statusDiv.innerHTML = '<div class="import-status success">✅ Limpo!</div>';
-                    }
-                } else {
-                    if (statusDiv) {
-                        statusDiv.innerHTML = '<div class="import-status error">❌ Erro</div>';
-                    }
+                const response = await apiRequest(`/api/produtos/limpar?plataforma=${plataforma}`, { method: 'DELETE' });
+                if (statusDiv) {
+                    statusDiv.innerHTML = response.ok ? '<div class="import-status success">✅ Limpo!</div>' : '<div class="import-status error">❌ Erro</div>';
                 }
             } catch (error) {
-                if (statusDiv) {
-                    statusDiv.innerHTML = '<div class="import-status error">❌ Erro</div>';
-                }
+                if (statusDiv) statusDiv.innerHTML = '<div class="import-status error">❌ Erro</div>';
             }
         }
         
         setTimeout(() => {
             if (typeof carregarContadores === 'function') carregarContadores();
             if (typeof carregarDadosReais === 'function') carregarDadosReais();
-            const plataformasIds = ['ml', 'amazon', 'shopee', 'magalu'];
-            for (const p of plataformasIds) {
-                const statusDiv = document.getElementById(`${p}-status`);
-                if (statusDiv) {
-                    setTimeout(() => { statusDiv.innerHTML = ''; }, 3000);
-                }
-            }
+            ['ml', 'amazon', 'shopee', 'magalu'].forEach(p => {
+                const sd = document.getElementById(`${p}-status`);
+                if (sd) setTimeout(() => { sd.innerHTML = ''; }, 3000);
+            });
         }, 2000);
         
         alert('✅ Processo de limpeza iniciado para todas as plataformas!');
@@ -667,20 +623,12 @@
 
 <script>
     const btnTopo = document.getElementById('btnTopo');
-    
     window.addEventListener('scroll', function() {
-        if (window.scrollY > 300) {
-            btnTopo.classList.add('show');
-        } else {
-            btnTopo.classList.remove('show');
-        }
+        if (window.scrollY > 300) btnTopo.classList.add('show');
+        else btnTopo.classList.remove('show');
     });
-    
     btnTopo.addEventListener('click', function() {
-        window.scrollTo({
-            top: 0,
-            behavior: 'smooth'
-        });
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     });
 </script>
 
