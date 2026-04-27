@@ -418,7 +418,7 @@ body {
     display: none !important;
 }
 
-/* ===== CARROSSEL - TAMANHO ÚNICO ===== */
+/* ===== CARROSSEL ===== */
 .mais-vendidos-section {
     padding: 40px 0;
     background: #ffffff;
@@ -438,13 +438,13 @@ body {
 .carousel-track {
     display: flex;
     transition: transform 0.5s ease-in-out;
-    gap: 16px;
+    gap: 8px;
     will-change: transform;
 }
 
 .carousel-card {
-    flex: 0 0 calc(16.666% - 14px);
-    min-width: calc(16.666% - 14px);
+    flex: 0 0 calc(16.666% - 7px);
+    min-width: calc(16.666% - 7px);
     background: #fff;
     border-radius: 10px;
     padding: 10px;
@@ -957,8 +957,11 @@ body {
 
 @media (max-width: 1024px) {
     .carousel-card {
-        flex: 0 0 calc(33.333% - 12px);
-        min-width: calc(33.333% - 12px);
+        flex: 0 0 calc(33.333% - 6px);
+        min-width: calc(33.333% - 6px);
+    }
+    .carousel-track {
+        gap: 6px;
     }
     .carousel-wrapper {
         padding: 0 20px;
@@ -1061,12 +1064,16 @@ body {
         font-size: 12px;
     }
     
-    /* CARROSSEL TABLET - 3 cards */
+    /* CARROSSEL TABLET - 3 cards + gap reduzido */
     .carousel-card {
-        flex: 0 0 calc(33.333% - 8px);
-        min-width: calc(33.333% - 8px);
+        flex: 0 0 calc(33.333% - 4px);
+        min-width: calc(33.333% - 4px);
         padding: 10px;
         height: 310px;
+    }
+    
+    .carousel-track {
+        gap: 4px;
     }
     
     .carousel-card img {
@@ -1181,12 +1188,16 @@ body {
         font-size: 12px;
     }
     
-    /* CARROSSEL CELULAR - 🔥 3 CARDS */
+    /* CARROSSEL CELULAR - 3 cards + gap reduzido */
     .carousel-card {
-        flex: 0 0 calc(33.333% - 6px);
-        min-width: calc(33.333% - 6px);
+        flex: 0 0 calc(33.333% - 4px);
+        min-width: calc(33.333% - 4px);
         padding: 6px;
         height: 310px;
+    }
+    
+    .carousel-track {
+        gap: 4px;
     }
     
     .carousel-card img {
