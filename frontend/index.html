@@ -57,8 +57,8 @@
             <button class="menu-btn" onclick="voltarParaHome(event)">🏠 Home</button>
             
             <!-- Dropdown para Categorias -->
-            <div class="dropdown">
-                <button class="menu-btn" id="btnCategoriasDropdown">📂 Categorias ▼</button>
+            <div class="dropdown" id="dropdown-container">
+                <button class="menu-btn" id="btnCategoriasDropdown" onclick="toggleDropdownCategorias(event)">📂 Categorias ▼</button>
                 <div class="dropdown-content" id="dropdown-categorias">
                     <a href="#" style="color: #999;">Carregando...</a>
                 </div>
@@ -224,17 +224,14 @@
 
   window.mostrarQuemSomos = function(event) {
       if (event) event.preventDefault();
-      // Mostra todas as seções principais
       document.getElementById('mais-vendidos').classList.remove('hidden-section');
       document.getElementById('selecionados').classList.remove('hidden-section');
       document.getElementById('sobre').style.display = 'block';
       document.getElementById('termos-section').style.display = 'none';
       document.getElementById('privacidade-section').style.display = 'none';
       document.getElementById('resultado-busca').style.display = 'none';
-      // 🔥 Rola até o Quem Somos
       document.getElementById('sobre').scrollIntoView({ behavior: 'smooth' });
   };
-
 
   window.mostrarTermos = function(event) {
       if (event) event.preventDefault();
@@ -257,6 +254,51 @@
       document.getElementById('resultado-busca').style.display = 'none';
       window.scrollTo({ top: 0, behavior: 'smooth' });
   };
+
+  // 🔥 NOVO: Toggle do dropdown de categorias (funciona no iOS)
+  window.toggleDropdownCategorias = function(event) {
+      if (event) event.stopPropagation();
+      const dropdown = document.getElementById('dropdown-categorias');
+      if (!dropdown) return;
+      
+      if (dropdown.style.display === 'block') {
+          dropdown.style.display = 'none';
+      } else {
+          dropdown.style.display = 'block';
+      }
+  };
+
+  // 🔥 NOVO: Fechar dropdown ao clicar em uma categoria
+  window.fecharDropdownCategorias = function() {
+      const dropdown = document.getElementById('dropdown-categorias');
+      if (dropdown) {
+          dropdown.style.display = 'none';
+      }
+  };
+
+  // 🔥 NOVO: Fechar dropdown ao clicar fora (funciona em todos dispositivos)
+  document.addEventListener('click', function(e) {
+      const dropdownContainer = document.getElementById('dropdown-container');
+      const dropdownContent = document.getElementById('dropdown-categorias');
+      if (!dropdownContainer || !dropdownContent) return;
+      
+      // Se o clique foi fora do dropdown, fecha
+      if (!dropdownContainer.contains(e.target)) {
+          dropdownContent.style.display = 'none';
+      }
+  });
+
+  // 🔥 NOVO: Fechar dropdown ao tocar fora (iOS)
+  document.addEventListener('touchstart', function(e) {
+      const dropdownContainer = document.getElementById('dropdown-container');
+      const dropdownContent = document.getElementById('dropdown-categorias');
+      if (!dropdownContainer || !dropdownContent) return;
+      
+      // Se o toque foi fora do dropdown, fecha
+      if (!dropdownContainer.contains(e.target)) {
+          dropdownContent.style.display = 'none';
+      }
+  });
 </script>
 
 <script src="js/main.js"></script>

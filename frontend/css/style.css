@@ -1125,13 +1125,17 @@ body {
         opacity: 0.7;
     }
     
+    /* 🔥 DROPDOWN CORRIGIDO PARA iOS */
     .dropdown-content {
         position: fixed;
-        left: 50%;
-        transform: translateX(-50%);
+        left: 50% !important;
+        top: 120px !important;
+        transform: translateX(-50%) !important;
         width: 90%;
-        max-width: 300px;
-        max-height: 250px;
+        max-width: 350px;
+        max-height: 400px;
+        z-index: 9999 !important;
+        margin-top: 0 !important;
     }
     
     .selecionados-grid .product-card {
