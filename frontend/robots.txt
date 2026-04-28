@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /admin.html
+Disallow: /js/
+Disallow: /css/
+Disallow: /api/
+
+Sitemap: https://ofertaprimex.com.br/sitemap.xml

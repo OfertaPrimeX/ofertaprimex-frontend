@@ -2,23 +2,49 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title id="seo-title">OfertaPrimeX - Compare os Melhores Preços</title>
+    <title>OfertaPrimeX - Compare Preços e Ofertas no Mercado Livre, Amazon, Shopee e Magalu</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
-    <!-- Meta Tags SEO -->
-    <meta name="description" id="seo-description" content="Carregando ofertas...">
-    <meta name="keywords" id="seo-keywords" content="ofertas, promoções, descontos, comparação de preços">
+    <!-- 🔥 SEO - Meta Tags Otimizadas -->
+    <meta name="description" content="Compare preços de produtos nas maiores lojas do Brasil: Mercado Livre, Amazon, Shopee e Magalu. Encontre as melhores ofertas, descontos e promoções atualizados diariamente com links de afiliado.">
+    <meta name="keywords" content="ofertas, promoções, descontos, comparação de preços, Mercado Livre, Amazon, Shopee, Magalu, produtos baratos, melhores preços, afiliados, compras online, economia, promoções do dia">
     <meta name="author" content="OfertaPrimeX">
-    <meta name="robots" content="index, follow">
+    <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large">
     <meta name="language" content="Portuguese">
-    <meta name="revisit-after" content="7 days">
+    <meta name="revisit-after" content="1 day">
     <link rel="canonical" href="https://ofertaprimex.com.br">
+    
+    <!-- 🔥 Google Search Console Verification -->
+    <meta name="google-site-verification" content="DOli0tV1Yt74EXeaWia_F8yXZ-jlEQZICok9TfEOQk0" />
+    
+    <!-- 🔥 Schema.org - Dados Estruturados para Google -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "OfertaPrimeX",
+      "url": "https://ofertaprimex.com.br",
+      "description": "Compare preços de produtos nas maiores lojas do Brasil: Mercado Livre, Amazon, Shopee e Magalu. Encontre as melhores ofertas com links de afiliado atualizados diariamente.",
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": "https://ofertaprimex.com.br?q={search_term_string}",
+        "query-input": "required name=search_term_string"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "OfertaPrimeX",
+        "url": "https://ofertaprimex.com.br",
+        "logo": "https://ofertaprimex.com.br/img/OPX.png"
+      }
+    }
+    </script>
     
     <link rel="stylesheet" href="css/style.css">
     
     <!-- Favicon -->
     <link rel="icon" type="image/x-icon" href="img/favicon.ico">
     <link rel="shortcut icon" href="img/favicon.ico">
+    <link rel="apple-touch-icon" href="img/OPX.png">
     
     <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-X5QHMRK4J7"></script>
@@ -29,18 +55,19 @@
       gtag('config', 'G-X5QHMRK4J7');
     </script>
     
-    <!-- Meta Tags para WhatsApp e Facebook (dinâmicas via JavaScript) -->
-    <meta property="og:title" id="og-title" content="OfertaPrimeX - Compare os Melhores Preços">
-    <meta property="og:description" id="og-description" content="Carregando ofertas...">
+    <!-- Meta Tags para WhatsApp e Facebook -->
+    <meta property="og:title" content="OfertaPrimeX - Compare Preços e Ofertas no Mercado Livre, Amazon, Shopee e Magalu">
+    <meta property="og:description" content="Compare preços de produtos nas maiores lojas do Brasil. Encontre as melhores ofertas, descontos e promoções atualizados diariamente.">
     <meta property="og:image" content="https://ofertaprimex.com.br/img/OPX.png">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
     <meta property="og:url" content="https://ofertaprimex.com.br">
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="OfertaPrimeX">
+    <meta property="og:locale" content="pt_BR">
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" id="twitter-title" content="OfertaPrimeX - Compare os Melhores Preços">
-    <meta name="twitter:description" id="twitter-description" content="Carregando ofertas...">
+    <meta name="twitter:title" content="OfertaPrimeX - Compare Preços e Ofertas">
+    <meta name="twitter:description" content="Compare preços nas maiores lojas do Brasil. Ofertas atualizadas diariamente.">
     <meta name="twitter:image" content="https://ofertaprimex.com.br/img/OPX.png">
 </head>
 <body>
@@ -48,8 +75,8 @@
 <header class="header">
     <div class="container header-content">
         <div class="logo">
-            <a href="#" onclick="voltarParaHome(event)" style="display: flex; align-items: center; text-decoration: none;">
-                <img src="img/OPX.png" alt="OfertaPrimeX - Logo" class="logo-img" style="height: 40px; width: auto; display: inline-block;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+            <a href="#" onclick="voltarParaHome(event)" style="display: flex; align-items: center; text-decoration: none;" title="OfertaPrimeX - Página Inicial">
+                <img src="img/OPX.png" alt="OfertaPrimeX - Compare Preços e Ofertas" class="logo-img" style="height: 40px; width: auto; display: inline-block;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
                 <span style="display: none; color: #ff6a00; font-size: 22px; font-weight: bold; align-items: center;">OfertaPrime<span style="color:#222;">X</span></span>
             </a>
         </div>
@@ -122,7 +149,8 @@
 <section class="section" id="sobre">
     <div class="container">
         <h2 class="section-title">Quem Somos</h2>
-        <p class="about-text">O OfertaPrimeX é uma vitrine inteligente de ofertas. Pesquisamos produtos nas maiores plataformas do Brasil, comparamos preços e exibimos os mais procurados, sempre com links oficiais de afiliados.</p>
+        <p class="about-text">O <strong>OfertaPrimeX</strong> é uma vitrine inteligente de ofertas. Pesquisamos produtos nas maiores plataformas do Brasil — <strong>Mercado Livre</strong>, <strong>Amazon</strong>, <strong>Shopee</strong> e <strong>Magalu</strong> — comparamos preços e exibimos os mais procurados, sempre com links oficiais de afiliados.</p>
+        <p class="about-text" style="margin-top:10px;">Nosso objetivo é ajudar você a encontrar os <strong>melhores preços</strong> e <strong>promoções</strong> em um só lugar, de forma rápida e gratuita. Atualizamos nossos produtos diariamente para garantir as melhores ofertas do momento.</p>
     </div>
 </section>
 
