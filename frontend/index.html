@@ -313,8 +313,8 @@
 
   window.mostrarQuemSomos = function(event) {
       if (event) event.preventDefault();
-      document.getElementById('mais-vendidos').classList.remove('hidden-section');
-      document.getElementById('selecionados').classList.remove('hidden-section');
+      document.getElementById('mais-vendidos').classList.add('hidden-section');
+      document.getElementById('selecionados').classList.add('hidden-section');
       document.getElementById('sobre').style.display = 'block';
       document.getElementById('termos-section').style.display = 'none';
       document.getElementById('privacidade-section').style.display = 'none';
