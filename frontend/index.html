@@ -146,7 +146,7 @@
 </section>
 
 <!-- ================= QUEM SOMOS ================= -->
-<section class="section" id="sobre">
+<section class="section" id="sobre" style="display: none;">
     <div class="container">
         <h2 class="section-title">Quem Somos</h2>
         <p class="about-text" id="texto-quem-somos">O <strong>OfertaPrimeX</strong> é uma vitrine inteligente de ofertas. Pesquisamos produtos nas maiores plataformas do Brasil — <strong>Mercado Livre</strong>, <strong>Amazon</strong>, <strong>Shopee</strong> e <strong>Magalu</strong> — comparamos preços e exibimos os mais procurados, sempre com links oficiais de afiliados.</p>
@@ -281,7 +281,7 @@
       if (event) event.preventDefault();
       document.getElementById('mais-vendidos').classList.remove('hidden-section');
       document.getElementById('selecionados').classList.remove('hidden-section');
-      document.getElementById('sobre').style.display = 'block';
+      document.getElementById('sobre').style.display = 'none';
       document.getElementById('termos-section').style.display = 'none';
       document.getElementById('privacidade-section').style.display = 'none';
       document.getElementById('resultado-busca').style.display = 'none';
