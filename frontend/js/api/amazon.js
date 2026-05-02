@@ -30,7 +30,17 @@ export async function getMaisVendidosAmazon(limite = 50) {
  */
 export async function searchAmazon(termo) {
     try {
-        console.log('🔍 Busca Amazon ainda não implementada');
+        // Usa a rota de busca multiplataforma filtrando só Amazon
+        const data = await apiRequest('/api/produtos/buscar', {
+            method: 'POST',
+            body: JSON.stringify({ termo, plataforma: 'amazon' })
+        });
+        
+        if (data.success && data.products) {
+            console.log(`🔍 Busca Amazon: ${data.products.length} resultados para "${termo}"`);
+            return data.products;
+        }
+        console.log(`📭 Nenhum resultado Amazon para "${termo}"`);
         return [];
     } catch (error) {
         console.error('❌ Erro na busca Amazon:', error);

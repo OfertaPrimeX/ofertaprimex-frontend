@@ -57,14 +57,17 @@ function formatarPrecoCentralizado(valor) {
 }
 
 // ============================================
-// FUNÇÃO PARA OBTER O PREÇO PRINCIPAL
+// FUNÇÃO PARA OBTER O PREÇO PRINCIPAL (CORRIGIDA PARA AMAZON)
 // ============================================
 function getPrecoFormatado(produto) {
     let preco = null;
     
-    if (produto.preco_pix && produto.preco_pix !== 'N/A' && produto.preco_pix !== null) {
+    // 1. Prioridade: preco_pix (Amazon também usa)
+    if (produto.preco_pix && produto.preco_pix !== 'N/A' && produto.preco_pix !== null && produto.preco_pix > 0) {
         preco = produto.preco_pix;
-    } else if (produto.preco && produto.preco !== 'N/A' && produto.preco !== null) {
+    } 
+    // 2. Fallback: preco
+    else if (produto.preco && produto.preco !== 'N/A' && produto.preco !== null && produto.preco > 0) {
         preco = produto.preco;
     }
     
@@ -75,7 +78,7 @@ function getPrecoFormatado(produto) {
 }
 
 // ============================================
-// 🔥 FUNÇÃO PARA OBTER PARCELAMENTO FORMATADO (CORRIGIDA - BUSCA TODAS AS FONTES)
+// FUNÇÃO PARA OBTER PARCELAMENTO FORMATADO (CORRIGIDA)
 // ============================================
 function getParcelamentoHtml(produto) {
     let texto = produto.parcelas_texto || 
@@ -83,6 +86,7 @@ function getParcelamentoHtml(produto) {
                 produto.preco_parcelado || 
                 '';
     
+    // Se não tem texto, tenta montar a partir dos campos individuais
     if (!texto || texto === 'N/A') {
         if (produto.parcelas_qtd && produto.parcelas_qtd > 0) {
             const qtd = produto.parcelas_qtd;
@@ -121,7 +125,7 @@ function getFreteGratisIcon(freteGratis) {
 }
 
 // ============================================
-// FUNÇÃO PARA OBTER ÍCONE DE LOJA OFICIAL (REMOVIDO)
+// FUNÇÃO PARA OBTER ÍCONE DE LOJA OFICIAL
 // ============================================
 function getLojaOficialIcon(lojaOficial) {
     return '';
@@ -262,7 +266,6 @@ export function filtrarProdutosPorPlataforma(produtos) {
 function registrarCliqueFireAndForget(produtoId, plataforma, linkOriginal, pagina) {
     if (!produtoId) return;
     
-    // Usa fetch sem await - não bloqueia o window.open
     const sessaoId = localStorage.getItem('sessaoId') || ('sess_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9));
     if (!localStorage.getItem('sessaoId')) {
         localStorage.setItem('sessaoId', sessaoId);
@@ -292,7 +295,7 @@ function registrarCliqueFireAndForget(produtoId, plataforma, linkOriginal, pagin
 }
 
 // ============================================
-// RENDERIZAÇÃO DE PRODUTOS (CARDS NORMAIS) - CORRIGIDO PARA SAFARI
+// RENDERIZAÇÃO DE PRODUTOS (CARDS NORMAIS)
 // ============================================
 export function renderProducts(container, products, isCarousel = false) {
     if (!container) return;
@@ -320,17 +323,14 @@ export function renderProducts(container, products, isCarousel = false) {
         const plataforma = p.plataforma || 'Mercado Livre';
         const link = p.link_afiliado || p.link_original || '#';
         
-        // 🔥 CORRIGIDO: abre o link PRIMEIRO, registra clique DEPOIS (sem await)
         card.onclick = (e) => {
             e.preventDefault();
             e.stopPropagation();
             
-            // Abre o link imediatamente (antes de qualquer await)
             if (link && link !== '#') {
                 window.open(link, '_blank');
             }
             
-            // Registra o clique em segundo plano (fire-and-forget)
             if (produtoId) {
                 registrarCliqueFireAndForget(produtoId, plataforma, link, window.location.pathname);
             }
@@ -433,7 +433,6 @@ export function renderProductsHTML(products) {
         const iconeHtml = getIconeCard(plataforma);
         const plataformaKey = plataforma === 'Mercado Livre' ? 'mercadolivre' : plataforma.toLowerCase();
         
-        // 🔥 CORRIGIDO: window.open PRIMEIRO, fetch DEPOIS (sem await bloqueando)
         return `
             <div class="product-card" style="position: relative; cursor:pointer;" onclick="
                 (function(){
