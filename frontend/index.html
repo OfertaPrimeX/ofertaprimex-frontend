@@ -402,6 +402,10 @@
   } from './js/api.js';
   import { renderProducts, renderCarousel, carregarCategoriasDropdown } from './js/render.js';
 
+  // 🔥 CONFIGURAÇÃO DE MÍNIMOS POR PLATAFORMA
+  const MIN_AMAZON_SELECIONADOS = 12;
+  const MIN_ML_SELECIONADOS = 12;
+
   // FUNÇÃO PARA NORMALIZAR TÍTULO
   function normalizarTitulo(titulo) {
       if (!titulo) return '';
@@ -543,7 +547,22 @@
       }
   }
 
-  // CARREGAR SELECIONADOS
+  // 🔥 FUNÇÃO AUXILIAR: Adicionar produtos balanceados
+  function adicionarBalanceado(lista, quantidade, titulosVistos, destino) {
+      let adicionados = 0;
+      for (const produto of lista) {
+          if (adicionados >= quantidade) break;
+          const chave = normalizarTitulo(produto.titulo);
+          if (!titulosVistos.has(chave)) {
+              titulosVistos.add(chave);
+              destino.push(produto);
+              adicionados++;
+          }
+      }
+      return adicionados;
+  }
+
+  // 🔥 CARREGAR SELECIONADOS (COM BALANCEAMENTO)
   async function carregarSelecionados() {
       const container = document.getElementById('selecionados-grid');
       if (!container) return;
@@ -553,32 +572,62 @@
           
           const carrosselResponse = await fetch('https://yo0g0cg4c88w88osc4s04c0c.72.61.33.248.sslip.io/api/produtos/carrossel');
           const carrosselData = await carrosselResponse.json();
-          const carrosselIds = carrosselData.carrossel_ids || [];
+          const carrosselIds = new Set(carrosselData.carrossel_ids || []);
           
+          const ativas = await getPlataformasAtivas();
+          
+          // Buscar produtos de cada plataforma
           const [ml, amazon, shopee, magalu] = await Promise.all([
-              getMaisVendidosMercadoLivreFiltrado(150),
-              getMaisVendidosAmazonFiltrado(150),
-              getMaisVendidosShopeeFiltrado(150),
-              getMaisVendidosMagaluFiltrado(150)
+              ativas.includes('mercadolivre') ? getMaisVendidosMercadoLivre(200) : Promise.resolve([]),
+              ativas.includes('amazon') ? getMaisVendidosAmazon(200) : Promise.resolve([]),
+              ativas.includes('shopee') ? getMaisVendidosShopee(200) : Promise.resolve([]),
+              ativas.includes('magalu') ? getMaisVendidosMagalu(200) : Promise.resolve([])
           ]);
           
-          let todosProdutos = [...ml, ...amazon, ...shopee, ...magalu];
-          const produtosFiltrados = todosProdutos.filter(p => !carrosselIds.includes(p.id));
+          // Remover IDs do carrossel
+          const mlFiltrado = ml.filter(p => !carrosselIds.has(p.id));
+          const amazonFiltrado = amazon.filter(p => !carrosselIds.has(p.id));
+          const shopeeFiltrado = shopee.filter(p => !carrosselIds.has(p.id));
+          const magaluFiltrado = magalu.filter(p => !carrosselIds.has(p.id));
           
+          console.log(`📊 Selecionados - ML: ${mlFiltrado.length} | Amazon: ${amazonFiltrado.length} | Shopee: ${shopeeFiltrado.length} | Magalu: ${magaluFiltrado.length}`);
+          
+          let selecionados = [];
           const titulosVistos = new Set();
-          const produtosUnicos = [];
           
-          for (const produto of produtosFiltrados) {
-              const chave = normalizarTitulo(produto.titulo);
-              if (!titulosVistos.has(chave)) {
-                  titulosVistos.add(chave);
-                  produtosUnicos.push(produto);
-              }
+          // 1. Garantir mínimo 12 da Amazon (se ativa)
+          if (ativas.includes('amazon') && amazonFiltrado.length > 0) {
+              const qtd = Math.min(MIN_AMAZON_SELECIONADOS, amazonFiltrado.length);
+              adicionarBalanceado(amazonFiltrado, qtd, titulosVistos, selecionados);
+              console.log(`📊 Amazon: ${selecionados.filter(p => p.plataforma === 'Amazon').length} adicionados (mínimo ${MIN_AMAZON_SELECIONADOS})`);
           }
           
-          const produtos = produtosUnicos.slice(0, 36);
+          // 2. Garantir mínimo 12 do Mercado Livre (se ativo)
+          if (ativas.includes('mercadolivre') && mlFiltrado.length > 0) {
+              const qtd = Math.min(MIN_ML_SELECIONADOS, mlFiltrado.length);
+              adicionarBalanceado(mlFiltrado, qtd, titulosVistos, selecionados);
+              console.log(`📊 ML: ${selecionados.filter(p => p.plataforma === 'Mercado Livre').length} adicionados (mínimo ${MIN_ML_SELECIONADOS})`);
+          }
+          
+          // 3. Completar até 36 com produtos restantes de qualquer plataforma
+          if (selecionados.length < 36) {
+              const todosRestantes = [...mlFiltrado, ...amazonFiltrado, ...shopeeFiltrado, ...magaluFiltrado]
+                  .sort((a, b) => (b.cliques || 0) - (a.cliques || 0));
+              
+              const restante = 36 - selecionados.length;
+              adicionarBalanceado(todosRestantes, restante, titulosVistos, selecionados);
+          }
+          
+          // Distribuição final
+          const dist = {};
+          for (const p of selecionados) {
+              const plat = p.plataforma || 'Outro';
+              dist[plat] = (dist[plat] || 0) + 1;
+          }
+          console.log(`✅ Selecionados: ${selecionados.length} produtos | ${JSON.stringify(dist)}`);
+          
           container.innerHTML = '';
-          renderProducts(container, produtos, false);
+          renderProducts(container, selecionados, false);
       } catch (error) {
           console.error(error);
           container.innerHTML = '<p style="text-align: center;">⚠️ Erro ao carregar produtos</p>';
