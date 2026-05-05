@@ -26,7 +26,7 @@ function getIconeCard(plataforma) {
 }
 
 // ============================================
-// FUNÇÃO CENTRALIZADA PARA FORMATAR PREÇO
+// FUNÇÃO CENTRALIZADA PARA FORMATAR PREÇO (SEM ARREDONDAMENTO)
 // ============================================
 function formatarPrecoCentralizado(valor) {
     if (valor === null || valor === undefined || valor === 'N/A') {
@@ -37,8 +37,13 @@ function formatarPrecoCentralizado(valor) {
     
     if (typeof valor === 'number') {
         precoNum = valor;
-    } else {
-        let limpo = valor.toString().replace('R$', '').replace(/\./g, '').replace(',', '.').trim();
+    } else if (typeof valor === 'string') {
+        // Verifica se a string JÁ está formatada (ex: "R$ 2.269,80")
+        if (valor.includes('R$')) {
+            return valor; // Já está formatado, retorna como está
+        }
+        // Se for string numérica (ex: "2269.80" ou "2269.80")
+        let limpo = valor.replace(/\./g, '').replace(',', '.').trim();
         precoNum = parseFloat(limpo);
     }
     
@@ -46,13 +51,13 @@ function formatarPrecoCentralizado(valor) {
         return 'R$ 0,00';
     }
     
-    if (precoNum > 100000) {
-        precoNum = precoNum / 100;
-    }
-    
+    // 🔥 NÃO ARREDONDA - apenas formata como moeda
+    // Mantém TODOS os centavos exatamente como vieram
     return precoNum.toLocaleString('pt-BR', {
         style: 'currency',
-        currency: 'BRL'
+        currency: 'BRL',
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
     });
 }
 
