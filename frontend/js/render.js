@@ -26,9 +26,10 @@ function getIconeCard(plataforma) {
 }
 
 // ============================================
-// FUNÇÃO CENTRALIZADA PARA FORMATAR PREÇO (SEM ARREDONDAMENTO)
+// FUNÇÃO CENTRALIZADA PARA FORMATAR PREÇO (CORRIGIDA)
+// Agora trata cada plataforma de forma adequada
 // ============================================
-function formatarPrecoCentralizado(valor) {
+function formatarPrecoCentralizado(valor, plataforma = null) {
     if (valor === null || valor === undefined || valor === 'N/A') {
         return 'R$ 0,00';
     }
@@ -42,7 +43,7 @@ function formatarPrecoCentralizado(valor) {
         if (valor.includes('R$')) {
             return valor; // Já está formatado, retorna como está
         }
-        // Se for string numérica (ex: "2269.80" ou "2269.80")
+        // Se for string numérica (ex: "2269.80" ou "2269,80")
         let limpo = valor.replace(/\./g, '').replace(',', '.').trim();
         precoNum = parseFloat(limpo);
     }
@@ -51,8 +52,28 @@ function formatarPrecoCentralizado(valor) {
         return 'R$ 0,00';
     }
     
-    // 🔥 NÃO ARREDONDA - apenas formata como moeda
-    // Mantém TODOS os centavos exatamente como vieram
+    // APLICA A MESMA LÓGICA DO converterPrecoParaReais
+    const plataformaNome = (plataforma || '').toLowerCase();
+    
+    // Se for decimal (tem casas decimais), já está em reais
+    if (precoNum % 1 !== 0) {
+        // Já está em reais, não precisa converter
+    } else {
+        // Se for inteiro, verifica a plataforma para decidir se divide por 100
+        if (plataformaNome === 'amazon' || plataformaNome === 'magalu') {
+            // Amazon e Magalu: só converte se for > 100000
+            if (precoNum > 100000) {
+                precoNum = precoNum / 100;
+            }
+        } else {
+            // Mercado Livre, Shopee e outros: converte se > 10000
+            if (precoNum > 10000) {
+                precoNum = precoNum / 100;
+            }
+        }
+    }
+    
+    // Formata como moeda SEM arredondamento
     return precoNum.toLocaleString('pt-BR', {
         style: 'currency',
         currency: 'BRL',
@@ -66,6 +87,7 @@ function formatarPrecoCentralizado(valor) {
 // ============================================
 function getPrecoFormatado(produto) {
     let preco = null;
+    const plataforma = produto.plataforma || '';
     
     // 1. Prioridade: preco_pix (Amazon também usa)
     if (produto.preco_pix && produto.preco_pix !== 'N/A' && produto.preco_pix !== null && produto.preco_pix > 0) {
@@ -77,7 +99,7 @@ function getPrecoFormatado(produto) {
     }
     
     if (preco) {
-        return `<div class="product-price">${formatarPrecoCentralizado(preco)}</div>`;
+        return `<div class="product-price">${formatarPrecoCentralizado(preco, plataforma)}</div>`;
     }
     return '<div class="product-price">R$ 0,00</div>';
 }
