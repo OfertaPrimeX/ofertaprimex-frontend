@@ -27,7 +27,7 @@ function getIconeCard(plataforma) {
 
 // ============================================
 // FUNÇÃO CENTRALIZADA PARA FORMATAR PREÇO (CORRIGIDA)
-// Agora trata cada plataforma de forma adequada
+// CORREÇÃO: Trata corretamente strings com ponto decimal (ex: "210.32")
 // ============================================
 function formatarPrecoCentralizado(valor, plataforma = null) {
     if (valor === null || valor === undefined || valor === 'N/A') {
@@ -43,34 +43,35 @@ function formatarPrecoCentralizado(valor, plataforma = null) {
         if (valor.includes('R$')) {
             return valor; // Já está formatado, retorna como está
         }
-        // Se for string numérica (ex: "2269.80" ou "2269,80")
-        let limpo = valor.replace(/\./g, '').replace(',', '.').trim();
-        precoNum = parseFloat(limpo);
+        
+        // 🔥 CORRIGIDO: Tratamento inteligente de ponto e vírgula
+        const temVirgula = valor.includes(',');
+        const temPonto = valor.includes('.');
+        
+        if (temVirgula && temPonto) {
+            // Formato brasileiro: "1.234,56" → remove pontos, troca vírgula por ponto
+            valor = valor.replace(/\./g, '').replace(',', '.');
+        } else if (temVirgula && !temPonto) {
+            // Formato: "1234,56" → troca vírgula por ponto
+            valor = valor.replace(',', '.');
+        } else if (temPonto && !temVirgula) {
+            // Formato com ponto decimal: "210.32" → mantém como está!
+            const partes = valor.split('.');
+            if (partes.length === 2 && partes[1].length <= 3) {
+                // É um decimal válido: "210.32" → mantém, não faz nada
+            } else if (partes.length > 2) {
+                // Múltiplos pontos: "1.234.56" → último ponto é decimal
+                const ultimoPonto = valor.lastIndexOf('.');
+                valor = valor.substring(0, ultimoPonto).replace(/\./g, '') + '.' + valor.substring(ultimoPonto + 1);
+            }
+        }
+        // Se não tem nem ponto nem vírgula, é inteiro, mantém como está
+        
+        precoNum = parseFloat(valor);
     }
     
     if (isNaN(precoNum)) {
         return 'R$ 0,00';
-    }
-    
-    // APLICA A MESMA LÓGICA DO converterPrecoParaReais
-    const plataformaNome = (plataforma || '').toLowerCase();
-    
-    // Se for decimal (tem casas decimais), já está em reais
-    if (precoNum % 1 !== 0) {
-        // Já está em reais, não precisa converter
-    } else {
-        // Se for inteiro, verifica a plataforma para decidir se divide por 100
-        if (plataformaNome === 'amazon' || plataformaNome === 'magalu') {
-            // Amazon e Magalu: só converte se for > 100000
-            if (precoNum > 100000) {
-                precoNum = precoNum / 100;
-            }
-        } else {
-            // Mercado Livre, Shopee e outros: converte se > 10000
-            if (precoNum > 10000) {
-                precoNum = precoNum / 100;
-            }
-        }
     }
     
     // Formata como moeda SEM arredondamento
@@ -83,7 +84,7 @@ function formatarPrecoCentralizado(valor, plataforma = null) {
 }
 
 // ============================================
-// FUNÇÃO PARA OBTER O PREÇO PRINCIPAL (CORRIGIDA PARA AMAZON)
+// FUNÇÃO PARA OBTER O PREÇO PRINCIPAL
 // ============================================
 function getPrecoFormatado(produto) {
     let preco = null;
@@ -105,7 +106,7 @@ function getPrecoFormatado(produto) {
 }
 
 // ============================================
-// FUNÇÃO PARA OBTER PARCELAMENTO FORMATADO (CORRIGIDA)
+// FUNÇÃO PARA OBTER PARCELAMENTO FORMATADO
 // ============================================
 function getParcelamentoHtml(produto) {
     let texto = produto.parcelas_texto || 
